@@ -26,8 +26,5 @@ add_executable(euler2d
   main.cpp)
 target_include_directories(euler2d
   PUBLIC
-  ${CMAKE_SOURCE_DIR}/kokkos/core/src
-  ${CMAKE_SOURCE_DIR}/kokkos/containers/src
-  ${CMAKE_SOURCE_DIR}/kokkos/algorithms/src
-  ${CMAKE_BINARY_DIR}/kokkos)
+  ${Kokkos_INCLUDE_DIRS_RET})
 target_link_libraries(euler2d kokkos)
