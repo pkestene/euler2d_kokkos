@@ -32,7 +32,7 @@ make
 
 You should now have executable *euler2d*. You can run a simply implode test like this
 ```shell
-cp ../test_implode.ini .
+cd src
 ./euler2d ./test_implode.ini
 ```
 
@@ -52,4 +52,9 @@ Then you need to
     * select cuda architecture, e.g. set KOKKOS_GPU_ARCH to Kepler37 (for Nvidia K80 boards)
 
 then make should give you a working executable `euler2d` running on GPU.
+
+```shell
+cd src
+./euler2d ./test_implode.ini
+```
 
