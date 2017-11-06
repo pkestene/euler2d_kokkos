@@ -16,15 +16,4 @@ if (USE_DOUBLE)
   set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DUSE_DOUBLE" )
 endif()
 
-add_executable(euler2d
-  config/inih/ini.cpp
-  config/inih/INIReader.cpp
-  config/ConfigMap.cpp
-  HydroParams.cpp
-  HydroRun.cpp
-  Timer.cpp
-  main.cpp)
-target_include_directories(euler2d
-  PUBLIC
-  ${Kokkos_INCLUDE_DIRS_RET})
-target_link_libraries(euler2d kokkos)
+add_subdirectory(src)
