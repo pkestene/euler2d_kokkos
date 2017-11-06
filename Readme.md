@@ -4,10 +4,10 @@ Our miniApp uses kokkos as a git submodule, configured to use the `develop` bran
 In order to download the sources all-in-one (miniApp + kokkos):
 
 ```shell
-git clone --recursive git@gitlab.maisondelasimulation.fr:pkestene/euler2d_kokkos_functor.git
+git clone --recursive git@github.com:pkestene/euler2d_kokkos.git
 ```
 
-Alternatively, if you don't use option `--recursive`, you can afterwards retrieve kokkos like this
+Alternatively, if you didn't use option `--recursive`, you can afterwards retrieve kokkos like this
 ```shell
 git submodule init
 git submodule update
@@ -36,7 +36,7 @@ cd src
 ./euler2d ./test_implode.ini
 ```
 
-Optionally, you can activate HWLOC support by turning ON the flag KOKKOS_ENABLE_HWLOC.
+Optionally, you can (recommended) activate HWLOC support by turning ON the flag KOKKOS_ENABLE_HWLOC.
 
 
 ## build for Kokkos/CUDA
@@ -51,7 +51,7 @@ Then you need to
     * Just turn on KOKKOS_ENABLE_CUDA 
     * select cuda architecture, e.g. set KOKKOS_GPU_ARCH to Kepler37 (for Nvidia K80 boards)
 
-then make should give you a working executable `euler2d` running on GPU.
+then `make` should give you a working executable `euler2d` running on GPU.
 
 ```shell
 cd src
