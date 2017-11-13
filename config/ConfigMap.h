@@ -25,13 +25,13 @@ public:
   ~ConfigMap();
 
   //! Get a floating point value from the map.
-  float getFloat(std::string section, std::string name, float default_value);
+  float getFloat(std::string section, std::string name, float default_value) const;
   
   //! Set a floating point value to a section/name.
   void setFloat(std::string section, std::string name, float value);
   
   //! Get a boolean value from the map.
-  bool  getBool (std::string section, std::string name, bool default_value);
+  bool  getBool (std::string section, std::string name, bool default_value) const;
 
   //! Set a boolean value to a section/name.
   void  setBool (std::string section, std::string name, bool value);

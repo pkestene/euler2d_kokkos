@@ -27,7 +27,7 @@ ConfigMap::~ConfigMap()
 
 // =======================================================
 // =======================================================
-float ConfigMap::getFloat(std::string section, std::string name, float default_value)
+float ConfigMap::getFloat(std::string section, std::string name, float default_value) const
 {
   std::string valstr = getString(section, name, "");
   const char* value = valstr.c_str();
@@ -51,7 +51,7 @@ void ConfigMap::setFloat(std::string section, std::string name, float value)
 
 // =======================================================
 // =======================================================
-bool ConfigMap::getBool(std::string section, std::string name, bool default_value)
+bool ConfigMap::getBool(std::string section, std::string name, bool default_value) const
 {
   bool val = default_value;
   std::string valstr = getString(section, name, "");
