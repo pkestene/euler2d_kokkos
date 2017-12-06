@@ -23,16 +23,7 @@
 int main(int argc, char *argv[])
 {
 
-#ifdef CUDA
-  // Initialize Host mirror device
-  Kokkos::HostSpace::execution_space::initialize(1);
-  const unsigned device_count = Kokkos::Cuda::detect_device_count();
-
-  // Use the last device:
-  Kokkos::Cuda::initialize( Kokkos::Cuda::SelectDevice(device_count-1) );
-#else
   Kokkos::initialize(argc, argv);
-#endif
 
   {
     std::cout << "##########################\n";
@@ -48,11 +39,7 @@ int main(int argc, char *argv[])
           << "] )"
           << std::endl ;
     }
-#if defined( CUDA )
-    Kokkos::Cuda::print_configuration( msg );
-#elif defined (OPENMP)
-    Kokkos::OpenMP::print_configuration( msg );
-#endif
+    Kokkos::DefaultExecutionSpace::print_configuration( msg );
     std::cout << msg.str();
     std::cout << "##########################\n";
   }
@@ -145,15 +132,10 @@ int main(int argc, char *argv[])
     printf("io          time : %5.3f secondes %5.2f%%\n",t_io,100*t_io/t_tot);
     printf("Perf             : %10.2f number of Mcell-updates/s\n",nStep*isize*jsize/t_tot*1e-6);
   }
-
+  
   delete hydro;
 
-#ifdef CUDA
-  Kokkos::Cuda::finalize();
-  Kokkos::HostSpace::execution_space::finalize();
-#else
   Kokkos::finalize();
-#endif
   
   return EXIT_SUCCESS;
 
