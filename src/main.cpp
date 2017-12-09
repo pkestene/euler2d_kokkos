@@ -16,23 +16,20 @@
 #include "HydroRun.h"    // memory allocation for hydro arrays
 #include "Timer.h"  // for timer
 
-#ifdef CUDA
+#ifdef KOKKOS_ENABLE_CUDA
 #include "CudaTimer.h"
 #endif
 
 int main(int argc, char *argv[])
 {
 
-#ifdef CUDA
-  // Initialize Host mirror device
-  Kokkos::HostSpace::execution_space::initialize(1);
-  const unsigned device_count = Kokkos::Cuda::detect_device_count();
-
-  // Use the last device:
-  Kokkos::Cuda::initialize( Kokkos::Cuda::SelectDevice(device_count-1) );
-#else
+  /*
+   * Initialize kokkos (host + device)
+   * 
+   * If CUDA is enabled, Kokkos will try to use the default GPU, 
+   * i.e. GPU #0 if you have multiple GPUs.
+   */
   Kokkos::initialize(argc, argv);
-#endif
 
   {
     std::cout << "##########################\n";
@@ -48,11 +45,7 @@ int main(int argc, char *argv[])
           << "] )"
           << std::endl ;
     }
-#if defined( CUDA )
-    Kokkos::Cuda::print_configuration( msg );
-#elif defined (OPENMP)
-    Kokkos::OpenMP::print_configuration( msg );
-#endif
+    Kokkos::print_configuration( msg );
     std::cout << msg.str();
     std::cout << "##########################\n";
   }
@@ -148,12 +141,7 @@ int main(int argc, char *argv[])
 
   delete hydro;
 
-#ifdef CUDA
-  Kokkos::Cuda::finalize();
-  Kokkos::HostSpace::execution_space::finalize();
-#else
   Kokkos::finalize();
-#endif
   
   return EXIT_SUCCESS;
 
