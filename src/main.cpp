@@ -138,7 +138,7 @@ int main(int argc, char *argv[])
     printf("io          time : %5.3f secondes %5.2f%%\n",t_io,100*t_io/t_tot);
     printf("Perf             : %10.2f number of Mcell-updates/s\n",nStep*isize*jsize/t_tot*1e-6);
   }
-
+  
   delete hydro;
 
   Kokkos::finalize();
