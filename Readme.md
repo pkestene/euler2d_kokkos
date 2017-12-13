@@ -22,11 +22,7 @@ We strongly recommend the out-of-source build, so that one can have one build di
 To build for Kokkos/OpenMP backend (which is the default backend):
 ```shell
 mkdir build_openmp; cd build_openmp
-ccmake ..
-```
-Press `c` and `g` to generate Makefile, then `q` to quit `ccmake` interface.
-
-```shell
+cmake -DKOKKOS_ENABLE_OPENMP=ON ..
 make
 ```
 
