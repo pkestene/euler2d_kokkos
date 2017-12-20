@@ -378,12 +378,15 @@ void HydroRun::saveVTK(DataArray Udata,
   outFile << "  <ImageData WholeExtent=\""
 	  << 0 << " " << nx << " "
 	  << 0 << " " << ny << " "
-	  << 0 << " " << 0  << " "
-	  <<  "\" Origin=\"0 0 0\" Spacing=\"1 1 1\">\n";
+	  << 0 << " " << 0  << "\" "
+	  << "Origin=\""
+	  << params.xmin << " " << params.ymin << " " << 0.0 << "\" "
+	  << "Spacing=\""
+	  << params.dx << " " << params.dy << " " << 0.0 << "\">\n";
   outFile << "  <Piece Extent=\""
 	  << 0 << " " << nx << " "
 	  << 0 << " " << ny << " "
-	  << 0 << " " << 1  << " "    
+	  << 0 << " " << 0  << " "
 	  << "\">\n";
   
   outFile << "    <PointData>\n";
