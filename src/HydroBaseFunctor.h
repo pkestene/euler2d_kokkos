@@ -54,8 +54,8 @@ public:
 	   real_t* p,
 	   real_t* c) const
   {
-    real_t gamma0 = params.settings.gamma0;
-    real_t smallp = params.settings.smallp;
+    const real_t gamma0 = params.settings.gamma0;
+    const real_t smallp = params.settings.smallp;
     
     *p = FMAX((gamma0 - ONE_F) * rho * eint, rho * smallp);
     *c = SQRT(gamma0 * (*p) / rho);
@@ -74,9 +74,9 @@ public:
 			 real_t* c,
 			 HydroState& q) const
   {
-    real_t gamma0 = params.settings.gamma0;
-    real_t smallr = params.settings.smallr;
-    real_t smallp = params.settings.smallp;
+    const real_t gamma0 = params.settings.gamma0;
+    const real_t smallr = params.settings.smallr;
+    const real_t smallp = params.settings.smallp;
     
     real_t d, p, ux, uy;
     
@@ -125,8 +125,8 @@ public:
 			HydroState& qp_y) const
   {
     
-    real_t gamma0 = params.settings.gamma0;
-    real_t smallr = params.settings.smallr;
+    const real_t gamma0 = params.settings.gamma0;
+    const real_t smallr = params.settings.smallr;
     
     // first compute slopes
     HydroState dqX, dqY;
@@ -220,8 +220,8 @@ public:
 				  HydroState& qface) const
   {
   
-    real_t gamma0 = params.settings.gamma0;
-    real_t smallr = params.settings.smallr;
+    const real_t gamma0 = params.settings.gamma0;
+    const real_t smallr = params.settings.smallr;
 
     // Cell centered values
     real_t r =  q[ID];
@@ -312,9 +312,9 @@ public:
 			      HydroState& qp_y) const
   {
   
-    real_t gamma0 = params.settings.gamma0;
-    real_t smallr = params.settings.smallr;
-    real_t smallp = params.settings.smallp;
+    const real_t gamma0 = params.settings.gamma0;
+    const real_t smallr = params.settings.smallr;
+    const real_t smallp = params.settings.smallp;
 
     // Cell centered values
     real_t r = q[ID];
@@ -410,7 +410,7 @@ public:
 				     real_t *dqX,
 				     real_t *dqY) const
   {
-    real_t slope_type = params.settings.slope_type;
+    const real_t slope_type = params.settings.slope_type;
 
     real_t dlft, drgt, dcen, dsgn, slop, dlim;
 
@@ -464,8 +464,8 @@ public:
 			      HydroState& dqY) const
   {
   
-    real_t slope_type = params.settings.slope_type;
-
+    const real_t slope_type = params.settings.slope_type;
+    
     if (slope_type==0) {
 
       dqX[ID] = ZERO_F;
@@ -501,7 +501,7 @@ public:
   void cmpflx(const HydroState& qgdnv, 
 	      HydroState& flux) const
   {
-    real_t gamma0 = params.settings.gamma0;
+    const real_t gamma0 = params.settings.gamma0;
 
     // Compute fluxes
     // Mass density
@@ -538,12 +538,12 @@ public:
 		      HydroState& qgdnv, 
 		      HydroState& flux) const
   {
-    real_t gamma0  = params.settings.gamma0;
-    real_t gamma6  = params.settings.gamma6;
-    real_t smallr  = params.settings.smallr;
-    real_t smallc  = params.settings.smallc;
-    real_t smallp  = params.settings.smallp;
-    real_t smallpp = params.settings.smallpp;
+    const real_t gamma0  = params.settings.gamma0;
+    const real_t gamma6  = params.settings.gamma6;
+    const real_t smallr  = params.settings.smallr;
+    const real_t smallc  = params.settings.smallc;
+    const real_t smallp  = params.settings.smallp;
+    const real_t smallpp = params.settings.smallpp;
 
     // Pressure, density and velocity
     real_t rl = fmax(qleft [ID], smallr);
@@ -684,10 +684,10 @@ public:
 		    HydroState& flux) const
   {
 
-    real_t gamma0 = params.settings.gamma0;
-    real_t smallr = params.settings.smallr;
-    real_t smallp = params.settings.smallp;
-    real_t smallc = params.settings.smallc;
+    const real_t gamma0 = params.settings.gamma0;
+    const real_t smallr = params.settings.smallr;
+    const real_t smallp = params.settings.smallp;
+    const real_t smallc = params.settings.smallc;
 
     const real_t entho = ONE_F / (gamma0 - ONE_F);
   
