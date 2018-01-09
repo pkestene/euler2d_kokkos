@@ -1113,15 +1113,13 @@ public:
     
     int i,j;
 
-    int boundary_type;
-    
     int i0, j0;
     int iVar;
 
     if (faceId == FACE_XMIN) {
       
       // boundary xmin
-      boundary_type = params.boundary_type_xmin;
+      int boundary_type = params.boundary_type_xmin;
 
       j = index / ghostWidth;
       i = index - j*ghostWidth;
@@ -1151,7 +1149,7 @@ public:
     if (faceId == FACE_XMAX) {
       
       // boundary xmax
-      boundary_type = params.boundary_type_xmax;
+      int boundary_type = params.boundary_type_xmax;
 
       j = index / ghostWidth;
       i = index - j*ghostWidth;
@@ -1181,7 +1179,7 @@ public:
     if (faceId == FACE_YMIN) {
       
       // boundary ymin
-      boundary_type = params.boundary_type_ymin;
+      int boundary_type = params.boundary_type_ymin;
 
       i = index / ghostWidth;
       j = index - i*ghostWidth;
@@ -1209,7 +1207,7 @@ public:
     if (faceId == FACE_YMAX) {
 
       // boundary ymax
-      boundary_type = params.boundary_type_ymax;
+      int boundary_type = params.boundary_type_ymax;
 
       i = index / ghostWidth;
       j = index - i*ghostWidth;
