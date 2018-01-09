@@ -67,8 +67,6 @@ public:
   // inside this routine)
   void saveVTK(DataArray Udata, int iStep, std::string name);
   
-  int isize, jsize, ijsize;
-  
 }; // class HydroRun
 
 #endif // HYDRO_RUN_H_

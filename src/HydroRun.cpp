@@ -32,11 +32,11 @@ HydroRun::HydroRun(HydroParams& params, ConfigMap& configMap) :
   configMap(configMap),
   U(), U2(), Q(),
   Fluxes_x(), Fluxes_y(),
-  Slopes_x(), Slopes_y(),
-  isize(params.isize),
-  jsize(params.jsize),
-  ijsize(params.isize*params.jsize)
+  Slopes_x(), Slopes_y()
 {
+
+  const int isize = params.isize;
+  const int jsize = params.jsize;
 
   /*
    * memory allocation (use sizes with ghosts included)
@@ -116,6 +116,8 @@ HydroRun::~HydroRun()
 real_t HydroRun::compute_dt(int useU)
 {
 
+  const int ijsize = params.isize*params.jsize;
+
   real_t dt;
   real_t invDt = ZERO_F;
   DataArray Udata;
@@ -162,6 +164,8 @@ void HydroRun::godunov_unsplit_cpu(DataArray data_in,
 				   real_t dt, 
 				   int nStep)
 {
+
+  const int ijsize = params.isize*params.jsize;
 
   real_t dtdx;
   real_t dtdy;
@@ -250,6 +254,7 @@ void HydroRun::godunov_unsplit_cpu(DataArray data_in,
 // ///////////////////////////////////////////////////////////////////
 void HydroRun::convertToPrimitives(DataArray Udata)
 {
+  const int ijsize = params.isize*params.jsize;
 
   // call device functor
   ConvertToPrimitivesFunctor convertToPrimitivesFunctor(params, Udata, Q);
@@ -266,6 +271,9 @@ void HydroRun::convertToPrimitives(DataArray Udata)
 void HydroRun::make_boundaries(DataArray Udata)
 {
   const int ghostWidth=params.ghostWidth;
+  const int isize = params.isize;
+  const int jsize = params.jsize;
+
   int nbIter = ghostWidth*std::max(isize,jsize);
   
   // call device functor
@@ -297,6 +305,7 @@ void HydroRun::make_boundaries(DataArray Udata)
  */
 void HydroRun::init_implode(DataArray Udata)
 {
+  const int ijsize = params.isize*params.jsize;
 
   InitImplodeFunctor functor(params, Udata);
   Kokkos::parallel_for(ijsize, functor);
@@ -311,6 +320,7 @@ void HydroRun::init_implode(DataArray Udata)
  */
 void HydroRun::init_blast(DataArray Udata)
 {
+  const int ijsize = params.isize*params.jsize;
 
   InitBlastFunctor functor(params, Udata);
   Kokkos::parallel_for(ijsize, functor);
@@ -330,6 +340,8 @@ void HydroRun::saveVTK(DataArray Udata,
 		       std::string name)
 {
 
+  const int ijsize = params.isize*params.jsize;
+  const int isize  = params.isize;
   const int nx = params.nx;
   const int ny = params.ny;
   const int imin = params.imin;
