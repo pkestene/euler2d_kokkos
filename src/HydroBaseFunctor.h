@@ -5,9 +5,6 @@
 
 #include "HydroParams.h"
 
-//!< a POD data structure to store local conservative / primitive variables
-using HydroState = Kokkos::Array<real_t,NBVAR>;
-
 /**
  * Base class to derive actual kokkos functor.
  * params is passed by copy.

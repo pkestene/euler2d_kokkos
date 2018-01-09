@@ -15,6 +15,9 @@ using Device = Kokkos::DefaultExecutionSpace;
 typedef Kokkos::View<real_t**[NBVAR], Device> DataArray;
 typedef DataArray::HostMirror                 DataArrayHost;
 
+/// a POD data structure to store local conservative / primitive variables
+using HydroState = Kokkos::Array<real_t,NBVAR>;
+
 /**
  * Retrieve cartesian coordinate from index, using memory layout information.
  *
