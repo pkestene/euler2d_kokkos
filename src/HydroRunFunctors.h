@@ -21,6 +21,15 @@ public:
     HydroBaseFunctor(params),
     Udata(Udata)  {};
 
+  // static method which does it all: create and execute functor
+  static void apply(HydroParams params,
+		    DataArray Udata,
+		    real_t& invDt) {
+    const int ijsize = params.isize*params.jsize;
+    ComputeDtFunctor computeDtFunctor(params, Udata);
+    Kokkos::parallel_reduce(ijsize, computeDtFunctor, invDt);
+  }
+
   // Tell each thread how to initialize its reduction result.
   KOKKOS_INLINE_FUNCTION
   void init (real_t& dst) const
@@ -105,6 +114,16 @@ public:
 			     DataArray Qdata) :
     HydroBaseFunctor(params), Udata(Udata), Qdata(Qdata)  {};
   
+  // static method which does it all: create and execute functor
+  static void apply(HydroParams params,
+		    DataArray Udata,
+		    DataArray Qdata)
+  {
+    const int ijsize = params.isize*params.jsize;
+    ConvertToPrimitivesFunctor convertToPrimitivesFunctor(params, Udata, Qdata);
+    Kokkos::parallel_for(ijsize, convertToPrimitivesFunctor);
+  }
+
   KOKKOS_INLINE_FUNCTION
   void operator()(const int& index) const
   {
@@ -149,6 +168,7 @@ public:
 /*************************************************/
 /*************************************************/
 /*************************************************/
+/* NOT USED CURRENTLY */
 class ComputeFluxesAndUpdateFunctor : public HydroBaseFunctor {
 
 public:
@@ -165,6 +185,24 @@ public:
     Qm_x(Qm_x), Qm_y(Qm_y), Qp_x(Qp_x), Qp_y(Qp_y),
     dtdx(dtdx), dtdy(dtdy) {};
   
+  // static method which does it all: create and execute functor
+  static void apply(HydroParams params,
+		    DataArray Udata,
+		    DataArray Qm_x,
+		    DataArray Qm_y,
+		    DataArray Qp_x,
+		    DataArray Qp_y,
+		    real_t dtdx,
+		    real_t dtdy)
+  {
+    const int ijsize = params.isize*params.jsize;
+    ComputeFluxesAndUpdateFunctor computeFluxesAndUpdateFunctor(params, Udata,
+								Qm_x, Qm_y,
+								Qp_x, Qp_y,
+								dtdx, dtdy);
+    Kokkos::parallel_for(ijsize, computeFluxesAndUpdateFunctor);
+  }
+
   KOKKOS_INLINE_FUNCTION
   void operator()(const int& index_) const
   {
@@ -251,6 +289,7 @@ public:
 /*************************************************/
 /*************************************************/
 /*************************************************/
+/* NOT USED CURRENTLY */
 class ComputeTraceFunctor : public HydroBaseFunctor {
 
 public:
@@ -269,6 +308,28 @@ public:
     Qm_x(Qm_x), Qm_y(Qm_y), Qp_x(Qp_x), Qp_y(Qp_y),
     dtdx(dtdx), dtdy(dtdy) {};
   
+  // static method which does it all: create and execute functor
+  static void apply(HydroParams params,
+		    DataArray Udata,
+		    DataArray Qdata,
+		    DataArray Qm_x,
+		    DataArray Qm_y,
+		    DataArray Qp_x,
+		    DataArray Qp_y,
+		    real_t dtdx,
+		    real_t dtdy)
+  {
+
+    const int ijsize = params.isize*params.jsize;
+    ComputeTraceFunctor computeTraceFunctor(params, Udata, Qdata,
+					    Qm_x, Qm_y,
+					    Qp_x, Qp_y,
+					    dtdx, dtdy);
+    Kokkos::parallel_for(ijsize, computeTraceFunctor);
+    
+  }
+
+
   KOKKOS_INLINE_FUNCTION
   void operator()(const int& index) const
   {
@@ -388,6 +449,22 @@ public:
     dtdx(dtdx),
     dtdy(dtdy) {};
   
+  // static method which does it all: create and execute functor
+  static void apply(HydroParams params,
+		    DataArray Qdata,
+		    DataArray FluxData_x,
+		    DataArray FluxData_y,		       
+		    real_t dtdx,
+		    real_t dtdy)
+  {
+    const int ijsize = params.isize*params.jsize;
+    ComputeAndStoreFluxesFunctor functor(params, Qdata,
+					 FluxData_x, FluxData_y,
+					 dtdx, dtdy);
+    Kokkos::parallel_for(ijsize, functor);
+    
+  }
+
   KOKKOS_INLINE_FUNCTION
   void operator()(const int& index) const
   {
@@ -605,6 +682,18 @@ public:
     FluxData_x(FluxData_x),
     FluxData_y(FluxData_y) {};
   
+  // static method which does it all: create and execute functor
+  static void apply(HydroParams params,
+		    DataArray Udata,
+		    DataArray FluxData_x,
+		    DataArray FluxData_y)
+  {
+    const int ijsize = params.isize*params.jsize;
+    UpdateFunctor functor(params, Udata,
+			  FluxData_x, FluxData_y);
+    Kokkos::parallel_for(ijsize, functor);
+  }
+
   KOKKOS_INLINE_FUNCTION
   void operator()(const int& index) const
   {
@@ -664,6 +753,16 @@ public:
     Udata(Udata), 
     FluxData(FluxData) {};
   
+  // static method which does it all: create and execute functor
+  static void apply(HydroParams params,
+		    DataArray Udata,
+		    DataArray FluxData)
+  {
+    const int ijsize = params.isize*params.jsize;
+    UpdateDirFunctor<dir> functor(params, Udata, FluxData);
+    Kokkos::parallel_for(ijsize, functor);
+  }
+
   KOKKOS_INLINE_FUNCTION
   void operator()(const int& index) const
   {
@@ -727,6 +826,17 @@ public:
     HydroBaseFunctor(params), Qdata(Qdata),
     Slopes_x(Slopes_x), Slopes_y(Slopes_y) {};
   
+  // static method which does it all: create and execute functor
+  static void apply(HydroParams params,
+		    DataArray Qdata,
+		    DataArray Slopes_x,
+		    DataArray Slopes_y)
+  {
+    const int ijsize = params.isize*params.jsize;
+    ComputeSlopesFunctor functor(params, Qdata, Slopes_x, Slopes_x);
+    Kokkos::parallel_for(ijsize, functor);
+  }
+
   KOKKOS_INLINE_FUNCTION
   void operator()(const int& index) const
   {
@@ -825,6 +935,21 @@ public:
     Fluxes(Fluxes),
     dtdx(dtdx), dtdy(dtdy) {};
   
+  // static method which does it all: create and execute functor
+  static void apply(HydroParams params,
+		    DataArray Qdata,
+		    DataArray Slopes_x,
+		    DataArray Slopes_y,
+		    DataArray Fluxes,
+		    real_t    dtdx,
+		    real_t    dtdy)
+  {
+    const int ijsize = params.isize*params.jsize;
+    ComputeTraceAndFluxes_Functor<dir> functor(params, Qdata, Slopes_x, Slopes_x, Fluxes,
+					       dtdx, dtdy);
+    Kokkos::parallel_for(ijsize, functor);
+  }
+
   KOKKOS_INLINE_FUNCTION
   void operator()(const int& index) const
   {
@@ -978,6 +1103,15 @@ public:
 		     DataArray Udata) :
     HydroBaseFunctor(params), Udata(Udata)  {};
   
+  // static method which does it all: create and execute functor
+  static void apply(HydroParams params,
+		    DataArray Udata)
+  {
+    const int ijsize = params.isize*params.jsize;
+    InitImplodeFunctor functor(params, Udata);
+    Kokkos::parallel_for(ijsize, functor);
+  }
+
   KOKKOS_INLINE_FUNCTION
   void operator()(const int& index) const
   {
@@ -1028,6 +1162,15 @@ public:
 		   DataArray Udata) :
     HydroBaseFunctor(params), Udata(Udata)  {};
   
+  // static method which does it all: create and execute functor
+  static void apply(HydroParams params,
+		    DataArray Udata)
+  {
+    const int ijsize = params.isize*params.jsize;
+    InitBlastFunctor functor(params, Udata);
+    Kokkos::parallel_for(ijsize, functor);
+  }
+
   KOKKOS_INLINE_FUNCTION
   void operator()(const int& index) const
   {
@@ -1086,14 +1229,25 @@ public:
 /*************************************************/
 /*************************************************/
 /*************************************************/
- template <FaceIdType faceId>
- class MakeBoundariesFunctor : public HydroBaseFunctor {
-
+template <FaceIdType faceId>
+class MakeBoundariesFunctor : public HydroBaseFunctor {
+  
 public:
-
+  
   MakeBoundariesFunctor(HydroParams params,
 			DataArray Udata) :
     HydroBaseFunctor(params), Udata(Udata)  {};
+  
+
+  // static method which does it all: create and execute functor
+  static void apply(HydroParams params,
+		    DataArray Udata,
+		    int nbIter)
+  {
+    const int ijsize = params.isize*params.jsize;
+    MakeBoundariesFunctor<faceId> functor(params, Udata);
+    Kokkos::parallel_for(nbIter, functor);
+  }
   
   KOKKOS_INLINE_FUNCTION
   void operator()(const int& index) const
@@ -1104,7 +1258,7 @@ public:
     //const int isize = params.isize;
     //const int jsize = params.jsize;
     const int ghostWidth = params.ghostWidth;
-
+    
     const int imin = params.imin;
     const int imax = params.imax;
     

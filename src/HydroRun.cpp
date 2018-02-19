@@ -116,8 +116,6 @@ HydroRun::~HydroRun()
 real_t HydroRun::compute_dt(int useU)
 {
 
-  const int ijsize = params.isize*params.jsize;
-
   real_t dt;
   real_t invDt = ZERO_F;
   DataArray Udata;
@@ -129,8 +127,7 @@ real_t HydroRun::compute_dt(int useU)
     Udata = U2;
 
   // call device functor
-  ComputeDtFunctor computeDtFunctor(params, Udata);
-  Kokkos::parallel_reduce(ijsize, computeDtFunctor, invDt);
+  ComputeDtFunctor::apply(params, Udata, invDt);
     
   dt = params.settings.cfl/invDt;
 
@@ -165,8 +162,6 @@ void HydroRun::godunov_unsplit_cpu(DataArray data_in,
 				   int nStep)
 {
 
-  const int ijsize = params.isize*params.jsize;
-
   real_t dtdx;
   real_t dtdy;
   
@@ -191,56 +186,37 @@ void HydroRun::godunov_unsplit_cpu(DataArray data_in,
   if (params.implementationVersion == 0) {
     
     // compute fluxes
-    {
-      ComputeAndStoreFluxesFunctor functor(params, Q,
-					   Fluxes_x, Fluxes_y,
-					   dtdx, dtdy);
-      Kokkos::parallel_for(ijsize, functor);
-    }
+    ComputeAndStoreFluxesFunctor::apply(params, Q,
+					Fluxes_x, Fluxes_y,
+					dtdx, dtdy);
 
     // actual update
-    {
-      UpdateFunctor functor(params, data_out,
-			    Fluxes_x, Fluxes_y);
-      Kokkos::parallel_for(ijsize, functor);
-    }
+    UpdateFunctor::apply(params, data_out,
+			 Fluxes_x, Fluxes_y);
     
   } else if (params.implementationVersion == 1) {
 
     // call device functor to compute slopes
-    ComputeSlopesFunctor computeSlopesFunctor(params, Q, Slopes_x, Slopes_y);
-    Kokkos::parallel_for(ijsize, computeSlopesFunctor);
+    ComputeSlopesFunctor::apply(params, Q, Slopes_x, Slopes_y);
 
     // now trace along X axis
-    {
-      ComputeTraceAndFluxes_Functor<XDIR> functor(params, Q,
-						  Slopes_x, Slopes_y,
-						  Fluxes_x,
-						  dtdx, dtdy);
-      Kokkos::parallel_for(ijsize, functor);
-    }
+    ComputeTraceAndFluxes_Functor<XDIR>::apply(params, Q,
+					       Slopes_x, Slopes_y,
+					       Fluxes_x,
+					       dtdx, dtdy);
     
     // and update along X axis
-    {
-      UpdateDirFunctor<XDIR> functor(params, data_out, Fluxes_x);
-      Kokkos::parallel_for(ijsize, functor);
-    }
-
+    UpdateDirFunctor<XDIR>::apply(params, data_out, Fluxes_x);
+    
     // now trace along Y axis
-    {
-      ComputeTraceAndFluxes_Functor<YDIR> functor(params, Q,
-						  Slopes_x, Slopes_y,
-						  Fluxes_y,
-						  dtdx, dtdy);
-      Kokkos::parallel_for(ijsize, functor);
-    }
+    ComputeTraceAndFluxes_Functor<YDIR>::apply(params, Q,
+					       Slopes_x, Slopes_y,
+					       Fluxes_y,
+					       dtdx, dtdy);
     
     // and update along Y axis
-    {
-      UpdateDirFunctor<YDIR> functor(params, data_out, Fluxes_y);
-      Kokkos::parallel_for(ijsize, functor);
-    }
-
+    UpdateDirFunctor<YDIR>::apply(params, data_out, Fluxes_y);
+    
   } // end params.implementationVersion == 1
   
   godunov_timer.stop();
@@ -254,11 +230,8 @@ void HydroRun::godunov_unsplit_cpu(DataArray data_in,
 // ///////////////////////////////////////////////////////////////////
 void HydroRun::convertToPrimitives(DataArray Udata)
 {
-  const int ijsize = params.isize*params.jsize;
-
   // call device functor
-  ConvertToPrimitivesFunctor convertToPrimitivesFunctor(params, Udata, Q);
-  Kokkos::parallel_for(ijsize, convertToPrimitivesFunctor);
+  ConvertToPrimitivesFunctor::apply(params, Udata, Q);
   
 } // HydroRun::convertToPrimitives
 
@@ -276,24 +249,11 @@ void HydroRun::make_boundaries(DataArray Udata)
 
   int nbIter = ghostWidth*std::max(isize,jsize);
   
-  // call device functor
-  {
-    MakeBoundariesFunctor<FACE_XMIN> functor(params, Udata);
-    Kokkos::parallel_for(nbIter, functor);
-  }
-  {
-    MakeBoundariesFunctor<FACE_XMAX> functor(params, Udata);
-    Kokkos::parallel_for(nbIter, functor);
-  }
-
-  {
-    MakeBoundariesFunctor<FACE_YMIN> functor(params, Udata);
-    Kokkos::parallel_for(nbIter, functor);
-  }
-  {
-    MakeBoundariesFunctor<FACE_YMAX> functor(params, Udata);
-    Kokkos::parallel_for(nbIter, functor);
-  }
+  // call device functors
+  MakeBoundariesFunctor<FACE_XMIN>::apply(params, Udata, nbIter);
+  MakeBoundariesFunctor<FACE_XMAX>::apply(params, Udata, nbIter);
+  MakeBoundariesFunctor<FACE_YMIN>::apply(params, Udata, nbIter);
+  MakeBoundariesFunctor<FACE_YMAX>::apply(params, Udata, nbIter);
   
 } // HydroRun::make_boundaries
 
@@ -305,10 +265,8 @@ void HydroRun::make_boundaries(DataArray Udata)
  */
 void HydroRun::init_implode(DataArray Udata)
 {
-  const int ijsize = params.isize*params.jsize;
-
-  InitImplodeFunctor functor(params, Udata);
-  Kokkos::parallel_for(ijsize, functor);
+  
+  InitImplodeFunctor::apply(params, Udata);
   
 } // init_implode
 
@@ -320,10 +278,8 @@ void HydroRun::init_implode(DataArray Udata)
  */
 void HydroRun::init_blast(DataArray Udata)
 {
-  const int ijsize = params.isize*params.jsize;
-
-  InitBlastFunctor functor(params, Udata);
-  Kokkos::parallel_for(ijsize, functor);
+  
+  InitBlastFunctor::apply(params, Udata);
 
 } // HydroRun::init_blast
 
