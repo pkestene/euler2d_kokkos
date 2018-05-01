@@ -247,13 +247,11 @@ void HydroRun::make_boundaries(DataArray Udata)
   const int isize = params.isize;
   const int jsize = params.jsize;
 
-  int nbIter = ghostWidth*std::max(isize,jsize);
-  
   // call device functors
-  MakeBoundariesFunctor<FACE_XMIN>::apply(params, Udata, nbIter);
-  MakeBoundariesFunctor<FACE_XMAX>::apply(params, Udata, nbIter);
-  MakeBoundariesFunctor<FACE_YMIN>::apply(params, Udata, nbIter);
-  MakeBoundariesFunctor<FACE_YMAX>::apply(params, Udata, nbIter);
+  MakeBoundariesFunctor<FACE_XMIN>::apply(params, Udata);
+  MakeBoundariesFunctor<FACE_XMAX>::apply(params, Udata);
+  MakeBoundariesFunctor<FACE_YMIN>::apply(params, Udata);
+  MakeBoundariesFunctor<FACE_YMAX>::apply(params, Udata);
   
 } // HydroRun::make_boundaries
 

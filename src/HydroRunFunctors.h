@@ -1241,10 +1241,11 @@ public:
 
   // static method which does it all: create and execute functor
   static void apply(HydroParams params,
-		    DataArray Udata,
-		    int nbIter)
+		    DataArray Udata)
   {
-    const int ijsize = params.isize*params.jsize;
+    int nbIter = params.ghostWidth*std::max(params.isize,
+					    params.jsize);
+    
     MakeBoundariesFunctor<faceId> functor(params, Udata);
     Kokkos::parallel_for(nbIter, functor);
   }
