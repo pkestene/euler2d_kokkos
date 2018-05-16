@@ -542,25 +542,25 @@ public:
       qNeighbors_0[ID] = Qdata(i  ,j  , ID);
       qNeighbors_1[ID] = Qdata(i-2,j  , ID);
       qNeighbors_2[ID] = Qdata(i-1,j+1, ID);
-      qNeighbors_3[ID] = Qdata(i-2,j-1, ID);
+      qNeighbors_3[ID] = Qdata(i-1,j-1, ID);
       
       qLocNeighbor[IP] = Qdata(i-1,j  , IP);
       qNeighbors_0[IP] = Qdata(i  ,j  , IP);
       qNeighbors_1[IP] = Qdata(i-2,j  , IP);
       qNeighbors_2[IP] = Qdata(i-1,j+1, IP);
-      qNeighbors_3[IP] = Qdata(i-2,j-1, IP);
+      qNeighbors_3[IP] = Qdata(i-1,j-1, IP);
       
       qLocNeighbor[IU] = Qdata(i-1,j  , IU);
       qNeighbors_0[IU] = Qdata(i  ,j  , IU);
       qNeighbors_1[IU] = Qdata(i-2,j  , IU);
       qNeighbors_2[IU] = Qdata(i-1,j+1, IU);
-      qNeighbors_3[IU] = Qdata(i-2,j-1, IU);
+      qNeighbors_3[IU] = Qdata(i-1,j-1, IU);
       
       qLocNeighbor[IV] = Qdata(i-1,j  , IV);
       qNeighbors_0[IV] = Qdata(i  ,j  , IV);
       qNeighbors_1[IV] = Qdata(i-2,j  , IV);
       qNeighbors_2[IV] = Qdata(i-1,j+1, IV);
-      qNeighbors_3[IV] = Qdata(i-2,j-1, IV);
+      qNeighbors_3[IV] = Qdata(i-1,j-1, IV);
       
       slope_unsplit_hydro_2d(qLocNeighbor, 
 			     qNeighbors_0, qNeighbors_1, 
