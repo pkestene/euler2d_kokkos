@@ -1269,7 +1269,6 @@ public:
     int i,j;
 
     int i0, j0;
-    int iVar;
 
     if (faceId == FACE_XMIN) {
       
@@ -1282,12 +1281,13 @@ public:
       if(j >= jmin && j <= jmax    &&
 	 i >= 0    && i <ghostWidth) {
 	
-	real_t sign=1.0;
-	for ( iVar=0; iVar<NBVAR; iVar++ ) {
+	for ( int iVar=0; iVar<NBVAR; iVar++ ) {
+	  
+	  real_t sign=1.0;
 	  
 	  if ( boundary_type == BC_DIRICHLET ) {
 	    i0=2*ghostWidth-1-i;
-	    if (iVar==IU) sign=-ONE_F;
+	    if (iVar==IU) sign=-1.0;
 	  } else if( boundary_type == BC_NEUMANN ) {
 	    i0=ghostWidth;
 	  } else { // periodic
@@ -1313,12 +1313,13 @@ public:
       if(j >= jmin          && j <= jmax             &&
 	 i >= nx+ghostWidth && i <= nx+2*ghostWidth-1) {
 	
-	real_t sign=1.0;
-	for ( iVar=0; iVar<NBVAR; iVar++ ) {
+	for ( int iVar=0; iVar<NBVAR; iVar++ ) {
+	  
+	  real_t sign=1.0;
 	  
 	  if ( boundary_type == BC_DIRICHLET ) {
 	    i0=2*nx+2*ghostWidth-1-i;
-	    if (iVar==IU) sign=-ONE_F;
+	    if (iVar==IU) sign=-1.0;
 	  } else if ( boundary_type == BC_NEUMANN ) {
 	    i0=nx+ghostWidth-1;
 	  } else { // periodic
@@ -1342,12 +1343,13 @@ public:
       if(i >= imin && i <= imax    &&
 	 j >= 0    && j <ghostWidth) {
 	
-	real_t sign=1.0;
-	
-	for ( iVar=0; iVar<NBVAR; iVar++ ) {
+	for ( int iVar=0; iVar<NBVAR; iVar++ ) {
+
+	  real_t sign=1.0;
+
 	  if ( boundary_type == BC_DIRICHLET ) {
 	    j0=2*ghostWidth-1-j;
-	    if (iVar==IV) sign=-ONE_F;
+	    if (iVar==IV) sign=-1.0;
 	  } else if ( boundary_type == BC_NEUMANN ) {
 	    j0=ghostWidth;
 	  } else { // periodic
@@ -1367,15 +1369,17 @@ public:
       i = index / ghostWidth;
       j = index - i*ghostWidth;
       j += (ny+ghostWidth);
+      
       if(i >= imin          && i <= imax              &&
 	 j >= ny+ghostWidth && j <= ny+2*ghostWidth-1) {
 	
-	real_t sign=1.0;
-	for ( iVar=0; iVar<NBVAR; iVar++ ) {
+	for ( int iVar=0; iVar<NBVAR; iVar++ ) {
+	  
+	  real_t sign=1.0;
 	  
 	  if ( boundary_type == BC_DIRICHLET ) {
 	    j0=2*ny+2*ghostWidth-1-j;
-	    if (iVar==IV) sign=-ONE_F;
+	    if (iVar==IV) sign=-1.0;
 	  } else if ( boundary_type == BC_NEUMANN ) {
 	    j0=ny+ghostWidth-1;
 	  } else { // periodic
