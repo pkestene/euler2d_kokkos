@@ -1,3 +1,5 @@
+![blast2d_1024x1536](https://github.com/pkestene/euler2d_kokkos/blob/master/blast2d.gif)
+
 # Get the source
 
 Our miniApp uses kokkos as a git submodule, configured to use the `develop` branch of kokkos.
