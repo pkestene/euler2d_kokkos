@@ -136,7 +136,7 @@ int main(int argc, char *argv[])
     printf("compute dt  time : %5.3f secondes %5.2f%%\n",t_dt,100*t_dt/t_tot);
     printf("boundaries  time : %5.3f secondes %5.2f%%\n",t_bound,100*t_bound/t_tot);
     printf("io          time : %5.3f secondes %5.2f%%\n",t_io,100*t_io/t_tot);
-    printf("Perf             : %10.2f number of Mcell-updates/s\n",nStep*isize*jsize/t_tot*1e-6);
+    printf("Perf             : %10.2f number of Mcell-updates/s\n",1.0*nStep*isize*jsize/t_tot*1e-6);
   }
   
   delete hydro;
