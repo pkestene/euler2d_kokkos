@@ -368,17 +368,13 @@ void HydroRun::saveVTK(DataArray Udata,
       outFile << "Float32";
     outFile << "\" Name=\"" << varNames[iVar] << "\" format=\"ascii\" >\n";
 
-    for (int index=0; index<ijsize; ++index) {
-      //index2coord(index,i,j,isize,jsize);
-
-      // enforce the use of left layout (Ok for CUDA)
-      // but for OpenMP, we will need to transpose
-      j = index / isize;
-      i = index - j*isize;
-
-      if (j>=jmin+ghostWidth and j<=jmax-ghostWidth and
-	  i>=imin+ghostWidth and i<=imax-ghostWidth) {
-    	outFile << Uhost(i, j, iVar) << " ";
+    for (j=0; j<params.jsize; ++j) {
+      for (i=0; i<params.isize; ++i) {      
+        
+        if (j>=jmin+ghostWidth and j<=jmax-ghostWidth and
+            i>=imin+ghostWidth and i<=imax-ghostWidth) {
+          outFile << Uhost(i, j, iVar) << " ";
+        }
       }
     }
     outFile << "\n    </DataArray>\n";
