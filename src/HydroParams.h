@@ -163,6 +163,12 @@ struct HydroParams {
   // other parameters
   int implementationVersion=0; /*!< triggers which implementation to use (currently 3 versions)*/
 
+  /// kokkos policy related (hierarchical parallelism)
+  bool use_team_policy;
+
+  /// number of teams (only meaningful when use_team_policy is true)
+  int nbTeams;
+
   HydroParams() :
     nStepmax(0), tEnd(0.0), nOutput(0), enableOutput(true),
     nx(0), ny(0), ghostWidth(2),
@@ -181,7 +187,9 @@ struct HydroParams {
     blast_center_x(0.0), blast_center_y(0.0),
     blast_density_in(1.0), blast_density_out(1.2),
     blast_pressure_in(10.0), blast_pressure_out(0.1),
-    implementationVersion(0) {}
+    implementationVersion(0),
+    use_team_policy(false),
+    nbTeams(4) {}
 
   void setup(ConfigMap& map);
   void init();
