@@ -85,6 +85,10 @@ void HydroParams::setup(ConfigMap &configMap)
     implementationVersion = 0;
   }
 
+  // Team or Range execution policy for Kokkos ?
+  use_team_policy = configMap.getBool("OTHER", "use_team_policy", false);
+  nbTeams = configMap.getInteger("OTHER", "nbTeams", 4);
+
   init();
 
 } // HydroParams::setup
