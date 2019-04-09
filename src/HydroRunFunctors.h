@@ -9,6 +9,36 @@
 
 #include "HydroBaseFunctor.h"
 
+/**
+ * small utility to wrap selection between team and range policy
+ */
+template<class Functor>
+static void launch_functor(HydroParams params, Functor functor)
+{
+
+  using team_policy_t = Kokkos::TeamPolicy<Kokkos::IndexType<int>>;
+
+  // select execution policy : team or range ?
+  if (params.use_team_policy) {
+    
+    // loop over i used for "vectorization"
+    // loop over j used for team/thread parallelism
+    
+    Kokkos::parallel_for(
+      team_policy_t(params.nbTeams, 
+                    Kokkos::AUTO, /* team size chosen by kokkos */
+                    team_policy_t::vector_length_max()),
+      functor);
+    
+  } else {
+    
+    const int ijsize = params.isize*params.jsize;
+    Kokkos::parallel_for(ijsize, functor);
+
+  }
+
+} // end launch_functor
+
 /*************************************************/
 /*************************************************/
 /*************************************************/
@@ -114,11 +144,6 @@ public:
 			     DataArray Qdata) :
     HydroBaseFunctor(params), Udata(Udata), Qdata(Qdata)  {};
 
-  // some type alias for team policy
-  using team_policy_t = Kokkos::TeamPolicy<Kokkos::IndexType<int>>;
-  using thread_t      = team_policy_t::member_type;
-
-
   // static method which does it all: create and execute functor
   static void apply(HydroParams params,
 		    DataArray Udata,
@@ -128,23 +153,7 @@ public:
     // create functor
     ConvertToPrimitivesFunctor functor(params, Udata, Qdata);
 
-    // select execution policy : team or range ?
-    if (params.use_team_policy) {
-
-      // loop over i used for "vectorization"
-      // loop over j used for team/thread parallelism
-
-      Kokkos::parallel_for(
-        team_policy_t(params.nbTeams, 
-                      Kokkos::AUTO, /* team size chosen by kokkos */
-                      team_policy_t::vector_length_max()),
-        functor);
-
-    } else {
-
-      const int ijsize = params.isize*params.jsize;
-      Kokkos::parallel_for(ijsize, functor);
-    }
+    launch_functor(params,functor);
 
   } // end apply
 
@@ -264,7 +273,7 @@ public:
     HydroBaseFunctor(params), Udata(Udata),
     Qm_x(Qm_x), Qm_y(Qm_y), Qp_x(Qp_x), Qp_y(Qp_y),
     dtdx(dtdx), dtdy(dtdy) {};
-  
+
   // static method which does it all: create and execute functor
   static void apply(HydroParams params,
 		    DataArray Udata,
@@ -275,24 +284,82 @@ public:
 		    real_t dtdx,
 		    real_t dtdy)
   {
-    const int ijsize = params.isize*params.jsize;
-    ComputeFluxesAndUpdateFunctor computeFluxesAndUpdateFunctor(params, Udata,
-								Qm_x, Qm_y,
-								Qp_x, Qp_y,
-								dtdx, dtdy);
-    Kokkos::parallel_for(ijsize, computeFluxesAndUpdateFunctor);
-  }
+    ComputeFluxesAndUpdateFunctor functor(params, Udata,
+                                          Qm_x, Qm_y,
+                                          Qp_x, Qp_y,
+                                          dtdx, dtdy);
 
+    launch_functor(params,functor);
+    
+  } // end apply
+
+  /** 
+   * entry point for team policy
+   */
+  KOKKOS_INLINE_FUNCTION
+  void operator()(const thread_t& thread) const
+  {
+
+    // the teams league must distribute last dimension (here j) into
+    // nbTeams chuncks
+    // so compute chunck size per team (rounded up)
+    int chunck_size_y = (params.jsize+params.nbTeams-1)/params.nbTeams;
+    
+    int chunk_size_per_team = chunck_size_y;
+
+    // team id
+    int teamId = thread.league_rank();
+    
+    // compute j start
+    int jStart = teamId * chunck_size_y; 
+
+    // spread work among the thread in the team
+    Kokkos::parallel_for(
+      Kokkos::TeamThreadRange(thread, chunk_size_per_team), 
+      [=](const int &index) {
+
+        // index goes from 0 to chunck_size_ter_team
+        // re-compute j from offset + index 
+        int j =  jStart + index;
+
+        Kokkos::parallel_for(
+          Kokkos::ThreadVectorRange(thread, params.isize),
+          [=](const int &i) {
+            
+            do_compute(i,j);
+
+          }); // end vector range
+      });
+    
+  } // end team policy functor
+
+  /** 
+   * entry point for range policy
+   */
   KOKKOS_INLINE_FUNCTION
   void operator()(const int& index_) const
   {
     const int isize = params.isize;
     const int jsize = params.jsize;
-    const int ghostWidth = params.ghostWidth;
-    
+
     int i,j;
     index2coord(index_,i,j,isize,jsize);
     
+    do_compute(i,j);
+
+  } // end range policy functor
+
+  /**
+   * Actual computation.
+   */
+  KOKKOS_INLINE_FUNCTION
+  void do_compute(const int& i, const int& j) const
+  {
+
+    const int isize = params.isize;
+    const int jsize = params.jsize;
+    const int ghostWidth = params.ghostWidth;
+
     if(j >= ghostWidth && j <= jsize - ghostWidth &&
        i >= ghostWidth && i <= isize - ghostWidth) {
       
@@ -358,7 +425,7 @@ public:
       
     }
     
-  }
+  } // end do_compute
   
   DataArray Udata;
   DataArray Qm_x, Qm_y, Qp_x, Qp_y;
@@ -537,23 +604,80 @@ public:
 		    real_t dtdx,
 		    real_t dtdy)
   {
-    const int ijsize = params.isize*params.jsize;
     ComputeAndStoreFluxesFunctor functor(params, Qdata,
 					 FluxData_x, FluxData_y,
 					 dtdx, dtdy);
-    Kokkos::parallel_for(ijsize, functor);
-    
-  }
 
+    launch_functor(params,functor);
+
+  } // end apply
+
+  /** 
+   * entry point for team policy
+   */
   KOKKOS_INLINE_FUNCTION
-  void operator()(const int& index) const
+  void operator()(const thread_t& thread) const
+  {
+
+    // the teams league must distribute last dimension (here j) into
+    // nbTeams chuncks
+    // so compute chunck size per team (rounded up)
+    int chunck_size_y = (params.jsize+params.nbTeams-1)/params.nbTeams;
+    
+    int chunk_size_per_team = chunck_size_y;
+
+    // team id
+    int teamId = thread.league_rank();
+    
+    // compute j start
+    int jStart = teamId * chunck_size_y; 
+
+    // spread work among the thread in the team
+    Kokkos::parallel_for(
+      Kokkos::TeamThreadRange(thread, chunk_size_per_team), 
+      [=](const int &index) {
+
+        // index goes from 0 to chunck_size_ter_team
+        // re-compute j from offset + index 
+        int j =  jStart + index;
+
+        Kokkos::parallel_for(
+          Kokkos::ThreadVectorRange(thread, params.isize),
+          [=](const int &i) {
+            
+            do_compute(i,j);
+
+          }); // end vector range
+      });
+    
+  } // end team policy functor
+
+  /** 
+   * entry point for range policy
+   */
+  KOKKOS_INLINE_FUNCTION
+  void operator()(const int& index_) const
   {
     const int isize = params.isize;
     const int jsize = params.jsize;
-    const int ghostWidth = params.ghostWidth;
-    
+
     int i,j;
-    index2coord(index,i,j,isize,jsize);
+    index2coord(index_,i,j,isize,jsize);
+    
+    do_compute(i,j);
+
+  } // end range policy functor
+
+  /**
+   * Actual computation.
+   */
+  KOKKOS_INLINE_FUNCTION
+  void do_compute(const int& i, const int& j) const
+  {
+
+    const int isize = params.isize;
+    const int jsize = params.jsize;
+    const int ghostWidth = params.ghostWidth;    
     
     if(j >= ghostWidth && j <= jsize-ghostWidth  &&
        i >= ghostWidth && i <= isize-ghostWidth ) {
@@ -737,7 +861,7 @@ public:
           
     } // end if
     
-  } // end operator ()
+  } // end do_compute
   
   DataArray Qdata;
   DataArray FluxData_x;
@@ -768,21 +892,78 @@ public:
 		    DataArray FluxData_x,
 		    DataArray FluxData_y)
   {
-    const int ijsize = params.isize*params.jsize;
     UpdateFunctor functor(params, Udata,
 			  FluxData_x, FluxData_y);
-    Kokkos::parallel_for(ijsize, functor);
-  }
 
+    launch_functor(params,functor);
+
+  } // end apply
+
+    /** 
+   * entry point for team policy
+   */
   KOKKOS_INLINE_FUNCTION
-  void operator()(const int& index) const
+  void operator()(const thread_t& thread) const
+  {
+
+    // the teams league must distribute last dimension (here j) into
+    // nbTeams chuncks
+    // so compute chunck size per team (rounded up)
+    int chunck_size_y = (params.jsize+params.nbTeams-1)/params.nbTeams;
+    
+    int chunk_size_per_team = chunck_size_y;
+
+    // team id
+    int teamId = thread.league_rank();
+    
+    // compute j start
+    int jStart = teamId * chunck_size_y; 
+
+    // spread work among the thread in the team
+    Kokkos::parallel_for(
+      Kokkos::TeamThreadRange(thread, chunk_size_per_team), 
+      [=](const int &index) {
+
+        // index goes from 0 to chunck_size_ter_team
+        // re-compute j from offset + index 
+        int j =  jStart + index;
+
+        Kokkos::parallel_for(
+          Kokkos::ThreadVectorRange(thread, params.isize),
+          [=](const int &i) {
+            
+            do_compute(i,j);
+
+          }); // end vector range
+      });
+    
+  } // end team policy functor
+
+  /** 
+   * entry point for range policy
+   */
+  KOKKOS_INLINE_FUNCTION
+  void operator()(const int& index_) const
   {
     const int isize = params.isize;
     const int jsize = params.jsize;
-    const int ghostWidth = params.ghostWidth;
-    
+
     int i,j;
-    index2coord(index,i,j,isize,jsize);
+    index2coord(index_,i,j,isize,jsize);
+    
+    do_compute(i,j);
+
+  } // end range policy functor
+
+  /**
+   * Actual computation.
+   */
+  KOKKOS_INLINE_FUNCTION
+  void do_compute(const int& i, const int& j) const
+  {
+    const int isize = params.isize;
+    const int jsize = params.jsize;
+    const int ghostWidth = params.ghostWidth;    
 
     if(j >= ghostWidth && j < jsize-ghostWidth  &&
        i >= ghostWidth && i < isize-ghostWidth ) {
@@ -809,7 +990,7 @@ public:
 
     } // end if
     
-  } // end operator ()
+  } // end do_compute
   
   DataArray Udata;
   DataArray FluxData_x;
@@ -838,20 +1019,75 @@ public:
 		    DataArray Udata,
 		    DataArray FluxData)
   {
-    const int ijsize = params.isize*params.jsize;
     UpdateDirFunctor<dir> functor(params, Udata, FluxData);
-    Kokkos::parallel_for(ijsize, functor);
-  }
+    launch_functor(params,functor);
+  } // end apply
 
+  /** 
+   * entry point for team policy
+   */
   KOKKOS_INLINE_FUNCTION
-  void operator()(const int& index) const
+  void operator()(const thread_t& thread) const
+  {
+
+    // the teams league must distribute last dimension (here j) into
+    // nbTeams chuncks
+    // so compute chunck size per team (rounded up)
+    int chunck_size_y = (params.jsize+params.nbTeams-1)/params.nbTeams;
+    
+    int chunk_size_per_team = chunck_size_y;
+
+    // team id
+    int teamId = thread.league_rank();
+    
+    // compute j start
+    int jStart = teamId * chunck_size_y; 
+
+    // spread work among the thread in the team
+    Kokkos::parallel_for(
+      Kokkos::TeamThreadRange(thread, chunk_size_per_team), 
+      [=](const int &index) {
+
+        // index goes from 0 to chunck_size_ter_team
+        // re-compute j from offset + index 
+        int j =  jStart + index;
+
+        Kokkos::parallel_for(
+          Kokkos::ThreadVectorRange(thread, params.isize),
+          [=](const int &i) {
+            
+            do_compute(i,j);
+
+          }); // end vector range
+      });
+    
+  } // end team policy functor
+
+  /** 
+   * entry point for range policy
+   */
+  KOKKOS_INLINE_FUNCTION
+  void operator()(const int& index_) const
   {
     const int isize = params.isize;
     const int jsize = params.jsize;
-    const int ghostWidth = params.ghostWidth;
-    
+
     int i,j;
-    index2coord(index,i,j,isize,jsize);
+    index2coord(index_,i,j,isize,jsize);
+    
+    do_compute(i,j);
+
+  } // end range policy functor
+
+  /**
+   * Actual computation.
+   */
+  KOKKOS_INLINE_FUNCTION
+  void do_compute(const int& i, const int& j) const
+  {
+    const int isize = params.isize;
+    const int jsize = params.jsize;
+    const int ghostWidth = params.ghostWidth;    
     
     if(j >= ghostWidth && j < jsize-ghostWidth  &&
        i >= ghostWidth && i < isize-ghostWidth ) {
@@ -884,14 +1120,14 @@ public:
       
     } // end if
     
-  } // end operator ()
+  } // end do_compute
   
   DataArray Udata;
   DataArray FluxData;
   
 }; // UpdateDirFunctor
 
-    
+
 /*************************************************/
 /*************************************************/
 /*************************************************/
@@ -912,20 +1148,76 @@ public:
 		    DataArray Slopes_x,
 		    DataArray Slopes_y)
   {
-    const int ijsize = params.isize*params.jsize;
     ComputeSlopesFunctor functor(params, Qdata, Slopes_x, Slopes_x);
-    Kokkos::parallel_for(ijsize, functor);
-  }
+    launch_functor(params,functor);
+  } // end apply
 
+  /** 
+   * entry point for team policy
+   */
   KOKKOS_INLINE_FUNCTION
-  void operator()(const int& index) const
+  void operator()(const thread_t& thread) const
+  {
+
+    // the teams league must distribute last dimension (here j) into
+    // nbTeams chuncks
+    // so compute chunck size per team (rounded up)
+    int chunck_size_y = (params.jsize+params.nbTeams-1)/params.nbTeams;
+    
+    int chunk_size_per_team = chunck_size_y;
+
+    // team id
+    int teamId = thread.league_rank();
+    
+    // compute j start
+    int jStart = teamId * chunck_size_y; 
+
+    // spread work among the thread in the team
+    Kokkos::parallel_for(
+      Kokkos::TeamThreadRange(thread, chunk_size_per_team), 
+      [=](const int &index) {
+
+        // index goes from 0 to chunck_size_ter_team
+        // re-compute j from offset + index 
+        int j =  jStart + index;
+
+        Kokkos::parallel_for(
+          Kokkos::ThreadVectorRange(thread, params.isize),
+          [=](const int &i) {
+            
+            do_compute(i,j);
+
+          }); // end vector range
+      });
+    
+  } // end team policy functor
+
+  /** 
+   * entry point for range policy
+   */
+  KOKKOS_INLINE_FUNCTION
+  void operator()(const int& index_) const
   {
     const int isize = params.isize;
     const int jsize = params.jsize;
-    const int ghostWidth = params.ghostWidth;
 
     int i,j;
-    index2coord(index,i,j,isize,jsize);
+    index2coord(index_,i,j,isize,jsize);
+    
+    do_compute(i,j);
+
+  } // end range policy functor
+
+  /**
+   * Actual computation.
+   */
+  KOKKOS_INLINE_FUNCTION
+  void do_compute(const int& i, const int& j) const
+  {
+
+    const int isize = params.isize;
+    const int jsize = params.jsize;
+    const int ghostWidth = params.ghostWidth;
 
     if(j >= ghostWidth-1 && j <= jsize-ghostWidth  &&
        i >= ghostWidth-1 && i <= isize-ghostWidth ) {
@@ -988,7 +1280,7 @@ public:
       
     } // end if
     
-  } // end operator ()
+  } // end do_compute
   
   DataArray Qdata;
   DataArray Slopes_x, Slopes_y;
@@ -1024,21 +1316,76 @@ public:
 		    real_t    dtdx,
 		    real_t    dtdy)
   {
-    const int ijsize = params.isize*params.jsize;
     ComputeTraceAndFluxes_Functor<dir> functor(params, Qdata, Slopes_x, Slopes_x, Fluxes,
 					       dtdx, dtdy);
-    Kokkos::parallel_for(ijsize, functor);
-  }
+    launch_functor(params,functor);
+  } // end apply
 
+  /** 
+   * entry point for team policy
+   */
   KOKKOS_INLINE_FUNCTION
-  void operator()(const int& index) const
+  void operator()(const thread_t& thread) const
+  {
+
+    // the teams league must distribute last dimension (here j) into
+    // nbTeams chuncks
+    // so compute chunck size per team (rounded up)
+    int chunck_size_y = (params.jsize+params.nbTeams-1)/params.nbTeams;
+    
+    int chunk_size_per_team = chunck_size_y;
+
+    // team id
+    int teamId = thread.league_rank();
+    
+    // compute j start
+    int jStart = teamId * chunck_size_y; 
+
+    // spread work among the thread in the team
+    Kokkos::parallel_for(
+      Kokkos::TeamThreadRange(thread, chunk_size_per_team), 
+      [=](const int &index) {
+
+        // index goes from 0 to chunck_size_ter_team
+        // re-compute j from offset + index 
+        int j =  jStart + index;
+
+        Kokkos::parallel_for(
+          Kokkos::ThreadVectorRange(thread, params.isize),
+          [=](const int &i) {
+            
+            do_compute(i,j);
+
+          }); // end vector range
+      });
+    
+  } // end team policy functor
+
+  /** 
+   * entry point for range policy
+   */
+  KOKKOS_INLINE_FUNCTION
+  void operator()(const int& index_) const
+  {
+    const int isize = params.isize;
+    const int jsize = params.jsize;
+
+    int i,j;
+    index2coord(index_,i,j,isize,jsize);
+    
+    do_compute(i,j);
+
+  } // end range policy functor
+
+  /**
+   * Actual computation.
+   */
+  KOKKOS_INLINE_FUNCTION
+  void do_compute(const int& i, const int& j) const
   {
     const int isize = params.isize;
     const int jsize = params.jsize;
     const int ghostWidth = params.ghostWidth;
-    
-    int i,j;
-    index2coord(index,i,j,isize,jsize);
     
     if(j >= ghostWidth && j <= jsize-ghostWidth  &&
        i >= ghostWidth && i <= isize-ghostWidth ) {
@@ -1164,7 +1511,7 @@ public:
 	      
     } // end if
     
-  } // end operator ()
+  } // end do_compute
   
   DataArray Qdata;
   DataArray Slopes_x, Slopes_y;

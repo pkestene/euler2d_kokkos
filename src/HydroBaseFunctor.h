@@ -18,7 +18,11 @@ public:
   virtual ~HydroBaseFunctor() {};
 
   HydroParams params;
-  
+
+  // some type alias for team policy
+  using team_policy_t = Kokkos::TeamPolicy<Kokkos::IndexType<int>>;
+  using thread_t      = team_policy_t::member_type;
+
   // utility routines used in various computational kernels
 
   KOKKOS_INLINE_FUNCTION
