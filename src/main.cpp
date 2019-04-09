@@ -92,7 +92,7 @@ int main(int argc, char *argv[])
 
     // output
     if (params.enableOutput) {
-      if (nStep % params.nOutput == 0) {
+      if (params.nOutput>0 and nStep % params.nOutput == 0) {
 	std::cout << "Output results at time t=" << t << " step " << nStep
 		  << " dt=" << dt << std::endl;
 	io_timer.start();
