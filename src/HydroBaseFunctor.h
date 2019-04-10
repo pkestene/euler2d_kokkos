@@ -29,9 +29,15 @@ public:
    * Left layout linearization.
    */
   KOKKOS_INLINE_FUNCTION
+  int INDEX(const int& i, const int& j, const int& ivar) const
+  {
+    return i + params.isize*j + params.ijsize*ivar;
+  }
+
+  KOKKOS_INLINE_FUNCTION
   int INDEX(const int& i, const int& j) const
   {
-    return coord2index(i,j,params.isize,params.jsize);
+    return i + params.isize*j;
   }
 
   KOKKOS_INLINE_FUNCTION

@@ -80,6 +80,7 @@ public:
   {
     const int isize = params.isize;
     const int jsize = params.jsize;
+    const int ijsize = params.ijsize;
     const int ghostWidth = params.ghostWidth;
     const real_t dx = params.dx;
     const real_t dy = params.dy;
@@ -96,10 +97,10 @@ public:
       real_t vx, vy;
       
       // get local conservative variable
-      uLoc[ID] = Udata(index,ID);
-      uLoc[IP] = Udata(index,IP);
-      uLoc[IU] = Udata(index,IU);
-      uLoc[IV] = Udata(index,IV);
+      uLoc[ID] = Udata(index+ijsize*ID);
+      uLoc[IP] = Udata(index+ijsize*IP);
+      uLoc[IU] = Udata(index+ijsize*IU);
+      uLoc[IV] = Udata(index+ijsize*IV);
 
       // get primitive variables in current cell
       computePrimitives(uLoc, &c, qLoc);
@@ -229,19 +230,19 @@ public:
       real_t c;
       
       // get local conservative variable
-      uLoc[ID] = Udata(index,ID);
-      uLoc[IP] = Udata(index,IP);
-      uLoc[IU] = Udata(index,IU);
-      uLoc[IV] = Udata(index,IV);
+      uLoc[ID] = Udata(INDEX(i,j,ID));
+      uLoc[IP] = Udata(INDEX(i,j,IP));
+      uLoc[IU] = Udata(INDEX(i,j,IU));
+      uLoc[IV] = Udata(INDEX(i,j,IV));
       
       // get primitive variables in current cell
       computePrimitives(uLoc, &c, qLoc);
 
       // copy q state in q global
-      Qdata(index,ID) = qLoc[ID];
-      Qdata(index,IP) = qLoc[IP];
-      Qdata(index,IU) = qLoc[IU];
-      Qdata(index,IV) = qLoc[IV];
+      Qdata(INDEX(i,j,ID)) = qLoc[ID];
+      Qdata(INDEX(i,j,IP)) = qLoc[IP];
+      Qdata(INDEX(i,j,IU)) = qLoc[IU];
+      Qdata(INDEX(i,j,IV)) = qLoc[IV];
       
     }
 
@@ -708,29 +709,29 @@ public:
       //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
       
       // get primitive variables state vector
-      qLoc[ID]         = Qdata(INDEX(i  ,j  ), ID);
-      qNeighbors_0[ID] = Qdata(INDEX(i+1,j  ), ID);
-      qNeighbors_1[ID] = Qdata(INDEX(i-1,j  ), ID);
-      qNeighbors_2[ID] = Qdata(INDEX(i  ,j+1), ID);
-      qNeighbors_3[ID] = Qdata(INDEX(i  ,j-1), ID);
+      qLoc[ID]         = Qdata(INDEX(i  ,j  , ID));
+      qNeighbors_0[ID] = Qdata(INDEX(i+1,j  , ID));
+      qNeighbors_1[ID] = Qdata(INDEX(i-1,j  , ID));
+      qNeighbors_2[ID] = Qdata(INDEX(i  ,j+1, ID));
+      qNeighbors_3[ID] = Qdata(INDEX(i  ,j-1, ID));
       
-      qLoc[IP]         = Qdata(INDEX(i  ,j  ), IP);
-      qNeighbors_0[IP] = Qdata(INDEX(i+1,j  ), IP);
-      qNeighbors_1[IP] = Qdata(INDEX(i-1,j  ), IP);
-      qNeighbors_2[IP] = Qdata(INDEX(i  ,j+1), IP);
-      qNeighbors_3[IP] = Qdata(INDEX(i  ,j-1), IP);
+      qLoc[IP]         = Qdata(INDEX(i  ,j  , IP));
+      qNeighbors_0[IP] = Qdata(INDEX(i+1,j  , IP));
+      qNeighbors_1[IP] = Qdata(INDEX(i-1,j  , IP));
+      qNeighbors_2[IP] = Qdata(INDEX(i  ,j+1, IP));
+      qNeighbors_3[IP] = Qdata(INDEX(i  ,j-1, IP));
       
-      qLoc[IU]         = Qdata(INDEX(i  ,j  ), IU);
-      qNeighbors_0[IU] = Qdata(INDEX(i+1,j  ), IU);
-      qNeighbors_1[IU] = Qdata(INDEX(i-1,j  ), IU);
-      qNeighbors_2[IU] = Qdata(INDEX(i  ,j+1), IU);
-      qNeighbors_3[IU] = Qdata(INDEX(i  ,j-1), IU);
+      qLoc[IU]         = Qdata(INDEX(i  ,j  , IU));
+      qNeighbors_0[IU] = Qdata(INDEX(i+1,j  , IU));
+      qNeighbors_1[IU] = Qdata(INDEX(i-1,j  , IU));
+      qNeighbors_2[IU] = Qdata(INDEX(i  ,j+1, IU));
+      qNeighbors_3[IU] = Qdata(INDEX(i  ,j-1, IU));
       
-      qLoc[IV]         = Qdata(INDEX(i  ,j  ), IV);
-      qNeighbors_0[IV] = Qdata(INDEX(i+1,j  ), IV);
-      qNeighbors_1[IV] = Qdata(INDEX(i-1,j  ), IV);
-      qNeighbors_2[IV] = Qdata(INDEX(i  ,j+1), IV);
-      qNeighbors_3[IV] = Qdata(INDEX(i  ,j-1), IV);
+      qLoc[IV]         = Qdata(INDEX(i  ,j  , IV));
+      qNeighbors_0[IV] = Qdata(INDEX(i+1,j  , IV));
+      qNeighbors_1[IV] = Qdata(INDEX(i-1,j  , IV));
+      qNeighbors_2[IV] = Qdata(INDEX(i  ,j+1, IV));
+      qNeighbors_3[IV] = Qdata(INDEX(i  ,j-1, IV));
       
       slope_unsplit_hydro_2d(qLoc, 
 			     qNeighbors_0, qNeighbors_1, 
@@ -738,29 +739,29 @@ public:
 			     dqX, dqY);
 	
       // slopes at left neighbor along X      
-      qLocNeighbor[ID] = Qdata(INDEX(i-1,j  ), ID);
-      qNeighbors_0[ID] = Qdata(INDEX(i  ,j  ), ID);
-      qNeighbors_1[ID] = Qdata(INDEX(i-2,j  ), ID);
-      qNeighbors_2[ID] = Qdata(INDEX(i-1,j+1), ID);
-      qNeighbors_3[ID] = Qdata(INDEX(i-1,j-1), ID);
+      qLocNeighbor[ID] = Qdata(INDEX(i-1,j  , ID));
+      qNeighbors_0[ID] = Qdata(INDEX(i  ,j  , ID));
+      qNeighbors_1[ID] = Qdata(INDEX(i-2,j  , ID));
+      qNeighbors_2[ID] = Qdata(INDEX(i-1,j+1, ID));
+      qNeighbors_3[ID] = Qdata(INDEX(i-1,j-1, ID));
       
-      qLocNeighbor[IP] = Qdata(INDEX(i-1,j  ), IP);
-      qNeighbors_0[IP] = Qdata(INDEX(i  ,j  ), IP);
-      qNeighbors_1[IP] = Qdata(INDEX(i-2,j  ), IP);
-      qNeighbors_2[IP] = Qdata(INDEX(i-1,j+1), IP);
-      qNeighbors_3[IP] = Qdata(INDEX(i-1,j-1), IP);
+      qLocNeighbor[IP] = Qdata(INDEX(i-1,j  , IP));
+      qNeighbors_0[IP] = Qdata(INDEX(i  ,j  , IP));
+      qNeighbors_1[IP] = Qdata(INDEX(i-2,j  , IP));
+      qNeighbors_2[IP] = Qdata(INDEX(i-1,j+1, IP));
+      qNeighbors_3[IP] = Qdata(INDEX(i-1,j-1, IP));
       
-      qLocNeighbor[IU] = Qdata(INDEX(i-1,j  ), IU);
-      qNeighbors_0[IU] = Qdata(INDEX(i  ,j  ), IU);
-      qNeighbors_1[IU] = Qdata(INDEX(i-2,j  ), IU);
-      qNeighbors_2[IU] = Qdata(INDEX(i-1,j+1), IU);
-      qNeighbors_3[IU] = Qdata(INDEX(i-1,j-1), IU);
+      qLocNeighbor[IU] = Qdata(INDEX(i-1,j  , IU));
+      qNeighbors_0[IU] = Qdata(INDEX(i  ,j  , IU));
+      qNeighbors_1[IU] = Qdata(INDEX(i-2,j  , IU));
+      qNeighbors_2[IU] = Qdata(INDEX(i-1,j+1, IU));
+      qNeighbors_3[IU] = Qdata(INDEX(i-1,j-1, IU));
       
-      qLocNeighbor[IV] = Qdata(INDEX(i-1,j  ), IV);
-      qNeighbors_0[IV] = Qdata(INDEX(i  ,j  ), IV);
-      qNeighbors_1[IV] = Qdata(INDEX(i-2,j  ), IV);
-      qNeighbors_2[IV] = Qdata(INDEX(i-1,j+1), IV);
-      qNeighbors_3[IV] = Qdata(INDEX(i-1,j-1), IV);
+      qLocNeighbor[IV] = Qdata(INDEX(i-1,j  , IV));
+      qNeighbors_0[IV] = Qdata(INDEX(i  ,j  , IV));
+      qNeighbors_1[IV] = Qdata(INDEX(i-2,j  , IV));
+      qNeighbors_2[IV] = Qdata(INDEX(i-1,j+1, IV));
+      qNeighbors_3[IV] = Qdata(INDEX(i-1,j-1, IV));
       
       slope_unsplit_hydro_2d(qLocNeighbor, 
 			     qNeighbors_0, qNeighbors_1, 
@@ -788,39 +789,39 @@ public:
       //
       // store fluxes X
       //
-      FluxData_x(INDEX(i  ,j  ), ID) = flux_x[ID] * dtdx;
-      FluxData_x(INDEX(i  ,j  ), IP) = flux_x[IP] * dtdx;
-      FluxData_x(INDEX(i  ,j  ), IU) = flux_x[IU] * dtdx;
-      FluxData_x(INDEX(i  ,j  ), IV) = flux_x[IV] * dtdx;
+      FluxData_x(INDEX(i  ,j  , ID)) = flux_x[ID] * dtdx;
+      FluxData_x(INDEX(i  ,j  , IP)) = flux_x[IP] * dtdx;
+      FluxData_x(INDEX(i  ,j  , IU)) = flux_x[IU] * dtdx;
+      FluxData_x(INDEX(i  ,j  , IV)) = flux_x[IV] * dtdx;
       
       //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
       // deal with left interface along Y !
       //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
       // slopes at left neighbor along Y
-      qLocNeighbor[ID] = Qdata(INDEX(i  ,j-1), ID);
-      qNeighbors_0[ID] = Qdata(INDEX(i+1,j-1), ID);
-      qNeighbors_1[ID] = Qdata(INDEX(i-1,j-1), ID);
-      qNeighbors_2[ID] = Qdata(INDEX(i  ,j  ), ID);
-      qNeighbors_3[ID] = Qdata(INDEX(i  ,j-2), ID);
+      qLocNeighbor[ID] = Qdata(INDEX(i  ,j-1, ID));
+      qNeighbors_0[ID] = Qdata(INDEX(i+1,j-1, ID));
+      qNeighbors_1[ID] = Qdata(INDEX(i-1,j-1, ID));
+      qNeighbors_2[ID] = Qdata(INDEX(i  ,j  , ID));
+      qNeighbors_3[ID] = Qdata(INDEX(i  ,j-2, ID));
       
-      qLocNeighbor[IP] = Qdata(INDEX(i  ,j-1), IP);
-      qNeighbors_0[IP] = Qdata(INDEX(i+1,j-1), IP);
-      qNeighbors_1[IP] = Qdata(INDEX(i-1,j-1), IP);
-      qNeighbors_2[IP] = Qdata(INDEX(i  ,j  ), IP);
-      qNeighbors_3[IP] = Qdata(INDEX(i  ,j-2), IP);
+      qLocNeighbor[IP] = Qdata(INDEX(i  ,j-1, IP));
+      qNeighbors_0[IP] = Qdata(INDEX(i+1,j-1, IP));
+      qNeighbors_1[IP] = Qdata(INDEX(i-1,j-1, IP));
+      qNeighbors_2[IP] = Qdata(INDEX(i  ,j  , IP));
+      qNeighbors_3[IP] = Qdata(INDEX(i  ,j-2, IP));
       
-      qLocNeighbor[IU] = Qdata(INDEX(i  ,j-1), IU);
-      qNeighbors_0[IU] = Qdata(INDEX(i+1,j-1), IU);
-      qNeighbors_1[IU] = Qdata(INDEX(i-1,j-1), IU);
-      qNeighbors_2[IU] = Qdata(INDEX(i  ,j  ), IU);
-      qNeighbors_3[IU] = Qdata(INDEX(i  ,j-2), IU);
+      qLocNeighbor[IU] = Qdata(INDEX(i  ,j-1, IU));
+      qNeighbors_0[IU] = Qdata(INDEX(i+1,j-1, IU));
+      qNeighbors_1[IU] = Qdata(INDEX(i-1,j-1, IU));
+      qNeighbors_2[IU] = Qdata(INDEX(i  ,j  , IU));
+      qNeighbors_3[IU] = Qdata(INDEX(i  ,j-2, IU));
       
-      qLocNeighbor[IV] = Qdata(INDEX(i  ,j-1), IV);
-      qNeighbors_0[IV] = Qdata(INDEX(i+1,j-1), IV);
-      qNeighbors_1[IV] = Qdata(INDEX(i-1,j-1), IV);
-      qNeighbors_2[IV] = Qdata(INDEX(i  ,j  ), IV);
-      qNeighbors_3[IV] = Qdata(INDEX(i  ,j-2), IV);
+      qLocNeighbor[IV] = Qdata(INDEX(i  ,j-1, IV));
+      qNeighbors_0[IV] = Qdata(INDEX(i+1,j-1, IV));
+      qNeighbors_1[IV] = Qdata(INDEX(i-1,j-1, IV));
+      qNeighbors_2[IV] = Qdata(INDEX(i  ,j  , IV));
+      qNeighbors_3[IV] = Qdata(INDEX(i  ,j-2, IV));
 	
       slope_unsplit_hydro_2d(qLocNeighbor, 
 			     qNeighbors_0, qNeighbors_1, 
@@ -850,10 +851,10 @@ public:
       //
       // store fluxes Y
       //
-      FluxData_y(INDEX(i  ,j  ), ID) = flux_y[ID] * dtdy;
-      FluxData_y(INDEX(i  ,j  ), IP) = flux_y[IP] * dtdy;
-      FluxData_y(INDEX(i  ,j  ), IU) = flux_y[IU] * dtdy;
-      FluxData_y(INDEX(i  ,j  ), IV) = flux_y[IV] * dtdy;
+      FluxData_y(INDEX(i  ,j  , ID)) = flux_y[ID] * dtdy;
+      FluxData_y(INDEX(i  ,j  , IP)) = flux_y[IP] * dtdy;
+      FluxData_y(INDEX(i  ,j  , IU)) = flux_y[IU] * dtdy;
+      FluxData_y(INDEX(i  ,j  , IV)) = flux_y[IV] * dtdy;
           
     } // end if
     
@@ -962,25 +963,25 @@ public:
     if(j >= ghostWidth && j < jsize-ghostWidth  &&
        i >= ghostWidth && i < isize-ghostWidth ) {
 
-      Udata(INDEX(i  ,j  ), ID) +=  FluxData_x(INDEX(i  ,j  ), ID);
-      Udata(INDEX(i  ,j  ), IP) +=  FluxData_x(INDEX(i  ,j  ), IP);
-      Udata(INDEX(i  ,j  ), IU) +=  FluxData_x(INDEX(i  ,j  ), IU);
-      Udata(INDEX(i  ,j  ), IV) +=  FluxData_x(INDEX(i  ,j  ), IV);
+      Udata(INDEX(i  ,j  , ID)) +=  FluxData_x(INDEX(i  ,j  , ID));
+      Udata(INDEX(i  ,j  , IP)) +=  FluxData_x(INDEX(i  ,j  , IP));
+      Udata(INDEX(i  ,j  , IU)) +=  FluxData_x(INDEX(i  ,j  , IU));
+      Udata(INDEX(i  ,j  , IV)) +=  FluxData_x(INDEX(i  ,j  , IV));
 
-      Udata(INDEX(i  ,j  ), ID) -=  FluxData_x(INDEX(i+1,j  ), ID);
-      Udata(INDEX(i  ,j  ), IP) -=  FluxData_x(INDEX(i+1,j  ), IP);
-      Udata(INDEX(i  ,j  ), IU) -=  FluxData_x(INDEX(i+1,j  ), IU);
-      Udata(INDEX(i  ,j  ), IV) -=  FluxData_x(INDEX(i+1,j  ), IV);
+      Udata(INDEX(i  ,j  , ID)) -=  FluxData_x(INDEX(i+1,j  , ID));
+      Udata(INDEX(i  ,j  , IP)) -=  FluxData_x(INDEX(i+1,j  , IP));
+      Udata(INDEX(i  ,j  , IU)) -=  FluxData_x(INDEX(i+1,j  , IU));
+      Udata(INDEX(i  ,j  , IV)) -=  FluxData_x(INDEX(i+1,j  , IV));
       
-      Udata(INDEX(i  ,j  ), ID) +=  FluxData_y(INDEX(i  ,j  ), ID);
-      Udata(INDEX(i  ,j  ), IP) +=  FluxData_y(INDEX(i  ,j  ), IP);
-      Udata(INDEX(i  ,j  ), IU) +=  FluxData_y(INDEX(i  ,j  ), IV); //
-      Udata(INDEX(i  ,j  ), IV) +=  FluxData_y(INDEX(i  ,j  ), IU); //
+      Udata(INDEX(i  ,j  , ID)) +=  FluxData_y(INDEX(i  ,j  , ID));
+      Udata(INDEX(i  ,j  , IP)) +=  FluxData_y(INDEX(i  ,j  , IP));
+      Udata(INDEX(i  ,j  , IU)) +=  FluxData_y(INDEX(i  ,j  , IV)); //
+      Udata(INDEX(i  ,j  , IV)) +=  FluxData_y(INDEX(i  ,j  , IU)); //
       
-      Udata(INDEX(i  ,j  ), ID) -=  FluxData_y(INDEX(i  ,j+1), ID);
-      Udata(INDEX(i  ,j  ), IP) -=  FluxData_y(INDEX(i  ,j+1), IP);
-      Udata(INDEX(i  ,j  ), IU) -=  FluxData_y(INDEX(i  ,j+1), IV); //
-      Udata(INDEX(i  ,j  ), IV) -=  FluxData_y(INDEX(i  ,j+1), IU); //
+      Udata(INDEX(i  ,j  , ID)) -=  FluxData_y(INDEX(i  ,j+1, ID));
+      Udata(INDEX(i  ,j  , IP)) -=  FluxData_y(INDEX(i  ,j+1, IP));
+      Udata(INDEX(i  ,j  , IU)) -=  FluxData_y(INDEX(i  ,j+1, IV)); //
+      Udata(INDEX(i  ,j  , IV)) -=  FluxData_y(INDEX(i  ,j+1, IU)); //
 
     } // end if
     
@@ -1086,27 +1087,27 @@ public:
 
       if (dir == XDIR) {
 
-	Udata(INDEX(i  ,j  ), ID) +=  FluxData(INDEX(i  ,j  ), ID);
-	Udata(INDEX(i  ,j  ), IP) +=  FluxData(INDEX(i  ,j  ), IP);
-	Udata(INDEX(i  ,j  ), IU) +=  FluxData(INDEX(i  ,j  ), IU);
-	Udata(INDEX(i  ,j  ), IV) +=  FluxData(INDEX(i  ,j  ), IV);
+	Udata(INDEX(i  ,j  , ID)) +=  FluxData(INDEX(i  ,j  , ID));
+	Udata(INDEX(i  ,j  , IP)) +=  FluxData(INDEX(i  ,j  , IP));
+	Udata(INDEX(i  ,j  , IU)) +=  FluxData(INDEX(i  ,j  , IU));
+	Udata(INDEX(i  ,j  , IV)) +=  FluxData(INDEX(i  ,j  , IV));
 
-	Udata(INDEX(i  ,j  ), ID) -=  FluxData(INDEX(i+1,j  ), ID);
-	Udata(INDEX(i  ,j  ), IP) -=  FluxData(INDEX(i+1,j  ), IP);
-	Udata(INDEX(i  ,j  ), IU) -=  FluxData(INDEX(i+1,j  ), IU);
-	Udata(INDEX(i  ,j  ), IV) -=  FluxData(INDEX(i+1,j  ), IV);
+	Udata(INDEX(i  ,j  , ID)) -=  FluxData(INDEX(i+1,j  , ID));
+	Udata(INDEX(i  ,j  , IP)) -=  FluxData(INDEX(i+1,j  , IP));
+	Udata(INDEX(i  ,j  , IU)) -=  FluxData(INDEX(i+1,j  , IU));
+	Udata(INDEX(i  ,j  , IV)) -=  FluxData(INDEX(i+1,j  , IV));
 
       } else if (dir == YDIR) {
 
-	Udata(INDEX(i  ,j  ), ID) +=  FluxData(INDEX(i  ,j  ), ID);
-	Udata(INDEX(i  ,j  ), IP) +=  FluxData(INDEX(i  ,j  ), IP);
-	Udata(INDEX(i  ,j  ), IU) +=  FluxData(INDEX(i  ,j  ), IU);
-	Udata(INDEX(i  ,j  ), IV) +=  FluxData(INDEX(i  ,j  ), IV);
+	Udata(INDEX(i  ,j  , ID)) +=  FluxData(INDEX(i  ,j  , ID));
+	Udata(INDEX(i  ,j  , IP)) +=  FluxData(INDEX(i  ,j  , IP));
+	Udata(INDEX(i  ,j  , IU)) +=  FluxData(INDEX(i  ,j  , IU));
+	Udata(INDEX(i  ,j  , IV)) +=  FluxData(INDEX(i  ,j  , IV));
 	
-	Udata(INDEX(i  ,j  ), ID) -=  FluxData(INDEX(i  ,j+1), ID);
-	Udata(INDEX(i  ,j  ), IP) -=  FluxData(INDEX(i  ,j+1), IP);
-	Udata(INDEX(i  ,j  ), IU) -=  FluxData(INDEX(i  ,j+1), IU);
-	Udata(INDEX(i  ,j  ), IV) -=  FluxData(INDEX(i  ,j+1), IV);
+	Udata(INDEX(i  ,j  , ID)) -=  FluxData(INDEX(i  ,j+1, ID));
+	Udata(INDEX(i  ,j  , IP)) -=  FluxData(INDEX(i  ,j+1, IP));
+	Udata(INDEX(i  ,j  , IU)) -=  FluxData(INDEX(i  ,j+1, IU));
+	Udata(INDEX(i  ,j  , IV)) -=  FluxData(INDEX(i  ,j+1, IV));
 
       }
       
@@ -1225,29 +1226,29 @@ public:
 	HydroState dqY;
       
 	// get primitive variables state vector
-	qLoc[ID]         = Qdata(INDEX(i  ,j  ), ID);
-	qNeighbors_0[ID] = Qdata(INDEX(i+1,j  ), ID);
-	qNeighbors_1[ID] = Qdata(INDEX(i-1,j  ), ID);
-	qNeighbors_2[ID] = Qdata(INDEX(i  ,j+1), ID);
-	qNeighbors_3[ID] = Qdata(INDEX(i  ,j-1), ID);
+	qLoc[ID]         = Qdata(INDEX(i  ,j  , ID));
+	qNeighbors_0[ID] = Qdata(INDEX(i+1,j  , ID));
+	qNeighbors_1[ID] = Qdata(INDEX(i-1,j  , ID));
+	qNeighbors_2[ID] = Qdata(INDEX(i  ,j+1, ID));
+	qNeighbors_3[ID] = Qdata(INDEX(i  ,j-1, ID));
 
-	qLoc[IP]         = Qdata(INDEX(i  ,j  ), IP);
-	qNeighbors_0[IP] = Qdata(INDEX(i+1,j  ), IP);
-	qNeighbors_1[IP] = Qdata(INDEX(i-1,j  ), IP);
-	qNeighbors_2[IP] = Qdata(INDEX(i  ,j+1), IP);
-	qNeighbors_3[IP] = Qdata(INDEX(i  ,j-1), IP);
+	qLoc[IP]         = Qdata(INDEX(i  ,j  , IP));
+	qNeighbors_0[IP] = Qdata(INDEX(i+1,j  , IP));
+	qNeighbors_1[IP] = Qdata(INDEX(i-1,j  , IP));
+	qNeighbors_2[IP] = Qdata(INDEX(i  ,j+1, IP));
+	qNeighbors_3[IP] = Qdata(INDEX(i  ,j-1, IP));
 	
-	qLoc[IU]         = Qdata(INDEX(i  ,j  ), IU);
-	qNeighbors_0[IU] = Qdata(INDEX(i+1,j  ), IU);
-	qNeighbors_1[IU] = Qdata(INDEX(i-1,j  ), IU);
-	qNeighbors_2[IU] = Qdata(INDEX(i  ,j+1), IU);
-	qNeighbors_3[IU] = Qdata(INDEX(i  ,j-1), IU);
+	qLoc[IU]         = Qdata(INDEX(i  ,j  , IU));
+	qNeighbors_0[IU] = Qdata(INDEX(i+1,j  , IU));
+	qNeighbors_1[IU] = Qdata(INDEX(i-1,j  , IU));
+	qNeighbors_2[IU] = Qdata(INDEX(i  ,j+1, IU));
+	qNeighbors_3[IU] = Qdata(INDEX(i  ,j-1, IU));
 	
-	qLoc[IV]         = Qdata(INDEX(i  ,j  ), IV);
-	qNeighbors_0[IV] = Qdata(INDEX(i+1,j  ), IV);
-	qNeighbors_1[IV] = Qdata(INDEX(i-1,j  ), IV);
-	qNeighbors_2[IV] = Qdata(INDEX(i  ,j+1), IV);
-	qNeighbors_3[IV] = Qdata(INDEX(i  ,j-1), IV);
+	qLoc[IV]         = Qdata(INDEX(i  ,j  , IV));
+	qNeighbors_0[IV] = Qdata(INDEX(i+1,j  , IV));
+	qNeighbors_1[IV] = Qdata(INDEX(i-1,j  , IV));
+	qNeighbors_2[IV] = Qdata(INDEX(i  ,j+1, IV));
+	qNeighbors_3[IV] = Qdata(INDEX(i  ,j-1, IV));
 	
 	slope_unsplit_hydro_2d(qLoc, 
 			       qNeighbors_0, qNeighbors_1, 
@@ -1255,17 +1256,17 @@ public:
 			       dqX, dqY);
 	
 	// copy back slopes in global arrays
-	Slopes_x(INDEX(i  ,j), ID) = dqX[ID];
-	Slopes_y(INDEX(i  ,j), ID) = dqY[ID];
+	Slopes_x(INDEX(i  ,j, ID)) = dqX[ID];
+	Slopes_y(INDEX(i  ,j, ID)) = dqY[ID];
 	
-	Slopes_x(INDEX(i  ,j), IP) = dqX[IP];
-	Slopes_y(INDEX(i  ,j), IP) = dqY[IP];
+	Slopes_x(INDEX(i  ,j, IP)) = dqX[IP];
+	Slopes_y(INDEX(i  ,j, IP)) = dqY[IP];
 	
-	Slopes_x(INDEX(i  ,j), IU) = dqX[IU];
-	Slopes_y(INDEX(i  ,j), IU) = dqY[IU];
+	Slopes_x(INDEX(i  ,j, IU)) = dqX[IU];
+	Slopes_y(INDEX(i  ,j, IU)) = dqY[IU];
 	
-	Slopes_x(INDEX(i  ,j), IV) = dqX[IV];
-	Slopes_y(INDEX(i  ,j), IV) = dqY[IV];
+	Slopes_x(INDEX(i  ,j, IV)) = dqX[IV];
+	Slopes_y(INDEX(i  ,j, IV)) = dqY[IV];
       
     } // end if
     
@@ -1398,21 +1399,21 @@ public:
 	//
 	// compute reconstructed states at left interface along X
 	//
-	qLoc[ID] = Qdata   (INDEX(i  ,j), ID);
-	dqX[ID]  = Slopes_x(INDEX(i  ,j), ID);
-	dqY[ID]  = Slopes_y(INDEX(i  ,j), ID);
+	qLoc[ID] = Qdata   (INDEX(i  ,j, ID));
+	dqX[ID]  = Slopes_x(INDEX(i  ,j, ID));
+	dqY[ID]  = Slopes_y(INDEX(i  ,j, ID));
 	
-	qLoc[IP] = Qdata   (INDEX(i  ,j), IP);
-	dqX[IP]  = Slopes_x(INDEX(i  ,j), IP);
-	dqY[IP]  = Slopes_y(INDEX(i  ,j), IP);
+	qLoc[IP] = Qdata   (INDEX(i  ,j, IP));
+	dqX[IP]  = Slopes_x(INDEX(i  ,j, IP));
+	dqY[IP]  = Slopes_y(INDEX(i  ,j, IP));
 	
-	qLoc[IU] = Qdata   (INDEX(i  ,j), IU);
-	dqX[IU]  = Slopes_x(INDEX(i  ,j), IU);
-	dqY[IU]  = Slopes_y(INDEX(i  ,j), IU);
+	qLoc[IU] = Qdata   (INDEX(i  ,j, IU));
+	dqX[IU]  = Slopes_x(INDEX(i  ,j, IU));
+	dqY[IU]  = Slopes_y(INDEX(i  ,j, IU));
 	
-	qLoc[IV] = Qdata   (INDEX(i  ,j), IV);
-	dqX[IV]  = Slopes_x(INDEX(i  ,j), IV);
-	dqY[IV]  = Slopes_y(INDEX(i  ,j), IV);
+	qLoc[IV] = Qdata   (INDEX(i  ,j, IV));
+	dqX[IV]  = Slopes_x(INDEX(i  ,j, IV));
+	dqY[IV]  = Slopes_y(INDEX(i  ,j, IV));
 
 	if (dir == XDIR) {
 
@@ -1421,21 +1422,21 @@ public:
 				     dqX, dqY,
 				     dtdx, dtdy, FACE_XMIN, qright);
 	  
-	  qLocNeighbor[ID] = Qdata   (INDEX(i-1,j  ), ID);
-	  dqX_neighbor[ID] = Slopes_x(INDEX(i-1,j  ), ID);
-	  dqY_neighbor[ID] = Slopes_y(INDEX(i-1,j  ), ID);
+	  qLocNeighbor[ID] = Qdata   (INDEX(i-1,j  , ID));
+	  dqX_neighbor[ID] = Slopes_x(INDEX(i-1,j  , ID));
+	  dqY_neighbor[ID] = Slopes_y(INDEX(i-1,j  , ID));
 	  
-	  qLocNeighbor[IP] = Qdata   (INDEX(i-1,j  ), IP);
-	  dqX_neighbor[IP] = Slopes_x(INDEX(i-1,j  ), IP);
-	  dqY_neighbor[IP] = Slopes_y(INDEX(i-1,j  ), IP);
+	  qLocNeighbor[IP] = Qdata   (INDEX(i-1,j  , IP));
+	  dqX_neighbor[IP] = Slopes_x(INDEX(i-1,j  , IP));
+	  dqY_neighbor[IP] = Slopes_y(INDEX(i-1,j  , IP));
 	  
-	  qLocNeighbor[IU] = Qdata   (INDEX(i-1,j  ), IU);
-	  dqX_neighbor[IU] = Slopes_x(INDEX(i-1,j  ), IU);
-	  dqY_neighbor[IU] = Slopes_y(INDEX(i-1,j  ), IU);
+	  qLocNeighbor[IU] = Qdata   (INDEX(i-1,j  , IU));
+	  dqX_neighbor[IU] = Slopes_x(INDEX(i-1,j  , IU));
+	  dqY_neighbor[IU] = Slopes_y(INDEX(i-1,j  , IU));
 	  
-	  qLocNeighbor[IV] = Qdata   (INDEX(i-1,j  ), IV);
-	  dqX_neighbor[IV] = Slopes_x(INDEX(i-1,j  ), IV);
-	  dqY_neighbor[IV] = Slopes_y(INDEX(i-1,j  ), IV);
+	  qLocNeighbor[IV] = Qdata   (INDEX(i-1,j  , IV));
+	  dqX_neighbor[IV] = Slopes_x(INDEX(i-1,j  , IV));
+	  dqY_neighbor[IV] = Slopes_y(INDEX(i-1,j  , IV));
 	  
 	  // left interface : left state
 	  trace_unsplit_2d_along_dir(qLocNeighbor,
@@ -1448,10 +1449,10 @@ public:
 	  //
 	  // store fluxes
 	  //	
-	  Fluxes(INDEX(i  ,j ), ID) =  flux[ID]*dtdx;
-	  Fluxes(INDEX(i  ,j ), IP) =  flux[IP]*dtdx;
-	  Fluxes(INDEX(i  ,j ), IU) =  flux[IU]*dtdx;
-	  Fluxes(INDEX(i  ,j ), IV) =  flux[IV]*dtdx;
+	  Fluxes(INDEX(i  ,j , ID)) =  flux[ID]*dtdx;
+	  Fluxes(INDEX(i  ,j , IP)) =  flux[IP]*dtdx;
+	  Fluxes(INDEX(i  ,j , IU)) =  flux[IU]*dtdx;
+	  Fluxes(INDEX(i  ,j , IV)) =  flux[IV]*dtdx;
 
 	} else if (dir == YDIR) {
 
@@ -1460,21 +1461,21 @@ public:
 				     dqX, dqY,
 				     dtdx, dtdy, FACE_YMIN, qright);
 	  
-	  qLocNeighbor[ID] = Qdata   (INDEX(i  ,j-1), ID);
-	  dqX_neighbor[ID] = Slopes_x(INDEX(i  ,j-1), ID);
-	  dqY_neighbor[ID] = Slopes_y(INDEX(i  ,j-1), ID);
+	  qLocNeighbor[ID] = Qdata   (INDEX(i  ,j-1, ID));
+	  dqX_neighbor[ID] = Slopes_x(INDEX(i  ,j-1, ID));
+	  dqY_neighbor[ID] = Slopes_y(INDEX(i  ,j-1, ID));
 	  
-	  qLocNeighbor[IP] = Qdata   (INDEX(i  ,j-1), IP);
-	  dqX_neighbor[IP] = Slopes_x(INDEX(i  ,j-1), IP);
-	  dqY_neighbor[IP] = Slopes_y(INDEX(i  ,j-1), IP);
+	  qLocNeighbor[IP] = Qdata   (INDEX(i  ,j-1, IP));
+	  dqX_neighbor[IP] = Slopes_x(INDEX(i  ,j-1, IP));
+	  dqY_neighbor[IP] = Slopes_y(INDEX(i  ,j-1, IP));
 	  
-	  qLocNeighbor[IU] = Qdata   (INDEX(i  ,j-1), IU);
-	  dqX_neighbor[IU] = Slopes_x(INDEX(i  ,j-1), IU);
-	  dqY_neighbor[IU] = Slopes_y(INDEX(i  ,j-1), IU);
+	  qLocNeighbor[IU] = Qdata   (INDEX(i  ,j-1, IU));
+	  dqX_neighbor[IU] = Slopes_x(INDEX(i  ,j-1, IU));
+	  dqY_neighbor[IU] = Slopes_y(INDEX(i  ,j-1, IU));
 	  
-	  qLocNeighbor[IV] = Qdata   (INDEX(i  ,j-1), IV);
-	  dqX_neighbor[IV] = Slopes_x(INDEX(i  ,j-1), IV);
-	  dqY_neighbor[IV] = Slopes_y(INDEX(i  ,j-1), IV);
+	  qLocNeighbor[IV] = Qdata   (INDEX(i  ,j-1, IV));
+	  dqX_neighbor[IV] = Slopes_x(INDEX(i  ,j-1, IV));
+	  dqY_neighbor[IV] = Slopes_y(INDEX(i  ,j-1, IV));
 	  
 	  // left interface : left state
 	  trace_unsplit_2d_along_dir(qLocNeighbor,
@@ -1489,10 +1490,10 @@ public:
 	  //
 	  // update hydro array
 	  //	  
-	  Fluxes(INDEX(i  ,j  ), ID) =  flux[ID]*dtdy;
-	  Fluxes(INDEX(i  ,j  ), IP) =  flux[IP]*dtdy;
-	  Fluxes(INDEX(i  ,j  ), IU) =  flux[IV]*dtdy; // IU/IV swapped
-	  Fluxes(INDEX(i  ,j  ), IV) =  flux[IU]*dtdy; // IU/IV swapped
+	  Fluxes(INDEX(i  ,j  , ID)) =  flux[ID]*dtdy;
+	  Fluxes(INDEX(i  ,j  , IP)) =  flux[IP]*dtdy;
+	  Fluxes(INDEX(i  ,j  , IU)) =  flux[IV]*dtdy; // IU/IV swapped
+	  Fluxes(INDEX(i  ,j  , IV)) =  flux[IU]*dtdy; // IU/IV swapped
 
 	}
 	      
@@ -1549,15 +1550,15 @@ public:
     
     real_t tmp = x+y*y;
     if (tmp > 0.5 && tmp < 1.5) {
-      Udata(INDEX(i  ,j  ), ID) = 1.0;
-      Udata(INDEX(i  ,j  ), IP) = 1.0/(gamma0-1.0);
-      Udata(INDEX(i  ,j  ), IU) = 0.0;
-      Udata(INDEX(i  ,j  ), IV) = 0.0;
+      Udata(INDEX(i  ,j  , ID)) = 1.0;
+      Udata(INDEX(i  ,j  , IP)) = 1.0/(gamma0-1.0);
+      Udata(INDEX(i  ,j  , IU)) = 0.0;
+      Udata(INDEX(i  ,j  , IV)) = 0.0;
     } else {
-      Udata(INDEX(i  ,j  ), ID) = 0.125;
-      Udata(INDEX(i  ,j  ), IP) = 0.14/(gamma0-1.0);
-      Udata(INDEX(i  ,j  ), IU) = 0.0;
-      Udata(INDEX(i  ,j  ), IV) = 0.0;
+      Udata(INDEX(i  ,j  , ID)) = 0.125;
+      Udata(INDEX(i  ,j  , IP)) = 0.14/(gamma0-1.0);
+      Udata(INDEX(i  ,j  , IU)) = 0.0;
+      Udata(INDEX(i  ,j  , IV)) = 0.0;
     }
     
   } // end operator ()
@@ -1622,15 +1623,15 @@ public:
       (y-blast_center_y)*(y-blast_center_y);    
     
     if (d2 < radius2) {
-      Udata(INDEX(i  ,j  ), ID) = blast_density_in;
-      Udata(INDEX(i  ,j  ), IP) = blast_pressure_in/(gamma0-1.0);
-      Udata(INDEX(i  ,j  ), IU) = 0.0;
-      Udata(INDEX(i  ,j  ), IV) = 0.0;
+      Udata(INDEX(i  ,j  , ID)) = blast_density_in;
+      Udata(INDEX(i  ,j  , IP)) = blast_pressure_in/(gamma0-1.0);
+      Udata(INDEX(i  ,j  , IU)) = 0.0;
+      Udata(INDEX(i  ,j  , IV)) = 0.0;
     } else {
-      Udata(INDEX(i  ,j  ), ID) = blast_density_out;
-      Udata(INDEX(i  ,j  ), IP) = blast_pressure_out/(gamma0-1.0);
-      Udata(INDEX(i  ,j  ), IU) = 0.0;
-      Udata(INDEX(i  ,j  ), IV) = 0.0;
+      Udata(INDEX(i  ,j  , ID)) = blast_density_out;
+      Udata(INDEX(i  ,j  , IP)) = blast_pressure_out/(gamma0-1.0);
+      Udata(INDEX(i  ,j  , IU)) = 0.0;
+      Udata(INDEX(i  ,j  , IV)) = 0.0;
     }
     
   } // end operator ()
@@ -1708,7 +1709,7 @@ public:
 	    i0=nx+i;
 	  }
 	  
-	  Udata(INDEX(i  ,j  ), iVar) = Udata(INDEX(i0  ,j  ), iVar)*sign;
+	  Udata(INDEX(i  ,j  , iVar)) = Udata(INDEX(i0  ,j  , iVar))*sign;
 	  
 	}
 	
@@ -1740,7 +1741,7 @@ public:
 	    i0=i-nx;
 	  }
 	  
-	  Udata(INDEX(i  ,j  ), iVar) = Udata(INDEX(i0 ,j  ), iVar)*sign;
+	  Udata(INDEX(i  ,j  , iVar)) = Udata(INDEX(i0 ,j  , iVar))*sign;
 	  
 	}
       }
@@ -1770,7 +1771,7 @@ public:
 	    j0=ny+j;
 	  }
 	  
-	  Udata(INDEX(i  ,j  ), iVar) = Udata(INDEX(i  ,j0 ), iVar)*sign;
+	  Udata(INDEX(i  ,j  , iVar)) = Udata(INDEX(i  ,j0 , iVar))*sign;
 	}
       }
     }
@@ -1800,7 +1801,7 @@ public:
 	    j0=j-ny;
 	  }
 	  
-	  Udata(INDEX(i  ,j  ), iVar) = Udata(INDEX(i  ,j0  ), iVar)*sign;
+	  Udata(INDEX(i  ,j  , iVar)) = Udata(INDEX(i  ,j0  , iVar))*sign;
 	  
 	}
 

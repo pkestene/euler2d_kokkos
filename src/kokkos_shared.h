@@ -16,7 +16,7 @@ using Device = Kokkos::DefaultExecutionSpace;
  * index linearization (layout left)
  * index = i + isize*j
  */
-typedef Kokkos::View<real_t*[NBVAR], Kokkos::LayoutLeft, Device> DataArray;
+typedef Kokkos::View<real_t*, Kokkos::LayoutLeft, Device> DataArray;
 typedef DataArray::HostMirror DataArrayHost;
 
 /// a POD data structure to store local conservative / primitive variables
