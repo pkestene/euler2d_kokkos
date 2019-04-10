@@ -25,6 +25,15 @@ public:
 
   // utility routines used in various computational kernels
 
+  /**
+   * Left layout linearization.
+   */
+  KOKKOS_INLINE_FUNCTION
+  int INDEX(const int& i, const int& j) const
+  {
+    return coord2index(i,j,params.isize,params.jsize);
+  }
+
   KOKKOS_INLINE_FUNCTION
   void swapValues(real_t *a, real_t *b) const
   {

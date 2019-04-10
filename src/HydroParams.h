@@ -126,7 +126,8 @@ struct HydroParams {
   
   int isize;  /*!< total size (in cell unit) along X direction with ghosts.*/
   int jsize;  /*!< total size (in cell unit) along Y direction with ghosts.*/
-  
+  int ijsize;
+
   real_t xmin;
   real_t xmax;
   real_t ymin;
@@ -173,7 +174,7 @@ struct HydroParams {
     nStepmax(0), tEnd(0.0), nOutput(0), enableOutput(true),
     nx(0), ny(0), ghostWidth(2),
     imin(0), imax(0), jmin(0), jmax(0),
-    isize(0), jsize(0),
+    isize(0), jsize(0), ijsize(0),
     xmin(0.0), xmax(1.0), ymin(0.0), ymax(1.0),
     dx(0.0), dy(0.0),
     boundary_type_xmin(1),

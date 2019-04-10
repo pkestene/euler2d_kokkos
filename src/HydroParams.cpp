@@ -104,7 +104,8 @@ void HydroParams::init()
   
   isize = imax - imin + 1;
   jsize = jmax - jmin + 1;
-  
+  ijsize = isize * jsize;
+
   dx = (xmax - xmin) / nx;
   dy = (ymax - ymin) / ny;
   

@@ -37,27 +37,28 @@ HydroRun::HydroRun(HydroParams& params, ConfigMap& configMap) :
 
   const int isize = params.isize;
   const int jsize = params.jsize;
+  const int ijsize = params.ijsize;
 
   /*
    * memory allocation (use sizes with ghosts included)
    */
-  U     = DataArray("U", isize, jsize);
+  U     = DataArray("U", ijsize);
   Uhost = Kokkos::create_mirror_view(U);
-  U2    = DataArray("U2",isize, jsize);
-  Q     = DataArray("Q", isize, jsize);
+  U2    = DataArray("U2",ijsize);
+  Q     = DataArray("Q", ijsize);
 
   if (params.implementationVersion == 0) {
 
-    Fluxes_x = DataArray("Fluxes_x", isize, jsize);
-    Fluxes_y = DataArray("Fluxes_y", isize, jsize);
+    Fluxes_x = DataArray("Fluxes_x", ijsize);
+    Fluxes_y = DataArray("Fluxes_y", ijsize);
     
   } else if (params.implementationVersion == 1) {
 
-    Slopes_x = DataArray("Slope_x", isize, jsize);
-    Slopes_y = DataArray("Slope_y", isize, jsize);
+    Slopes_x = DataArray("Slope_x", ijsize);
+    Slopes_y = DataArray("Slope_y", ijsize);
 
     // direction splitting (only need one flux array)
-    Fluxes_x = DataArray("Fluxes_x", isize, jsize);
+    Fluxes_x = DataArray("Fluxes_x", ijsize);
     Fluxes_y = Fluxes_x;
     
   } 
@@ -294,7 +295,6 @@ void HydroRun::saveVTK(DataArray Udata,
 		       std::string name)
 {
 
-  const int ijsize = params.isize*params.jsize;
   const int isize  = params.isize;
   const int nx = params.nx;
   const int ny = params.ny;
@@ -370,10 +370,12 @@ void HydroRun::saveVTK(DataArray Udata,
 
     for (j=0; j<params.jsize; ++j) {
       for (i=0; i<params.isize; ++i) {      
-        
+
+        int index = coord2index(i,j,params.isize, params.jsize);
+
         if (j>=jmin+ghostWidth and j<=jmax-ghostWidth and
             i>=imin+ghostWidth and i<=imax-ghostWidth) {
-          outFile << Uhost(i, j, iVar) << " ";
+          outFile << Uhost(index, iVar) << " ";
         }
       }
     }

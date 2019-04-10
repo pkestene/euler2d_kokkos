@@ -13,13 +13,10 @@ using Device = Kokkos::DefaultExecutionSpace;
 /**
  * Main data array type alias (based on Kokkos::View).
  *
- *first indexes are space location coordinates,
- * last index is hydro variable
- * number of hydro variables is 4 in 2D, 5 in 3D
- * enforce Left Layout, so that first index is always
- * the fast index (contiguous in memory).
+ * index linearization (layout left)
+ * index = i + isize*j
  */
-typedef Kokkos::View<real_t**[NBVAR], Kokkos::LayoutLeft, Device> DataArray;
+typedef Kokkos::View<real_t*[NBVAR], Kokkos::LayoutLeft, Device> DataArray;
 typedef DataArray::HostMirror DataArrayHost;
 
 /// a POD data structure to store local conservative / primitive variables
