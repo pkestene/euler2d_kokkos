@@ -1,22 +1,11 @@
 add_executable(euler2d
-  ../config/inih/ini.h
   ../config/inih/ini.cpp
-  ../config/inih/INIReader.h
   ../config/inih/INIReader.cpp
-  ../config/ConfigMap.h
   ../config/ConfigMap.cpp
-  kokkos_shared.h
-  real_type.h
-  HydroParams.h
+  kokkos_shared.cpp
   HydroParams.cpp
-  HydroRun.h
   HydroRun.cpp
-  hydro_common.h
-  HydroBaseFunctor.h
-  HydroRunFunctors.h
-  Timer.h
   Timer.cpp
-  CudaTimer.h
   main.cpp)
 
 target_include_directories(euler2d

@@ -43,23 +43,23 @@ HydroRun::HydroRun(HydroParams& params, ConfigMap& configMap) :
   /*
    * memory allocation (use sizes with ghosts included)
    */
-  U     = DataArray("U", ijksize);
-  Uhost = Kokkos::create_mirror_view(U);
-  U2    = DataArray("U2",ijksize);
-  Q     = DataArray("Q", ijksize);
+  U     = allocate_DataArray("U", ijsize);
+  Uhost = create_mirror(U);
+  U2    = allocate_DataArray("U2",ijsize);
+  Q     = allocate_DataArray("Q", ijsize);
 
   if (params.implementationVersion == 0) {
 
-    Fluxes_x = DataArray("Fluxes_x", ijksize);
-    Fluxes_y = DataArray("Fluxes_y", ijksize);
+    Fluxes_x = allocate_DataArray("Fluxes_x", ijsize);
+    Fluxes_y = allocate_DataArray("Fluxes_y", ijsize);
     
   } else if (params.implementationVersion == 1) {
 
-    Slopes_x = DataArray("Slope_x", ijksize);
-    Slopes_y = DataArray("Slope_y", ijksize);
+    Slopes_x = allocate_DataArray("Slope_x", ijsize);
+    Slopes_y = allocate_DataArray("Slope_y", ijsize);
 
     // direction splitting (only need one flux array)
-    Fluxes_x = DataArray("Fluxes_x", ijksize);
+    Fluxes_x = allocate_DataArray("Fluxes_x", ijsize);
     Fluxes_y = Fluxes_x;
     
   } 
@@ -91,7 +91,7 @@ HydroRun::HydroRun(HydroParams& params, ConfigMap& configMap) :
   }
 
   // copy U into U2
-  Kokkos::deep_copy(U2,U);
+  deep_copy(U2,U);
 
 } // HydroRun::HydroRun
 
@@ -177,7 +177,7 @@ void HydroRun::godunov_unsplit_cpu(DataArray data_in,
     
   // copy data_in into data_out (not necessary)
   // data_out = data_in;
-  Kokkos::deep_copy(data_out, data_in);
+  deep_copy(data_out, data_in);
   
   // start main computation
   godunov_timer.start();
@@ -307,7 +307,7 @@ void HydroRun::saveVTK(DataArray Udata,
   const int ghostWidth = params.ghostWidth;
   
   // copy device data to host
-  Kokkos::deep_copy(Uhost, Udata);
+  deep_copy(Uhost, Udata);
   
   // local variables
   int i,j,iVar;
@@ -377,7 +377,7 @@ void HydroRun::saveVTK(DataArray Udata,
 
         if (j>=jmin+ghostWidth and j<=jmax-ghostWidth and
             i>=imin+ghostWidth and i<=imax-ghostWidth) {
-          outFile << Uhost(index + iVar*ijsize) << " ";
+          outFile << Uhost[iVar](index) << " ";
         }
       }
     }
