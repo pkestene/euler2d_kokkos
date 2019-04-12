@@ -175,8 +175,20 @@ public:
     int teamId = thread.league_rank();
     
     // compute j start
-    int jStart = teamId * chunck_size_y; 
+    int jStart = teamId * chunck_size_y;
 
+    //using DataSlice = Kokkos::View<real_t*, Kokkos::MemoryUnmanaged>;
+    
+    auto U_ID = Kokkos::subview(Udata, Kokkos::ALL(), 0);
+    auto U_IP = Kokkos::subview(Udata, Kokkos::ALL(), 1);
+    auto U_IU = Kokkos::subview(Udata, Kokkos::ALL(), 2);
+    auto U_IV = Kokkos::subview(Udata, Kokkos::ALL(), 3);
+    
+    auto Q_ID = Kokkos::subview(Qdata, Kokkos::ALL(), 0);
+    auto Q_IP = Kokkos::subview(Qdata, Kokkos::ALL(), 1);
+    auto Q_IU = Kokkos::subview(Qdata, Kokkos::ALL(), 2);
+    auto Q_IV = Kokkos::subview(Qdata, Kokkos::ALL(), 3);
+    
     // spread work among the thread in the team
     Kokkos::parallel_for(
       Kokkos::TeamThreadRange(thread, chunk_size_per_team), 
@@ -190,7 +202,47 @@ public:
           Kokkos::ThreadVectorRange(thread, params.isize),
           [=](const int &i) {
             
-            do_compute(INDEX(i,j));
+            //do_compute(INDEX(i,j));
+
+	    const int isize = params.isize;
+	    const int jsize = params.jsize;
+	    //const int ghostWidth = params.ghostWidth;
+	    
+	    //int i,j;
+	    //index2coord(index,i,j,isize,jsize);
+	    int ij = coord2index(i,j,isize,jsize);
+	    
+	    if(j >= 0 && j < jsize  &&
+	       i >= 0 && i < isize ) {
+	      
+	      HydroState uLoc; // conservative    variables in current cell
+	      HydroState qLoc; // primitive    variables in current cell
+	      real_t c;
+	      
+	      // get local conservative variable
+	      /*uLoc[ID] = Udata(ij,ID);
+	      uLoc[IP] = Udata(ij,IP);
+	      uLoc[IU] = Udata(ij,IU);
+	      uLoc[IV] = Udata(ij,IV);*/
+	      uLoc[ID] = U_ID(ij);
+	      uLoc[IP] = U_IP(ij);
+	      uLoc[IU] = U_IU(ij);
+	      uLoc[IV] = U_IV(ij);
+	      
+	      // get primitive variables in current cell
+	      computePrimitives(uLoc, &c, qLoc);
+	      
+	      // copy q state in q global
+	      /*Qdata(ij,ID) = qLoc[ID];
+	      Qdata(ij,IP) = qLoc[IP];
+	      Qdata(ij,IU) = qLoc[IU];
+	      Qdata(ij,IV) = qLoc[IV];*/
+	      Q_ID(ij) = qLoc[ID];
+	      Q_IP(ij) = qLoc[IP];
+	      Q_IU(ij) = qLoc[IU];
+	      Q_IV(ij) = qLoc[IV];
+	      
+	    }
 
           }); // end vector range
       });
