@@ -842,27 +842,6 @@ public:
       });
     
   } // end team policy functor
-
-  /** 
-   * entry point for range policy
-   */
-  KOKKOS_INLINE_FUNCTION
-  void operator()(const int& index) const
-  {
-    
-    do_compute(index);
-
-  } // end range policy functor
-
-  /**
-   * Actual computation.
-   */
-  KOKKOS_INLINE_FUNCTION
-  void do_compute(const int& index) const
-  {
-
-
-  } // end do_compute
   
   DataArray Qdata;
   DataArray FluxData_x;
