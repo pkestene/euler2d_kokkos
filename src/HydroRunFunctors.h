@@ -195,7 +195,7 @@ public:
 	    const int isize = params.isize;
 	    const int jsize = params.jsize;
 	    //const int ghostWidth = params.ghostWidth;
-	    
+            
 	    int ij = coord2index(i,j,isize,jsize);
 	    
 	    if(j >= 0 && j < jsize  &&
@@ -1021,6 +1021,17 @@ public:
     // compute j start
     int jStart = teamId * chunck_size_y; 
 
+    auto U_ID = Kokkos::subview(Udata, Kokkos::ALL(), 0);
+    auto U_IP = Kokkos::subview(Udata, Kokkos::ALL(), 1);
+    auto U_IU = Kokkos::subview(Udata, Kokkos::ALL(), 2);
+    auto U_IV = Kokkos::subview(Udata, Kokkos::ALL(), 3);
+
+    auto F_ID = Kokkos::subview(FluxData, Kokkos::ALL(), 0);
+    auto F_IP = Kokkos::subview(FluxData, Kokkos::ALL(), 1);
+    auto F_IU = Kokkos::subview(FluxData, Kokkos::ALL(), 2);
+    auto F_IV = Kokkos::subview(FluxData, Kokkos::ALL(), 3);
+
+
     // spread work among the thread in the team
     Kokkos::parallel_for(
       Kokkos::TeamThreadRange(thread, chunk_size_per_team), 
@@ -1034,69 +1045,50 @@ public:
           Kokkos::ThreadVectorRange(thread, params.isize),
           [=](const int &i) {
             
-            do_compute(INDEX(i,j));
+            const int isize = params.isize;
+            const int jsize = params.jsize;
+            const int ghostWidth = params.ghostWidth;    
+            
+            const int di = 1;
+            const int dj = isize;
 
+	    int ij = coord2index(i,j,isize,jsize);
+            
+            if(j >= ghostWidth && j < jsize-ghostWidth  &&
+               i >= ghostWidth && i < isize-ghostWidth ) {
+              
+              if (dir == XDIR) {
+                
+                U_ID(ij) +=  F_ID(ij);
+                U_IP(ij) +=  F_IP(ij);
+                U_IU(ij) +=  F_IU(ij);
+                U_IV(ij) +=  F_IV(ij);
+                
+                U_ID(ij) -=  F_ID(ij+di);
+                U_IP(ij) -=  F_IP(ij+di);
+                U_IU(ij) -=  F_IU(ij+di);
+                U_IV(ij) -=  F_IV(ij+di);
+                
+              } else if (dir == YDIR) {
+                
+                U_ID(ij) +=  F_ID(ij);
+                U_IP(ij) +=  F_IP(ij);
+                U_IU(ij) +=  F_IU(ij);
+                U_IV(ij) +=  F_IV(ij);
+                
+                U_ID(ij) -=  F_ID(ij+dj);
+                U_IP(ij) -=  F_IP(ij+dj);
+                U_IU(ij) -=  F_IU(ij+dj);
+                U_IV(ij) -=  F_IV(ij+dj);
+                
+              }
+              
+            } // end if
+            
           }); // end vector range
       });
     
   } // end team policy functor
-
-  /** 
-   * entry point for range policy
-   */
-  KOKKOS_INLINE_FUNCTION
-  void operator()(const int& index) const
-  {
-    
-    do_compute(index);
-
-  } // end range policy functor
-
-  /**
-   * Actual computation.
-   */
-  KOKKOS_INLINE_FUNCTION
-  void do_compute(const int& index) const
-  {
-    const int isize = params.isize;
-    const int jsize = params.jsize;
-    const int ghostWidth = params.ghostWidth;    
-    
-    int i,j;
-    index2coord(index,i,j,isize,jsize);
-
-    if(j >= ghostWidth && j < jsize-ghostWidth  &&
-       i >= ghostWidth && i < isize-ghostWidth ) {
-
-      if (dir == XDIR) {
-
-	Udata(INDEX(i  ,j  ), ID) +=  FluxData(INDEX(i  ,j  ), ID);
-	Udata(INDEX(i  ,j  ), IP) +=  FluxData(INDEX(i  ,j  ), IP);
-	Udata(INDEX(i  ,j  ), IU) +=  FluxData(INDEX(i  ,j  ), IU);
-	Udata(INDEX(i  ,j  ), IV) +=  FluxData(INDEX(i  ,j  ), IV);
-
-	Udata(INDEX(i  ,j  ), ID) -=  FluxData(INDEX(i+1,j  ), ID);
-	Udata(INDEX(i  ,j  ), IP) -=  FluxData(INDEX(i+1,j  ), IP);
-	Udata(INDEX(i  ,j  ), IU) -=  FluxData(INDEX(i+1,j  ), IU);
-	Udata(INDEX(i  ,j  ), IV) -=  FluxData(INDEX(i+1,j  ), IV);
-
-      } else if (dir == YDIR) {
-
-	Udata(INDEX(i  ,j  ), ID) +=  FluxData(INDEX(i  ,j  ), ID);
-	Udata(INDEX(i  ,j  ), IP) +=  FluxData(INDEX(i  ,j  ), IP);
-	Udata(INDEX(i  ,j  ), IU) +=  FluxData(INDEX(i  ,j  ), IU);
-	Udata(INDEX(i  ,j  ), IV) +=  FluxData(INDEX(i  ,j  ), IV);
-	
-	Udata(INDEX(i  ,j  ), ID) -=  FluxData(INDEX(i  ,j+1), ID);
-	Udata(INDEX(i  ,j  ), IP) -=  FluxData(INDEX(i  ,j+1), IP);
-	Udata(INDEX(i  ,j  ), IU) -=  FluxData(INDEX(i  ,j+1), IU);
-	Udata(INDEX(i  ,j  ), IV) -=  FluxData(INDEX(i  ,j+1), IV);
-
-      }
-      
-    } // end if
-    
-  } // end do_compute
   
   DataArray Udata;
   DataArray FluxData;
@@ -1124,7 +1116,7 @@ public:
 		    DataArray Slopes_x,
 		    DataArray Slopes_y)
   {
-    ComputeSlopesFunctor functor(params, Qdata, Slopes_x, Slopes_x);
+    ComputeSlopesFunctor functor(params, Qdata, Slopes_x, Slopes_y);
     launch_functor(params,functor);
   } // end apply
 
@@ -1148,6 +1140,21 @@ public:
     // compute j start
     int jStart = teamId * chunck_size_y; 
 
+    auto Q_ID = Kokkos::subview(Qdata, Kokkos::ALL(), 0);
+    auto Q_IP = Kokkos::subview(Qdata, Kokkos::ALL(), 1);
+    auto Q_IU = Kokkos::subview(Qdata, Kokkos::ALL(), 2);
+    auto Q_IV = Kokkos::subview(Qdata, Kokkos::ALL(), 3);
+
+    auto Slopes_x_ID = Kokkos::subview(Slopes_x, Kokkos::ALL(), 0);
+    auto Slopes_x_IP = Kokkos::subview(Slopes_x, Kokkos::ALL(), 1);
+    auto Slopes_x_IU = Kokkos::subview(Slopes_x, Kokkos::ALL(), 2);
+    auto Slopes_x_IV = Kokkos::subview(Slopes_x, Kokkos::ALL(), 3);
+
+    auto Slopes_y_ID = Kokkos::subview(Slopes_y, Kokkos::ALL(), 0);
+    auto Slopes_y_IP = Kokkos::subview(Slopes_y, Kokkos::ALL(), 1);
+    auto Slopes_y_IU = Kokkos::subview(Slopes_y, Kokkos::ALL(), 2);
+    auto Slopes_y_IV = Kokkos::subview(Slopes_y, Kokkos::ALL(), 3);
+
     // spread work among the thread in the team
     Kokkos::parallel_for(
       Kokkos::TeamThreadRange(thread, chunk_size_per_team), 
@@ -1161,99 +1168,80 @@ public:
           Kokkos::ThreadVectorRange(thread, params.isize),
           [=](const int &i) {
             
-            do_compute(INDEX(i,j));
+            const int isize = params.isize;
+            const int jsize = params.jsize;
+            const int ghostWidth = params.ghostWidth;
+            
+            const int di = 1;
+            const int dj = isize;
+   	    
+            int ij = coord2index(i,j,isize,jsize);
+            
+            if(j >= ghostWidth-1 && j <= jsize-ghostWidth  &&
+               i >= ghostWidth-1 && i <= isize-ghostWidth ) {
+              
+              // local primitive variables
+              HydroState qLoc; // local primitive variables
+              
+              // local primitive variables in neighborbood
+              HydroState qNeighbors_0;
+              HydroState qNeighbors_1;
+              HydroState qNeighbors_2;
+              HydroState qNeighbors_3;
+              
+              // Local slopes and neighbor slopes
+              HydroState dqX;
+              HydroState dqY;
+              
+              // get primitive variables state vector
+              qLoc[ID]         = Q_ID(ij);
+              qNeighbors_0[ID] = Q_ID(ij+di);
+              qNeighbors_1[ID] = Q_ID(ij-di);
+              qNeighbors_2[ID] = Q_ID(ij+dj);
+              qNeighbors_3[ID] = Q_ID(ij-dj);
+
+              qLoc[IP]         = Q_IP(ij);
+              qNeighbors_0[IP] = Q_IP(ij+di);
+              qNeighbors_1[IP] = Q_IP(ij-di);
+              qNeighbors_2[IP] = Q_IP(ij+dj);
+              qNeighbors_3[IP] = Q_IP(ij-dj);
+              
+              qLoc[IU]         = Q_IU(ij);
+              qNeighbors_0[IU] = Q_IU(ij+di);
+              qNeighbors_1[IU] = Q_IU(ij-di);
+              qNeighbors_2[IU] = Q_IU(ij+dj);
+              qNeighbors_3[IU] = Q_IU(ij-dj);
+              
+              qLoc[IV]         = Q_IV(ij);
+              qNeighbors_0[IV] = Q_IV(ij+di);
+              qNeighbors_1[IV] = Q_IV(ij-di);
+              qNeighbors_2[IV] = Q_IV(ij+dj);
+              qNeighbors_3[IV] = Q_IV(ij-dj);
+              
+              slope_unsplit_hydro_2d(qLoc, 
+                                     qNeighbors_0, qNeighbors_1, 
+                                     qNeighbors_2, qNeighbors_3,
+                                     dqX, dqY);
+              
+              // copy back slopes in global arrays
+              Slopes_x_ID(ij) = dqX[ID];
+              Slopes_y_ID(ij) = dqY[ID];
+              
+              Slopes_x_IP(ij) = dqX[IP];
+              Slopes_y_IP(ij) = dqY[IP];
+              
+              Slopes_x_IU(ij) = dqX[IU];
+              Slopes_y_IU(ij) = dqY[IU];
+              
+              Slopes_x_IV(ij) = dqX[IV];
+              Slopes_y_IV(ij) = dqY[IV];
+              
+            } // end if
 
           }); // end vector range
       });
     
   } // end team policy functor
-
-  /** 
-   * entry point for range policy
-   */
-  KOKKOS_INLINE_FUNCTION
-  void operator()(const int& index) const
-  {
-    do_compute(index);
-
-  } // end range policy functor
-
-  /**
-   * Actual computation.
-   */
-  KOKKOS_INLINE_FUNCTION
-  void do_compute(const int& index) const
-  {
-
-    const int isize = params.isize;
-    const int jsize = params.jsize;
-    const int ghostWidth = params.ghostWidth;
-
-    int i,j;
-    index2coord(index,i,j,isize,jsize);
-    
-    if(j >= ghostWidth-1 && j <= jsize-ghostWidth  &&
-       i >= ghostWidth-1 && i <= isize-ghostWidth ) {
-
-      	// local primitive variables
-	HydroState qLoc; // local primitive variables
-
-	// local primitive variables in neighborbood
-	HydroState qNeighbors_0;
-	HydroState qNeighbors_1;
-	HydroState qNeighbors_2;
-	HydroState qNeighbors_3;
-
-	// Local slopes and neighbor slopes
-	HydroState dqX;
-	HydroState dqY;
-      
-	// get primitive variables state vector
-	qLoc[ID]         = Qdata(INDEX(i  ,j  ), ID);
-	qNeighbors_0[ID] = Qdata(INDEX(i+1,j  ), ID);
-	qNeighbors_1[ID] = Qdata(INDEX(i-1,j  ), ID);
-	qNeighbors_2[ID] = Qdata(INDEX(i  ,j+1), ID);
-	qNeighbors_3[ID] = Qdata(INDEX(i  ,j-1), ID);
-
-	qLoc[IP]         = Qdata(INDEX(i  ,j  ), IP);
-	qNeighbors_0[IP] = Qdata(INDEX(i+1,j  ), IP);
-	qNeighbors_1[IP] = Qdata(INDEX(i-1,j  ), IP);
-	qNeighbors_2[IP] = Qdata(INDEX(i  ,j+1), IP);
-	qNeighbors_3[IP] = Qdata(INDEX(i  ,j-1), IP);
-	
-	qLoc[IU]         = Qdata(INDEX(i  ,j  ), IU);
-	qNeighbors_0[IU] = Qdata(INDEX(i+1,j  ), IU);
-	qNeighbors_1[IU] = Qdata(INDEX(i-1,j  ), IU);
-	qNeighbors_2[IU] = Qdata(INDEX(i  ,j+1), IU);
-	qNeighbors_3[IU] = Qdata(INDEX(i  ,j-1), IU);
-	
-	qLoc[IV]         = Qdata(INDEX(i  ,j  ), IV);
-	qNeighbors_0[IV] = Qdata(INDEX(i+1,j  ), IV);
-	qNeighbors_1[IV] = Qdata(INDEX(i-1,j  ), IV);
-	qNeighbors_2[IV] = Qdata(INDEX(i  ,j+1), IV);
-	qNeighbors_3[IV] = Qdata(INDEX(i  ,j-1), IV);
-	
-	slope_unsplit_hydro_2d(qLoc, 
-			       qNeighbors_0, qNeighbors_1, 
-			       qNeighbors_2, qNeighbors_3,
-			       dqX, dqY);
-	
-	// copy back slopes in global arrays
-	Slopes_x(INDEX(i  ,j), ID) = dqX[ID];
-	Slopes_y(INDEX(i  ,j), ID) = dqY[ID];
-	
-	Slopes_x(INDEX(i  ,j), IP) = dqX[IP];
-	Slopes_y(INDEX(i  ,j), IP) = dqY[IP];
-	
-	Slopes_x(INDEX(i  ,j), IU) = dqX[IU];
-	Slopes_y(INDEX(i  ,j), IU) = dqY[IU];
-	
-	Slopes_x(INDEX(i  ,j), IV) = dqX[IV];
-	Slopes_y(INDEX(i  ,j), IV) = dqY[IV];
-      
-    } // end if
-    
-  } // end do_compute
   
   DataArray Qdata;
   DataArray Slopes_x, Slopes_y;
@@ -1289,7 +1277,7 @@ public:
 		    real_t    dtdx,
 		    real_t    dtdy)
   {
-    ComputeTraceAndFluxes_Functor<dir> functor(params, Qdata, Slopes_x, Slopes_x, Fluxes,
+    ComputeTraceAndFluxes_Functor<dir> functor(params, Qdata, Slopes_x, Slopes_y, Fluxes,
 					       dtdx, dtdy);
     launch_functor(params,functor);
   } // end apply
@@ -1314,6 +1302,26 @@ public:
     // compute j start
     int jStart = teamId * chunck_size_y; 
 
+    auto Q_ID = Kokkos::subview(Qdata, Kokkos::ALL(), 0);
+    auto Q_IP = Kokkos::subview(Qdata, Kokkos::ALL(), 1);
+    auto Q_IU = Kokkos::subview(Qdata, Kokkos::ALL(), 2);
+    auto Q_IV = Kokkos::subview(Qdata, Kokkos::ALL(), 3);
+
+    auto Slopes_x_ID = Kokkos::subview(Slopes_x, Kokkos::ALL(), 0);
+    auto Slopes_x_IP = Kokkos::subview(Slopes_x, Kokkos::ALL(), 1);
+    auto Slopes_x_IU = Kokkos::subview(Slopes_x, Kokkos::ALL(), 2);
+    auto Slopes_x_IV = Kokkos::subview(Slopes_x, Kokkos::ALL(), 3);
+
+    auto Slopes_y_ID = Kokkos::subview(Slopes_y, Kokkos::ALL(), 0);
+    auto Slopes_y_IP = Kokkos::subview(Slopes_y, Kokkos::ALL(), 1);
+    auto Slopes_y_IU = Kokkos::subview(Slopes_y, Kokkos::ALL(), 2);
+    auto Slopes_y_IV = Kokkos::subview(Slopes_y, Kokkos::ALL(), 3);
+
+    auto Fluxes_ID = Kokkos::subview(Fluxes, Kokkos::ALL(), 0);
+    auto Fluxes_IP = Kokkos::subview(Fluxes, Kokkos::ALL(), 1);
+    auto Fluxes_IU = Kokkos::subview(Fluxes, Kokkos::ALL(), 2);
+    auto Fluxes_IV = Kokkos::subview(Fluxes, Kokkos::ALL(), 3);
+
     // spread work among the thread in the team
     Kokkos::parallel_for(
       Kokkos::TeamThreadRange(thread, chunk_size_per_team), 
@@ -1327,162 +1335,144 @@ public:
           Kokkos::ThreadVectorRange(thread, params.isize),
           [=](const int &i) {
             
-            do_compute(INDEX(i,j));
+            //do_compute(INDEX(i,j));
+            const int isize = params.isize;
+            const int jsize = params.jsize;
+            const int ghostWidth = params.ghostWidth;
+            
+            const int di = 1;
+            const int dj = isize;
 
+	    int ij = coord2index(i,j,isize,jsize);
+           
+            if(j >= ghostWidth && j <= jsize-ghostWidth  &&
+               i >= ghostWidth && i <= isize-ghostWidth ) {
+              
+              // local primitive variables
+              HydroState qLoc; // local primitive variables
+              
+              // local primitive variables in neighbor cell
+              HydroState qLocNeighbor;
+              
+              // Local slopes and neighbor slopes
+              HydroState dqX;
+              HydroState dqY;
+              HydroState dqX_neighbor;
+              HydroState dqY_neighbor;
+              
+              // Local variables for Riemann problems solving
+              HydroState qleft;
+              HydroState qright;
+              HydroState qgdnv;
+              HydroState flux;
+              
+              //
+              // compute reconstructed states at left interface along X
+              //
+              qLoc[ID] = Q_ID       (ij);
+              dqX[ID]  = Slopes_x_ID(ij);
+              dqY[ID]  = Slopes_y_ID(ij);
+              
+              qLoc[IP] = Q_IP       (ij);
+              dqX[IP]  = Slopes_x_IP(ij);
+              dqY[IP]  = Slopes_y_IP(ij);
+              
+              qLoc[IU] = Q_IU       (ij);
+              dqX[IU]  = Slopes_x_IU(ij);
+              dqY[IU]  = Slopes_y_IU(ij);
+              
+              qLoc[IV] = Q_IV       (ij);
+              dqX[IV]  = Slopes_x_IV(ij);
+              dqY[IV]  = Slopes_y_IV(ij);
+              
+              if (dir == XDIR) {
+                
+                // left interface : right state
+                trace_unsplit_2d_along_dir(qLoc,
+                                           dqX, dqY,
+                                           dtdx, dtdy, FACE_XMIN, qright);
+                
+                qLocNeighbor[ID] = Q_ID       (ij-di);
+                dqX_neighbor[ID] = Slopes_x_ID(ij-di);
+                dqY_neighbor[ID] = Slopes_y_ID(ij-di);
+                
+                qLocNeighbor[IP] = Q_IP       (ij-di);
+                dqX_neighbor[IP] = Slopes_x_IP(ij-di);
+                dqY_neighbor[IP] = Slopes_y_IP(ij-di);
+                
+                qLocNeighbor[IU] = Q_IU       (ij-di);
+                dqX_neighbor[IU] = Slopes_x_IU(ij-di);
+                dqY_neighbor[IU] = Slopes_y_IU(ij-di);
+                
+                qLocNeighbor[IV] = Q_IV       (ij-di);
+                dqX_neighbor[IV] = Slopes_x_IV(ij-di);
+                dqY_neighbor[IV] = Slopes_y_IV(ij-di);
+                
+                // left interface : left state
+                trace_unsplit_2d_along_dir(qLocNeighbor,
+                                           dqX_neighbor,dqY_neighbor,
+                                           dtdx, dtdy, FACE_XMAX, qleft);
+                
+                // Solve Riemann problem at X-interfaces and compute X-fluxes
+                riemann_hllc(qleft,qright,qgdnv,flux);
+                
+                //
+                // store fluxes
+                //	
+                Fluxes_ID(ij) = flux[ID]*dtdx;
+                Fluxes_IP(ij) = flux[IP]*dtdx;
+                Fluxes_IU(ij) = flux[IU]*dtdx;
+                Fluxes_IV(ij) = flux[IV]*dtdx;
+                
+              } else if (dir == YDIR) {
+                
+                // left interface : right state
+                trace_unsplit_2d_along_dir(qLoc,
+                                           dqX, dqY,
+                                           dtdx, dtdy, FACE_YMIN, qright);
+                
+                qLocNeighbor[ID] = Q_ID       (ij-dj);
+                dqX_neighbor[ID] = Slopes_x_ID(ij-dj);
+                dqY_neighbor[ID] = Slopes_y_ID(ij-dj);
+                
+                qLocNeighbor[IP] = Q_IP       (ij-dj);
+                dqX_neighbor[IP] = Slopes_x_IP(ij-dj);
+                dqY_neighbor[IP] = Slopes_y_IP(ij-dj);
+                
+                qLocNeighbor[IU] = Q_IU       (ij-dj);
+                dqX_neighbor[IU] = Slopes_x_IU(ij-dj);
+                dqY_neighbor[IU] = Slopes_y_IU(ij-dj);
+                
+                qLocNeighbor[IV] = Q_IV       (ij-dj);
+                dqX_neighbor[IV] = Slopes_x_IV(ij-dj);
+                dqY_neighbor[IV] = Slopes_y_IV(ij-dj);
+                
+                // left interface : left state
+                trace_unsplit_2d_along_dir(qLocNeighbor,
+                                           dqX_neighbor,dqY_neighbor,
+                                           dtdx, dtdy, FACE_YMAX, qleft);
+                
+                // Solve Riemann problem at Y-interfaces and compute Y-fluxes
+                swapValues(&(qleft[IU]) ,&(qleft[IV]) );
+                swapValues(&(qright[IU]),&(qright[IV]));
+                riemann_hllc(qleft,qright,qgdnv,flux);
+                
+                //
+                // update hydro array
+                //	  
+                Fluxes_ID(ij) = flux[ID]*dtdy;
+                Fluxes_IP(ij) = flux[IP]*dtdy;
+                Fluxes_IU(ij) = flux[IV]*dtdy; // IU/IV swapped
+                Fluxes_IV(ij) = flux[IU]*dtdy; // IU/IV swapped
+                
+              }
+	      
+            } // end if
+            
           }); // end vector range
       });
     
   } // end team policy functor
-
-  /** 
-   * entry point for range policy
-   */
-  KOKKOS_INLINE_FUNCTION
-  void operator()(const int& index) const
-  {
-
-    do_compute(index);
-
-  } // end range policy functor
-
-  /**
-   * Actual computation.
-   */
-  KOKKOS_INLINE_FUNCTION
-  void do_compute(const int& index) const
-  {
-    const int isize = params.isize;
-    const int jsize = params.jsize;
-    const int ghostWidth = params.ghostWidth;
-    
-    int i,j;
-    index2coord(index,i,j,isize,jsize);
-    
-    if(j >= ghostWidth && j <= jsize-ghostWidth  &&
-       i >= ghostWidth && i <= isize-ghostWidth ) {
-
-	// local primitive variables
-	HydroState qLoc; // local primitive variables
-
-	// local primitive variables in neighbor cell
-	HydroState qLocNeighbor;
-
-	// Local slopes and neighbor slopes
-	HydroState dqX;
-	HydroState dqY;
-	HydroState dqX_neighbor;
-	HydroState dqY_neighbor;
-
-	// Local variables for Riemann problems solving
-	HydroState qleft;
-	HydroState qright;
-	HydroState qgdnv;
-	HydroState flux;
-
-	//
-	// compute reconstructed states at left interface along X
-	//
-	qLoc[ID] = Qdata   (INDEX(i  ,j), ID);
-	dqX[ID]  = Slopes_x(INDEX(i  ,j), ID);
-	dqY[ID]  = Slopes_y(INDEX(i  ,j), ID);
-	
-	qLoc[IP] = Qdata   (INDEX(i  ,j), IP);
-	dqX[IP]  = Slopes_x(INDEX(i  ,j), IP);
-	dqY[IP]  = Slopes_y(INDEX(i  ,j), IP);
-	
-	qLoc[IU] = Qdata   (INDEX(i  ,j), IU);
-	dqX[IU]  = Slopes_x(INDEX(i  ,j), IU);
-	dqY[IU]  = Slopes_y(INDEX(i  ,j), IU);
-	
-	qLoc[IV] = Qdata   (INDEX(i  ,j), IV);
-	dqX[IV]  = Slopes_x(INDEX(i  ,j), IV);
-	dqY[IV]  = Slopes_y(INDEX(i  ,j), IV);
-
-	if (dir == XDIR) {
-
-	  // left interface : right state
-	  trace_unsplit_2d_along_dir(qLoc,
-				     dqX, dqY,
-				     dtdx, dtdy, FACE_XMIN, qright);
-	  
-	  qLocNeighbor[ID] = Qdata   (INDEX(i-1,j  ), ID);
-	  dqX_neighbor[ID] = Slopes_x(INDEX(i-1,j  ), ID);
-	  dqY_neighbor[ID] = Slopes_y(INDEX(i-1,j  ), ID);
-	  
-	  qLocNeighbor[IP] = Qdata   (INDEX(i-1,j  ), IP);
-	  dqX_neighbor[IP] = Slopes_x(INDEX(i-1,j  ), IP);
-	  dqY_neighbor[IP] = Slopes_y(INDEX(i-1,j  ), IP);
-	  
-	  qLocNeighbor[IU] = Qdata   (INDEX(i-1,j  ), IU);
-	  dqX_neighbor[IU] = Slopes_x(INDEX(i-1,j  ), IU);
-	  dqY_neighbor[IU] = Slopes_y(INDEX(i-1,j  ), IU);
-	  
-	  qLocNeighbor[IV] = Qdata   (INDEX(i-1,j  ), IV);
-	  dqX_neighbor[IV] = Slopes_x(INDEX(i-1,j  ), IV);
-	  dqY_neighbor[IV] = Slopes_y(INDEX(i-1,j  ), IV);
-	  
-	  // left interface : left state
-	  trace_unsplit_2d_along_dir(qLocNeighbor,
-				     dqX_neighbor,dqY_neighbor,
-				     dtdx, dtdy, FACE_XMAX, qleft);
-	  
-	  // Solve Riemann problem at X-interfaces and compute X-fluxes
-	  riemann_hllc(qleft,qright,qgdnv,flux);
-
-	  //
-	  // store fluxes
-	  //	
-	  Fluxes(INDEX(i  ,j ), ID) =  flux[ID]*dtdx;
-	  Fluxes(INDEX(i  ,j ), IP) =  flux[IP]*dtdx;
-	  Fluxes(INDEX(i  ,j ), IU) =  flux[IU]*dtdx;
-	  Fluxes(INDEX(i  ,j ), IV) =  flux[IV]*dtdx;
-
-	} else if (dir == YDIR) {
-
-	  // left interface : right state
-	  trace_unsplit_2d_along_dir(qLoc,
-				     dqX, dqY,
-				     dtdx, dtdy, FACE_YMIN, qright);
-	  
-	  qLocNeighbor[ID] = Qdata   (INDEX(i  ,j-1), ID);
-	  dqX_neighbor[ID] = Slopes_x(INDEX(i  ,j-1), ID);
-	  dqY_neighbor[ID] = Slopes_y(INDEX(i  ,j-1), ID);
-	  
-	  qLocNeighbor[IP] = Qdata   (INDEX(i  ,j-1), IP);
-	  dqX_neighbor[IP] = Slopes_x(INDEX(i  ,j-1), IP);
-	  dqY_neighbor[IP] = Slopes_y(INDEX(i  ,j-1), IP);
-	  
-	  qLocNeighbor[IU] = Qdata   (INDEX(i  ,j-1), IU);
-	  dqX_neighbor[IU] = Slopes_x(INDEX(i  ,j-1), IU);
-	  dqY_neighbor[IU] = Slopes_y(INDEX(i  ,j-1), IU);
-	  
-	  qLocNeighbor[IV] = Qdata   (INDEX(i  ,j-1), IV);
-	  dqX_neighbor[IV] = Slopes_x(INDEX(i  ,j-1), IV);
-	  dqY_neighbor[IV] = Slopes_y(INDEX(i  ,j-1), IV);
-	  
-	  // left interface : left state
-	  trace_unsplit_2d_along_dir(qLocNeighbor,
-				     dqX_neighbor,dqY_neighbor,
-				     dtdx, dtdy, FACE_YMAX, qleft);
-	  
-	  // Solve Riemann problem at Y-interfaces and compute Y-fluxes
-	  swapValues(&(qleft[IU]) ,&(qleft[IV]) );
-	  swapValues(&(qright[IU]),&(qright[IV]));
-	  riemann_hllc(qleft,qright,qgdnv,flux);
-	  
-	  //
-	  // update hydro array
-	  //	  
-	  Fluxes(INDEX(i  ,j  ), ID) =  flux[ID]*dtdy;
-	  Fluxes(INDEX(i  ,j  ), IP) =  flux[IP]*dtdy;
-	  Fluxes(INDEX(i  ,j  ), IU) =  flux[IV]*dtdy; // IU/IV swapped
-	  Fluxes(INDEX(i  ,j  ), IV) =  flux[IU]*dtdy; // IU/IV swapped
-
-	}
-	      
-    } // end if
-    
-  } // end do_compute
   
   DataArray Qdata;
   DataArray Slopes_x, Slopes_y;
