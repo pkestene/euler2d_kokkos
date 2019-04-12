@@ -833,7 +833,7 @@ public:
 		    DataArray Slopes_y)
   {
     const int ijsize = params.isize*params.jsize;
-    ComputeSlopesFunctor functor(params, Qdata, Slopes_x, Slopes_x);
+    ComputeSlopesFunctor functor(params, Qdata, Slopes_x, Slopes_y);
     Kokkos::parallel_for(ijsize, functor);
   }
 
@@ -945,7 +945,9 @@ public:
 		    real_t    dtdy)
   {
     const int ijsize = params.isize*params.jsize;
-    ComputeTraceAndFluxes_Functor<dir> functor(params, Qdata, Slopes_x, Slopes_x, Fluxes,
+    ComputeTraceAndFluxes_Functor<dir> functor(params, Qdata, 
+                                               Slopes_x, Slopes_y,
+                                               Fluxes,
 					       dtdx, dtdy);
     Kokkos::parallel_for(ijsize, functor);
   }
