@@ -169,264 +169,262 @@ public:
 /*************************************************/
 /*************************************************/
 /* NOT USED CURRENTLY */
-class ComputeFluxesAndUpdateFunctor : public HydroBaseFunctor {
+// class ComputeFluxesAndUpdateFunctor : public HydroBaseFunctor {
 
-public:
+// public:
 
-  ComputeFluxesAndUpdateFunctor(HydroParams params,
-				DataArray Udata,
-				DataArray Qm_x,
-				DataArray Qm_y,
-				DataArray Qp_x,
-				DataArray Qp_y,
-				real_t dtdx,
-				real_t dtdy) :
-    HydroBaseFunctor(params), Udata(Udata),
-    Qm_x(Qm_x), Qm_y(Qm_y), Qp_x(Qp_x), Qp_y(Qp_y),
-    dtdx(dtdx), dtdy(dtdy) {};
+//   ComputeFluxesAndUpdateFunctor(HydroParams params,
+// 				DataArray Udata,
+// 				DataArray Qm_x,
+// 				DataArray Qm_y,
+// 				DataArray Qp_x,
+// 				DataArray Qp_y,
+// 				real_t dtdx,
+// 				real_t dtdy) :
+//     HydroBaseFunctor(params), Udata(Udata),
+//     Qm_x(Qm_x), Qm_y(Qm_y), Qp_x(Qp_x), Qp_y(Qp_y),
+//     dtdx(dtdx), dtdy(dtdy) {};
   
-  // static method which does it all: create and execute functor
-  static void apply(HydroParams params,
-		    DataArray Udata,
-		    DataArray Qm_x,
-		    DataArray Qm_y,
-		    DataArray Qp_x,
-		    DataArray Qp_y,
-		    real_t dtdx,
-		    real_t dtdy)
-  {
-    const int ijsize = params.isize*params.jsize;
-    ComputeFluxesAndUpdateFunctor computeFluxesAndUpdateFunctor(params, Udata,
-								Qm_x, Qm_y,
-								Qp_x, Qp_y,
-								dtdx, dtdy);
-    Kokkos::parallel_for(ijsize, computeFluxesAndUpdateFunctor);
-  }
+//   // static method which does it all: create and execute functor
+//   static void apply(HydroParams params,
+// 		    DataArray Udata,
+// 		    DataArray Qm_x,
+// 		    DataArray Qm_y,
+// 		    DataArray Qp_x,
+// 		    DataArray Qp_y,
+// 		    real_t dtdx,
+// 		    real_t dtdy)
+//   {
+//     const int ijsize = params.isize*params.jsize;
+//     ComputeFluxesAndUpdateFunctor computeFluxesAndUpdateFunctor(params, Udata,
+// 								Qm_x, Qm_y,
+// 								Qp_x, Qp_y,
+// 								dtdx, dtdy);
+//     Kokkos::parallel_for(ijsize, computeFluxesAndUpdateFunctor);
+//   }
 
-  KOKKOS_INLINE_FUNCTION
-  void operator()(const int& index_) const
-  {
-    const int isize = params.isize;
-    const int jsize = params.jsize;
-    const int ghostWidth = params.ghostWidth;
+//   KOKKOS_INLINE_FUNCTION
+//   void operator()(const int& index_) const
+//   {
+//     const int isize = params.isize;
+//     const int jsize = params.jsize;
+//     const int ghostWidth = params.ghostWidth;
     
-    int i,j;
-    index2coord(index_,i,j,isize,jsize);
+//     int i,j;
+//     index2coord(index_,i,j,isize,jsize);
     
-    if(j >= ghostWidth && j <= jsize - ghostWidth &&
-       i >= ghostWidth && i <= isize - ghostWidth) {
+//     if(j >= ghostWidth && j <= jsize - ghostWidth &&
+//        i >= ghostWidth && i <= isize - ghostWidth) {
       
-      HydroState qleft, qright;
-      HydroState flux_x, flux_y;
-      HydroState qgdnv;
+//       HydroState qleft, qright;
+//       HydroState flux_x, flux_y;
+//       HydroState qgdnv;
 
-      //
-      // Solve Riemann problem at X-interfaces and compute
-      // X-fluxes
-      //
-      qleft[ID]   = Qm_x(i-1,j , ID);
-      qleft[IP]   = Qm_x(i-1,j , IP);
-      qleft[IU]   = Qm_x(i-1,j , IU);
-      qleft[IV]   = Qm_x(i-1,j , IV);
+//       //
+//       // Solve Riemann problem at X-interfaces and compute
+//       // X-fluxes
+//       //
+//       qleft[ID]   = Qm_x(i-1,j , ID);
+//       qleft[IP]   = Qm_x(i-1,j , IP);
+//       qleft[IU]   = Qm_x(i-1,j , IU);
+//       qleft[IV]   = Qm_x(i-1,j , IV);
       
-      qright[ID]  = Qp_x(i  ,j , ID);
-      qright[IP]  = Qp_x(i  ,j , IP);
-      qright[IU]  = Qp_x(i  ,j , IU);
-      qright[IV]  = Qp_x(i  ,j , IV);
+//       qright[ID]  = Qp_x(i  ,j , ID);
+//       qright[IP]  = Qp_x(i  ,j , IP);
+//       qright[IU]  = Qp_x(i  ,j , IU);
+//       qright[IV]  = Qp_x(i  ,j , IV);
       
-      // compute hydro flux_x
-      riemann_hllc(qleft,qright,qgdnv,flux_x);
+//       // compute hydro flux_x
+//       riemann_hllc(qleft,qright,qgdnv,flux_x);
 
-      //
-      // Solve Riemann problem at Y-interfaces and compute Y-fluxes
-      //
-      qleft[ID]   = Qm_y(i  ,j-1, ID);
-      qleft[IP]   = Qm_y(i  ,j-1, IP);
-      qleft[IU]   = Qm_y(i  ,j-1, IV); // watchout IU, IV permutation
-      qleft[IV]   = Qm_y(i  ,j-1, IU); // watchout IU, IV permutation
+//       //
+//       // Solve Riemann problem at Y-interfaces and compute Y-fluxes
+//       //
+//       qleft[ID]   = Qm_y(i  ,j-1, ID);
+//       qleft[IP]   = Qm_y(i  ,j-1, IP);
+//       qleft[IU]   = Qm_y(i  ,j-1, IV); // watchout IU, IV permutation
+//       qleft[IV]   = Qm_y(i  ,j-1, IU); // watchout IU, IV permutation
 
-      qright[ID]  = Qp_y(i  ,j , ID);
-      qright[IP]  = Qp_y(i  ,j , IP);
-      qright[IU]  = Qp_y(i  ,j , IV); // watchout IU, IV permutation
-      qright[IV]  = Qp_y(i  ,j , IU); // watchout IU, IV permutation
+//       qright[ID]  = Qp_y(i  ,j , ID);
+//       qright[IP]  = Qp_y(i  ,j , IP);
+//       qright[IU]  = Qp_y(i  ,j , IV); // watchout IU, IV permutation
+//       qright[IV]  = Qp_y(i  ,j , IU); // watchout IU, IV permutation
       
-      // compute hydro flux_y
-      riemann_hllc(qleft,qright,qgdnv,flux_y);
+//       // compute hydro flux_y
+//       riemann_hllc(qleft,qright,qgdnv,flux_y);
             
-      //
-      // update hydro array
-      //
-      Udata(i-1,j  , ID) += - flux_x[ID]*dtdx;
-      Udata(i-1,j  , IP) += - flux_x[IP]*dtdx;
-      Udata(i-1,j  , IU) += - flux_x[IU]*dtdx;
-      Udata(i-1,j  , IV) += - flux_x[IV]*dtdx;
+//       //
+//       // update hydro array
+//       //
+//       Udata(i-1,j  , ID) += - flux_x[ID]*dtdx;
+//       Udata(i-1,j  , IP) += - flux_x[IP]*dtdx;
+//       Udata(i-1,j  , IU) += - flux_x[IU]*dtdx;
+//       Udata(i-1,j  , IV) += - flux_x[IV]*dtdx;
 
-      Udata(i  ,j  , ID) +=   flux_x[ID]*dtdx;
-      Udata(i  ,j  , IP) +=   flux_x[IP]*dtdx;
-      Udata(i  ,j  , IU) +=   flux_x[IU]*dtdx;
-      Udata(i  ,j  , IV) +=   flux_x[IV]*dtdx;
+//       Udata(i  ,j  , ID) +=   flux_x[ID]*dtdx;
+//       Udata(i  ,j  , IP) +=   flux_x[IP]*dtdx;
+//       Udata(i  ,j  , IU) +=   flux_x[IU]*dtdx;
+//       Udata(i  ,j  , IV) +=   flux_x[IV]*dtdx;
 
-      Udata(i  ,j-1, ID) += - flux_y[ID]*dtdy;
-      Udata(i  ,j-1, IP) += - flux_y[IP]*dtdy;
-      Udata(i  ,j-1, IU) += - flux_y[IV]*dtdy; // watchout IU and IV swapped
-      Udata(i  ,j-1, IV) += - flux_y[IU]*dtdy; // watchout IU and IV swapped
+//       Udata(i  ,j-1, ID) += - flux_y[ID]*dtdy;
+//       Udata(i  ,j-1, IP) += - flux_y[IP]*dtdy;
+//       Udata(i  ,j-1, IU) += - flux_y[IV]*dtdy; // watchout IU and IV swapped
+//       Udata(i  ,j-1, IV) += - flux_y[IU]*dtdy; // watchout IU and IV swapped
 
-      Udata(i  ,j  , ID) +=   flux_y[ID]*dtdy;
-      Udata(i  ,j  , IP) +=   flux_y[IP]*dtdy;
-      Udata(i  ,j  , IU) +=   flux_y[IV]*dtdy; // watchout IU and IV swapped
-      Udata(i  ,j  , IV) +=   flux_y[IU]*dtdy; // watchout IU and IV swapped
+//       Udata(i  ,j  , ID) +=   flux_y[ID]*dtdy;
+//       Udata(i  ,j  , IP) +=   flux_y[IP]*dtdy;
+//       Udata(i  ,j  , IU) +=   flux_y[IV]*dtdy; // watchout IU and IV swapped
+//       Udata(i  ,j  , IV) +=   flux_y[IU]*dtdy; // watchout IU and IV swapped
       
-    }
+//     }
     
-  }
+//   }
   
-  DataArray Udata;
-  DataArray Qm_x, Qm_y, Qp_x, Qp_y;
-  real_t dtdx, dtdy;
+//   DataArray Udata;
+//   DataArray Qm_x, Qm_y, Qp_x, Qp_y;
+//   real_t dtdx, dtdy;
   
-}; // ComputeFluxesAndUpdateFunctor
+// }; // ComputeFluxesAndUpdateFunctor
 
 /*************************************************/
 /*************************************************/
 /*************************************************/
 /* NOT USED CURRENTLY */
-class ComputeTraceFunctor : public HydroBaseFunctor {
+// class ComputeTraceFunctor : public HydroBaseFunctor {
 
-public:
+// public:
 
-  ComputeTraceFunctor(HydroParams params,
-		      DataArray Udata,
-		      DataArray Qdata,
-		      DataArray Qm_x,
-		      DataArray Qm_y,
-		      DataArray Qp_x,
-		      DataArray Qp_y,
-		      real_t dtdx,
-		      real_t dtdy) :
-    HydroBaseFunctor(params),
-    Udata(Udata), Qdata(Qdata),
-    Qm_x(Qm_x), Qm_y(Qm_y), Qp_x(Qp_x), Qp_y(Qp_y),
-    dtdx(dtdx), dtdy(dtdy) {};
+//   ComputeTraceFunctor(HydroParams params,
+// 		      DataArray Qdata,
+// 		      DataArray Qm_x,
+// 		      DataArray Qm_y,
+// 		      DataArray Qp_x,
+// 		      DataArray Qp_y,
+// 		      real_t dtdx,
+// 		      real_t dtdy) :
+//     HydroBaseFunctor(params),
+//     Qdata(Qdata),
+//     Qm_x(Qm_x), Qm_y(Qm_y), Qp_x(Qp_x), Qp_y(Qp_y),
+//     dtdx(dtdx), dtdy(dtdy) {};
   
-  // static method which does it all: create and execute functor
-  static void apply(HydroParams params,
-		    DataArray Udata,
-		    DataArray Qdata,
-		    DataArray Qm_x,
-		    DataArray Qm_y,
-		    DataArray Qp_x,
-		    DataArray Qp_y,
-		    real_t dtdx,
-		    real_t dtdy)
-  {
+//   // static method which does it all: create and execute functor
+//   static void apply(HydroParams params,
+// 		    DataArray Qdata,
+// 		    DataArray Qm_x,
+// 		    DataArray Qm_y,
+// 		    DataArray Qp_x,
+// 		    DataArray Qp_y,
+// 		    real_t dtdx,
+// 		    real_t dtdy)
+//   {
 
-    const int ijsize = params.isize*params.jsize;
-    ComputeTraceFunctor computeTraceFunctor(params, Udata, Qdata,
-					    Qm_x, Qm_y,
-					    Qp_x, Qp_y,
-					    dtdx, dtdy);
-    Kokkos::parallel_for(ijsize, computeTraceFunctor);
+//     const int ijsize = params.isize*params.jsize;
+//     ComputeTraceFunctor computeTraceFunctor(params, Qdata,
+// 					    Qm_x, Qm_y,
+// 					    Qp_x, Qp_y,
+// 					    dtdx, dtdy);
+//     Kokkos::parallel_for(ijsize, computeTraceFunctor);
     
-  }
+//   }
 
 
-  KOKKOS_INLINE_FUNCTION
-  void operator()(const int& index) const
-  {
-    const int isize = params.isize;
-    const int jsize = params.jsize;
-    const int ghostWidth = params.ghostWidth;
+//   KOKKOS_INLINE_FUNCTION
+//   void operator()(const int& index) const
+//   {
+//     const int isize = params.isize;
+//     const int jsize = params.jsize;
+//     const int ghostWidth = params.ghostWidth;
     
-    int i,j;
-    index2coord(index,i,j,isize,jsize);
+//     int i,j;
+//     index2coord(index,i,j,isize,jsize);
     
-    if(j >= 1 && j <= jsize - ghostWidth &&
-       i >= 1 && i <= isize - ghostWidth) {
+//     if(j >= 1 && j <= jsize - ghostWidth &&
+//        i >= 1 && i <= isize - ghostWidth) {
 
-      HydroState qLoc   ; // local primitive variables
-      HydroState qPlusX ;
-      HydroState qMinusX;
-      HydroState qPlusY ;
-      HydroState qMinusY;
+//       HydroState qLoc   ; // local primitive variables
+//       HydroState qPlusX ;
+//       HydroState qMinusX;
+//       HydroState qPlusY ;
+//       HydroState qMinusY;
 
-      HydroState dqX;
-      HydroState dqY;
+//       HydroState dqX;
+//       HydroState dqY;
 
-      HydroState qmX;
-      HydroState qmY;
-      HydroState qpX;
-      HydroState qpY;
+//       HydroState qmX;
+//       HydroState qmY;
+//       HydroState qpX;
+//       HydroState qpY;
       
-      // get primitive variables state vector
-      {
-	qLoc   [ID] = Qdata(i  ,j  , ID);
-	qPlusX [ID] = Qdata(i+1,j  , ID);
-	qMinusX[ID] = Qdata(i-1,j  , ID);
-	qPlusY [ID] = Qdata(i  ,j+1, ID);
-	qMinusY[ID] = Qdata(i  ,j-1, ID);
+//       // get primitive variables state vector
+//       {
+// 	qLoc   [ID] = Qdata(i  ,j  , ID);
+// 	qPlusX [ID] = Qdata(i+1,j  , ID);
+// 	qMinusX[ID] = Qdata(i-1,j  , ID);
+// 	qPlusY [ID] = Qdata(i  ,j+1, ID);
+// 	qMinusY[ID] = Qdata(i  ,j-1, ID);
 
-	qLoc   [IP] = Qdata(i  ,j  , IP);
-	qPlusX [IP] = Qdata(i+1,j  , IP);
-	qMinusX[IP] = Qdata(i-1,j  , IP);
-	qPlusY [IP] = Qdata(i  ,j+1, IP);
-	qMinusY[IP] = Qdata(i  ,j-1, IP);
+// 	qLoc   [IP] = Qdata(i  ,j  , IP);
+// 	qPlusX [IP] = Qdata(i+1,j  , IP);
+// 	qMinusX[IP] = Qdata(i-1,j  , IP);
+// 	qPlusY [IP] = Qdata(i  ,j+1, IP);
+// 	qMinusY[IP] = Qdata(i  ,j-1, IP);
 
-	qLoc   [IU] = Qdata(i  ,j  , IU);
-	qPlusX [IU] = Qdata(i+1,j  , IU);
-	qMinusX[IU] = Qdata(i-1,j  , IU);
-	qPlusY [IU] = Qdata(i  ,j+1, IU);
-	qMinusY[IU] = Qdata(i  ,j-1, IU);
+// 	qLoc   [IU] = Qdata(i  ,j  , IU);
+// 	qPlusX [IU] = Qdata(i+1,j  , IU);
+// 	qMinusX[IU] = Qdata(i-1,j  , IU);
+// 	qPlusY [IU] = Qdata(i  ,j+1, IU);
+// 	qMinusY[IU] = Qdata(i  ,j-1, IU);
 
-	qLoc   [IV] = Qdata(i  ,j  , IV);
-	qPlusX [IV] = Qdata(i+1,j  , IV);
-	qMinusX[IV] = Qdata(i-1,j  , IV);
-	qPlusY [IV] = Qdata(i  ,j+1, IV);
-	qMinusY[IV] = Qdata(i  ,j-1, IV);
+// 	qLoc   [IV] = Qdata(i  ,j  , IV);
+// 	qPlusX [IV] = Qdata(i+1,j  , IV);
+// 	qMinusX[IV] = Qdata(i-1,j  , IV);
+// 	qPlusY [IV] = Qdata(i  ,j+1, IV);
+// 	qMinusY[IV] = Qdata(i  ,j-1, IV);
 
-      } // 
+//       } // 
       
-      // get hydro slopes dq
-      slope_unsplit_hydro_2d(qLoc, 
-			     qPlusX, qMinusX, 
-			     qPlusY, qMinusY, 
-			     dqX, dqY);
+//       // get hydro slopes dq
+//       slope_unsplit_hydro_2d(qLoc, 
+// 			     qPlusX, qMinusX, 
+// 			     qPlusY, qMinusY, 
+// 			     dqX, dqY);
       
-      // compute qm, qp
-      trace_unsplit_hydro_2d(qLoc, 
-			     dqX, dqY,
-			     dtdx, dtdy, 
-			     qmX, qmY,
-			     qpX, qpY);
+//       // compute qm, qp
+//       trace_unsplit_hydro_2d(qLoc, 
+// 			     dqX, dqY,
+// 			     dtdx, dtdy, 
+// 			     qmX, qmY,
+// 			     qpX, qpY);
 
-      // store qm, qp : only what is really needed
-      Qm_x(i  ,j  , ID) = qmX[ID];
-      Qp_x(i  ,j  , ID) = qpX[ID];
-      Qm_y(i  ,j  , ID) = qmY[ID];
-      Qp_y(i  ,j  , ID) = qpY[ID];
+//       // store qm, qp : only what is really needed
+//       Qm_x(i  ,j  , ID) = qmX[ID];
+//       Qp_x(i  ,j  , ID) = qpX[ID];
+//       Qm_y(i  ,j  , ID) = qmY[ID];
+//       Qp_y(i  ,j  , ID) = qpY[ID];
       
-      Qm_x(i  ,j  , IP) = qmX[IP];
-      Qp_x(i  ,j  , ID) = qpX[IP];
-      Qm_y(i  ,j  , ID) = qmY[IP];
-      Qp_y(i  ,j  , ID) = qpY[IP];
+//       Qm_x(i  ,j  , IP) = qmX[IP];
+//       Qp_x(i  ,j  , IP) = qpX[IP];
+//       Qm_y(i  ,j  , IP) = qmY[IP];
+//       Qp_y(i  ,j  , IP) = qpY[IP];
       
-      Qm_x(i  ,j  , IU) = qmX[IU];
-      Qp_x(i  ,j  , IU) = qpX[IU];
-      Qm_y(i  ,j  , IU) = qmY[IU];
-      Qp_y(i  ,j  , IU) = qpY[IU];
+//       Qm_x(i  ,j  , IU) = qmX[IU];
+//       Qp_x(i  ,j  , IU) = qpX[IU];
+//       Qm_y(i  ,j  , IU) = qmY[IU];
+//       Qp_y(i  ,j  , IU) = qpY[IU];
       
-      Qm_x(i  ,j  , IV) = qmX[IV];
-      Qp_x(i  ,j  , IV) = qpX[IV];
-      Qm_y(i  ,j  , IV) = qmY[IV];
-      Qp_y(i  ,j  , IV) = qpY[IV];
+//       Qm_x(i  ,j  , IV) = qmX[IV];
+//       Qp_x(i  ,j  , IV) = qpX[IV];
+//       Qm_y(i  ,j  , IV) = qmY[IV];
+//       Qp_y(i  ,j  , IV) = qpY[IV];
       
-    }
-  }
+//     }
+//   }
 
-  DataArray Udata, Qdata;
-  DataArray Qm_x, Qm_y, Qp_x, Qp_y;
-  real_t dtdx, dtdy;
+//   DataArray Qdata;
+//   DataArray Qm_x, Qm_y, Qp_x, Qp_y;
+//   real_t dtdx, dtdy;
   
-}; // ComputeTraceFunctor
+// }; // ComputeTraceFunctor
 
 
 /*************************************************/
