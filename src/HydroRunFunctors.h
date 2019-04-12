@@ -1059,27 +1059,17 @@ public:
               
               if (dir == XDIR) {
                 
-                U_ID(ij) +=  F_ID(ij);
-                U_IP(ij) +=  F_IP(ij);
-                U_IU(ij) +=  F_IU(ij);
-                U_IV(ij) +=  F_IV(ij);
-                
-                U_ID(ij) -=  F_ID(ij+di);
-                U_IP(ij) -=  F_IP(ij+di);
-                U_IU(ij) -=  F_IU(ij+di);
-                U_IV(ij) -=  F_IV(ij+di);
+                U_ID(ij) +=  (F_ID(ij) - F_ID(ij+di));
+                U_IP(ij) +=  (F_IP(ij) - F_ID(ij+di));
+                U_IU(ij) +=  (F_IU(ij) - F_IU(ij+di));
+                U_IV(ij) +=  (F_IV(ij) - F_IV(ij+di));                
                 
               } else if (dir == YDIR) {
                 
-                U_ID(ij) +=  F_ID(ij);
-                U_IP(ij) +=  F_IP(ij);
-                U_IU(ij) +=  F_IU(ij);
-                U_IV(ij) +=  F_IV(ij);
-                
-                U_ID(ij) -=  F_ID(ij+dj);
-                U_IP(ij) -=  F_IP(ij+dj);
-                U_IU(ij) -=  F_IU(ij+dj);
-                U_IV(ij) -=  F_IV(ij+dj);
+                U_ID(ij) +=  (F_ID(ij) - F_ID(ij+dj));
+                U_IP(ij) +=  (F_IP(ij) - F_ID(ij+dj));
+                U_IU(ij) +=  (F_IU(ij) - F_IU(ij+dj));
+                U_IV(ij) +=  (F_IV(ij) - F_IV(ij+dj));                
                 
               }
               
