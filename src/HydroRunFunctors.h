@@ -650,8 +650,8 @@ public:
       //
       FluxData_y(i  ,j  , ID) = flux_y[ID] * dtdy;
       FluxData_y(i  ,j  , IP) = flux_y[IP] * dtdy;
-      FluxData_y(i  ,j  , IU) = flux_y[IU] * dtdy;
-      FluxData_y(i  ,j  , IV) = flux_y[IV] * dtdy;
+      FluxData_y(i  ,j  , IU) = flux_y[IV] * dtdy; //
+      FluxData_y(i  ,j  , IV) = flux_y[IU] * dtdy; //
           
     } // end if
     
@@ -717,13 +717,13 @@ public:
       
       Udata(i  ,j  , ID) +=  FluxData_y(i  ,j  , ID);
       Udata(i  ,j  , IP) +=  FluxData_y(i  ,j  , IP);
-      Udata(i  ,j  , IU) +=  FluxData_y(i  ,j  , IV); //
-      Udata(i  ,j  , IV) +=  FluxData_y(i  ,j  , IU); //
+      Udata(i  ,j  , IU) +=  FluxData_y(i  ,j  , IU);
+      Udata(i  ,j  , IV) +=  FluxData_y(i  ,j  , IV);
       
       Udata(i  ,j  , ID) -=  FluxData_y(i  ,j+1, ID);
       Udata(i  ,j  , IP) -=  FluxData_y(i  ,j+1, IP);
-      Udata(i  ,j  , IU) -=  FluxData_y(i  ,j+1, IV); //
-      Udata(i  ,j  , IV) -=  FluxData_y(i  ,j+1, IU); //
+      Udata(i  ,j  , IU) -=  FluxData_y(i  ,j+1, IU);
+      Udata(i  ,j  , IV) -=  FluxData_y(i  ,j+1, IV);
 
     } // end if
     
@@ -858,9 +858,9 @@ public:
 	HydroState qNeighbors_3;
 
 	// Local slopes and neighbor slopes
-	HydroState dqX;
-	HydroState dqY;
-      
+	HydroState dqX{};
+	HydroState dqY{};
+
 	// get primitive variables state vector
 	qLoc[ID]         = Qdata(i  ,j  , ID);
 	qNeighbors_0[ID] = Qdata(i+1,j  , ID);
