@@ -1148,7 +1148,7 @@ public:
 		    DataArray Slopes_x,
 		    DataArray Slopes_y)
   {
-    ComputeSlopesFunctor functor(params, Qdata, Slopes_x, Slopes_x);
+    ComputeSlopesFunctor functor(params, Qdata, Slopes_x, Slopes_y);
     launch_functor(params,functor);
   } // end apply
 
@@ -1316,7 +1316,7 @@ public:
 		    real_t    dtdx,
 		    real_t    dtdy)
   {
-    ComputeTraceAndFluxes_Functor<dir> functor(params, Qdata, Slopes_x, Slopes_x, Fluxes,
+    ComputeTraceAndFluxes_Functor<dir> functor(params, Qdata, Slopes_x, Slopes_y, Fluxes,
 					       dtdx, dtdy);
     launch_functor(params,functor);
   } // end apply
