@@ -448,6 +448,43 @@ public:
 
   } // slope_unsplit_hydro_2d_scalar
 
+  /**                                                                                                                               
+   * Compute primitive variables slopes (dqX,dqY) for one component from q and its neighbors.                                        
+   * This routine is only used in the 2D UNSPLIT integration and slope_type = 0,1 and 2.                                             
+   *                                                                                                                                 
+   * Only slope_type 1 and 2 are supported.                                                                                          
+   *                                                                                                                                 
+   * \param[in]  q       : current primitive variable                                                                                
+   * \param[in]  qPlusX  : value in the next neighbor cell along XDIR                                                                
+   * \param[in]  qMinusX : value in the previous neighbor cell along XDIR                                                            
+   * \param[in]  qPlusY  : value in the next neighbor cell along YDIR                                                                
+   * \param[in]  qMinusY : value in the previous neighbor cell along YDIR                                                            
+   * \param[out] dqX     : reference to an array returning the X slopes                                                              
+   * \param[out] dqY     : reference to an array returning the Y slopes                                                              
+   *                                                                                                                                 
+   */
+  KOKKOS_INLINE_FUNCTION
+  real_t slope_unsplit_hydro_2d_scalar(real_t q,
+                                       real_t qPlus,
+                                       real_t qMinus) const
+  {
+    const real_t slope_type = params.settings.slope_type;
+
+    real_t dlft, drgt, dcen, dsgn, slop, dlim;
+    real_t dq;
+
+    // compute slope
+    dlft = slope_type*(q     - qMinus);
+    drgt = slope_type*(qPlus - q     );
+    dcen = HALF_F * (qPlus - qMinus);
+    dsgn = (dcen >= ZERO_F) ? ONE_F : -ONE_F;
+    slop = fmin( FABS(dlft), FABS(drgt) );
+    dlim = dlft*drgt <= ZERO_F ? ZERO_F : slop;
+    dq   = dsgn * fmin( dlim, FABS(dcen) );
+
+    return dq;
+
+  } // slope_unsplit_hydro_2d_scalar                                                                                                 
 
   /**
    * Compute primitive variables slope (vector dq) from q and its neighbors.

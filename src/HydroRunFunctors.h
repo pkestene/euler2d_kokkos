@@ -74,31 +74,65 @@ public:
     const real_t dx = params.dx;
     const real_t dy = params.dy;
     
+    const real_t gamma0 = params.settings.gamma0;
+    const real_t smallr = params.settings.smallr;
+    const real_t smallp = params.settings.smallp;
+
     int i,j;
     index2coord(index,i,j,isize,jsize);
 
-    if(j >= ghostWidth && j < jsize - ghostWidth &&
-       i >= ghostWidth && i < isize - ghostWidth) {
-      
-      HydroState uLoc; // conservative    variables in current cell
-      HydroState qLoc; // primitive    variables in current cell
-      real_t c=0.0;
-      real_t vx, vy;
-      
-      // get local conservative variable
-      uLoc[ID] = Udata(index,ID);
-      uLoc[IP] = Udata(index,IP);
-      uLoc[IU] = Udata(index,IU);
-      uLoc[IV] = Udata(index,IV);
+    /*if(j >= ghostWidth && j < jsize - ghostWidth &&
+      i >= ghostWidth && i < isize - ghostWidth) {*/      
+    
+    // get local conservative variable
 
-      // get primitive variables in current cell
-      computePrimitives(uLoc, &c, qLoc);
-      vx = c+FABS(qLoc[IU]);
-      vy = c+FABS(qLoc[IV]);
+    // real_t rho  = Udata(index,ID);
+    // real_t rhoe = Udata(index,IP);
+    // real_t rhou = Udata(index,IU);
+    // real_t rhov = Udata(index,IV);
 
-      invDt = FMAX(invDt, vx/dx + vy/dy);
+    // real_t c=0.0;
+    // real_t vx, vy;
+    // real_t d, p, ux, uy;
+
+    // d  = fmax(rho, smallr);
+    // ux = rhou / d;
+    // uy = rhov / d;
+    
+    // real_t eken = HALF_F * (ux*ux + uy*uy);
+    // real_t e = rhoe / d - eken;
+    
+    // // compute pressure and speed of sound
+    // p = fmax((gamma0 - 1.0) * d * e, d * smallp);
+    // c = sqrt(gamma0 * (p) / d);
+
+    // // get primitive variables in current cell
+    // //computePrimitives(uLoc, &c, qLoc);
+    // vx = c+FABS(ux);
+    // vy = c+FABS(uy);
+    
+    // invDt = FMAX(invDt, vx/dx + vy/dy);
+
+    HydroState uLoc; // conservative    variables in current cell
+    HydroState qLoc; // primitive    variables in current cell
+
+    real_t c=0.0;
+    real_t vx, vy;
+
+    // get local conservative variable
+    uLoc[ID] = Udata(index,ID);
+    uLoc[IP] = Udata(index,IP);
+    uLoc[IU] = Udata(index,IU);
+    uLoc[IV] = Udata(index,IV);
+
+    // get primitive variables in current cell
+    computePrimitives(uLoc, &c, qLoc);
+    vx = c+FABS(qLoc[IU]);
+    vy = c+FABS(qLoc[IV]);
+
+    invDt = FMAX(invDt, vx/dx + vy/dy);
       
-    }
+    //}
 	    
   } // operator ()
 
@@ -1089,46 +1123,198 @@ public:
 /*************************************************/
 /*************************************************/
 /*************************************************/
+// class ComputeSlopesFunctor : public HydroBaseFunctor {
+  
+// public:
+  
+//   ComputeSlopesFunctor(HydroParams params,
+// 		       DataArray Qdata,
+// 		       DataArray Slopes_x,
+// 		       DataArray Slopes_y) :
+//     HydroBaseFunctor(params), Qdata(Qdata),
+//     Slopes_x(Slopes_x), Slopes_y(Slopes_y) {};
+  
+//   // static method which does it all: create and execute functor
+//   static void apply(HydroParams params,
+// 		    DataArray Qdata,
+// 		    DataArray Slopes_x,
+// 		    DataArray Slopes_y)
+//   {
+//     ComputeSlopesFunctor functor(params, Qdata, Slopes_x, Slopes_y);
+//     launch_functor(params,functor);
+//   } // end apply
+
+//   /** 
+//    * entry point for team policy
+//    */
+//   KOKKOS_INLINE_FUNCTION
+//   void operator()(const thread_t& thread) const
+//   {
+
+//     // the teams league must distribute last dimension (here j) into
+//     // nbTeams chuncks
+//     // so compute chunck size per team (rounded up)
+//     int chunck_size_y = (params.jsize+params.nbTeams-1)/params.nbTeams;
+    
+//     int chunk_size_per_team = chunck_size_y;
+
+//     // team id
+//     int teamId = thread.league_rank();
+    
+//     // compute j start
+//     int jStart = teamId * chunck_size_y; 
+
+//     auto Q_ID = Kokkos::subview(Qdata, Kokkos::ALL(), 0);
+//     auto Q_IP = Kokkos::subview(Qdata, Kokkos::ALL(), 1);
+//     auto Q_IU = Kokkos::subview(Qdata, Kokkos::ALL(), 2);
+//     auto Q_IV = Kokkos::subview(Qdata, Kokkos::ALL(), 3);
+
+//     auto Slopes_x_ID = Kokkos::subview(Slopes_x, Kokkos::ALL(), 0);
+//     auto Slopes_x_IP = Kokkos::subview(Slopes_x, Kokkos::ALL(), 1);
+//     auto Slopes_x_IU = Kokkos::subview(Slopes_x, Kokkos::ALL(), 2);
+//     auto Slopes_x_IV = Kokkos::subview(Slopes_x, Kokkos::ALL(), 3);
+
+//     auto Slopes_y_ID = Kokkos::subview(Slopes_y, Kokkos::ALL(), 0);
+//     auto Slopes_y_IP = Kokkos::subview(Slopes_y, Kokkos::ALL(), 1);
+//     auto Slopes_y_IU = Kokkos::subview(Slopes_y, Kokkos::ALL(), 2);
+//     auto Slopes_y_IV = Kokkos::subview(Slopes_y, Kokkos::ALL(), 3);
+
+//     // spread work among the thread in the team
+//     Kokkos::parallel_for(
+//       Kokkos::TeamThreadRange(thread, chunk_size_per_team), 
+//       [=](const int &index) {
+
+//         // index goes from 0 to chunck_size_ter_team
+//         // re-compute j from offset + index 
+//         int j =  jStart + index;
+
+//         Kokkos::parallel_for(
+//           Kokkos::ThreadVectorRange(thread, params.isize),
+//           [=](const int &i) {
+            
+//             const int isize = params.isize;
+//             const int jsize = params.jsize;
+//             const int ghostWidth = params.ghostWidth;
+            
+//             const int di = 1;
+//             const int dj = isize;
+   	    
+//             int ij = coord2index(i,j,isize,jsize);
+            
+//             if(j >= ghostWidth-1 && j <= jsize-ghostWidth  &&
+//                i >= ghostWidth-1 && i <= isize-ghostWidth ) {
+              
+//               // local primitive variables
+//               HydroState qLoc; // local primitive variables
+              
+//               // local primitive variables in neighborbood
+//               HydroState qNeighbors_0;
+//               HydroState qNeighbors_1;
+//               HydroState qNeighbors_2;
+//               HydroState qNeighbors_3;
+              
+//               // Local slopes and neighbor slopes
+//               HydroState dqX;
+//               HydroState dqY;
+              
+//               // get primitive variables state vector
+//               qLoc[ID]         = Q_ID(ij);
+//               qNeighbors_0[ID] = Q_ID(ij+di);
+//               qNeighbors_1[ID] = Q_ID(ij-di);
+//               qNeighbors_2[ID] = Q_ID(ij+dj);
+//               qNeighbors_3[ID] = Q_ID(ij-dj);
+
+//               qLoc[IP]         = Q_IP(ij);
+//               qNeighbors_0[IP] = Q_IP(ij+di);
+//               qNeighbors_1[IP] = Q_IP(ij-di);
+//               qNeighbors_2[IP] = Q_IP(ij+dj);
+//               qNeighbors_3[IP] = Q_IP(ij-dj);
+              
+//               qLoc[IU]         = Q_IU(ij);
+//               qNeighbors_0[IU] = Q_IU(ij+di);
+//               qNeighbors_1[IU] = Q_IU(ij-di);
+//               qNeighbors_2[IU] = Q_IU(ij+dj);
+//               qNeighbors_3[IU] = Q_IU(ij-dj);
+              
+//               qLoc[IV]         = Q_IV(ij);
+//               qNeighbors_0[IV] = Q_IV(ij+di);
+//               qNeighbors_1[IV] = Q_IV(ij-di);
+//               qNeighbors_2[IV] = Q_IV(ij+dj);
+//               qNeighbors_3[IV] = Q_IV(ij-dj);
+              
+//               slope_unsplit_hydro_2d(qLoc, 
+//                                      qNeighbors_0, qNeighbors_1, 
+//                                      qNeighbors_2, qNeighbors_3,
+//                                      dqX, dqY);
+              
+//               // copy back slopes in global arrays
+//               Slopes_x_ID(ij) = dqX[ID];
+//               Slopes_y_ID(ij) = dqY[ID];
+              
+//               Slopes_x_IP(ij) = dqX[IP];
+//               Slopes_y_IP(ij) = dqY[IP];
+              
+//               Slopes_x_IU(ij) = dqX[IU];
+//               Slopes_y_IU(ij) = dqY[IU];
+              
+//               Slopes_x_IV(ij) = dqX[IV];
+//               Slopes_y_IV(ij) = dqY[IV];
+              
+//             } // end if
+
+//           }); // end vector range
+//       });
+    
+//   } // end team policy functor
+  
+//   DataArray Qdata;
+//   DataArray Slopes_x, Slopes_y;
+  
+// }; // ComputeSlopesFunctor
+
+/*************************************************/
+/*************************************************/
+/*************************************************/
 class ComputeSlopesFunctor : public HydroBaseFunctor {
   
 public:
   
   ComputeSlopesFunctor(HydroParams params,
-		       DataArray Qdata,
-		       DataArray Slopes_x,
-		       DataArray Slopes_y) :
+                       DataArray Qdata,
+                       DataArray Slopes_x,
+                       DataArray Slopes_y) :
     HydroBaseFunctor(params), Qdata(Qdata),
     Slopes_x(Slopes_x), Slopes_y(Slopes_y) {};
   
   // static method which does it all: create and execute functor
   static void apply(HydroParams params,
-		    DataArray Qdata,
-		    DataArray Slopes_x,
-		    DataArray Slopes_y)
+                    DataArray Qdata,
+                    DataArray Slopes_x,
+                    DataArray Slopes_y)
   {
     ComputeSlopesFunctor functor(params, Qdata, Slopes_x, Slopes_y);
     launch_functor(params,functor);
-  } // end apply
-
-  /** 
-   * entry point for team policy
-   */
+  } // end apply                                                                                                                    
+  
+   /**                                                  
+    * entry point for team policy
+    */
   KOKKOS_INLINE_FUNCTION
   void operator()(const thread_t& thread) const
   {
-
+    
     // the teams league must distribute last dimension (here j) into
-    // nbTeams chuncks
+    // nbTeams chuncks                                                 
     // so compute chunck size per team (rounded up)
     int chunck_size_y = (params.jsize+params.nbTeams-1)/params.nbTeams;
-    
+
     int chunk_size_per_team = chunck_size_y;
 
     // team id
     int teamId = thread.league_rank();
-    
+
     // compute j start
-    int jStart = teamId * chunck_size_y; 
+    int jStart = teamId * chunck_size_y;
 
     auto Q_ID = Kokkos::subview(Qdata, Kokkos::ALL(), 0);
     auto Q_IP = Kokkos::subview(Qdata, Kokkos::ALL(), 1);
@@ -1147,97 +1333,82 @@ public:
 
     // spread work among the thread in the team
     Kokkos::parallel_for(
-      Kokkos::TeamThreadRange(thread, chunk_size_per_team), 
+      Kokkos::TeamThreadRange(thread, chunk_size_per_team),
       [=](const int &index) {
+	
+	// index goes from 0 to chunck_size_ter_team                 
+	// re-compute j from offset + index
+	int j =  jStart + index;
+	
+	if (j>= params.ghostWidth-1 and
+	    j<=params.jsize-params.ghostWidth) {
+	  
+	  Kokkos::parallel_for(
+	    Kokkos::ThreadVectorRange(thread, params.ghostWidth-1, params.isize-params.ghostWidth-1),
+	    [=](const int &i) {
+	      
+	      const int isize = params.isize;
+	      const int jsize = params.jsize;
+	      const int ghostWidth = params.ghostWidth;
+	      
+	      const int di = 1;
+	      const int dj = isize;
+	      
+	      int ij = coord2index(i,j,isize,jsize);
+	      
+	      // local primitive variables                                                                                 
+	      real_t qLoc; 
+	      
+	      // local primitive variables in neighbor cells
+	      real_t qPlus, qMinus;	      
+	      
+	      // get primitive variables state vector
 
-        // index goes from 0 to chunck_size_ter_team
-        // re-compute j from offset + index 
-        int j =  jStart + index;
+	      qLoc   = Q_ID(ij);
+	      qPlus  = Q_ID(ij+di);
+	      qMinus = Q_ID(ij-di);
+	      Slopes_x_ID(ij) = slope_unsplit_hydro_2d_scalar(qLoc, qPlus, qMinus);
+	      qPlus  = Q_ID(ij+dj);
+	      qMinus = Q_ID(ij-dj);
+	      Slopes_y_ID(ij) = slope_unsplit_hydro_2d_scalar(qLoc, qPlus, qMinus);
+	      
+	      qLoc   = Q_IP(ij);
+	      qPlus  = Q_IP(ij+di);
+	      qMinus = Q_IP(ij-di);
+	      Slopes_x_IP(ij) = slope_unsplit_hydro_2d_scalar(qLoc, qPlus, qMinus);
+	      qPlus  = Q_IP(ij+dj);
+	      qMinus = Q_IP(ij-dj);
+	      Slopes_y_IP(ij) = slope_unsplit_hydro_2d_scalar(qLoc, qPlus, qMinus);
+	      
+	      qLoc   = Q_IU(ij);
+	      qPlus  = Q_IU(ij+di);
+	      qMinus = Q_IU(ij-di);
+	      Slopes_x_IU(ij) = slope_unsplit_hydro_2d_scalar(qLoc, qPlus, qMinus);
+	      qPlus  = Q_IU(ij+dj);
+	      qMinus = Q_IU(ij-dj);
+	      Slopes_y_IU(ij) = slope_unsplit_hydro_2d_scalar(qLoc, qPlus, qMinus);
+	      
+	      qLoc   = Q_IV(ij);
+	      qPlus  = Q_IV(ij+di);
+	      qMinus = Q_IV(ij-di);
+	      Slopes_x_IV(ij) = slope_unsplit_hydro_2d_scalar(qLoc, qPlus, qMinus);
+	      qPlus  = Q_IV(ij+dj);
+	      qMinus = Q_IV(ij-dj);
+	      Slopes_y_IV(ij) = slope_unsplit_hydro_2d_scalar(qLoc, qPlus, qMinus);
+	      
+	    }); // end vector range
 
-        Kokkos::parallel_for(
-          Kokkos::ThreadVectorRange(thread, params.isize),
-          [=](const int &i) {
-            
-            const int isize = params.isize;
-            const int jsize = params.jsize;
-            const int ghostWidth = params.ghostWidth;
-            
-            const int di = 1;
-            const int dj = isize;
-   	    
-            int ij = coord2index(i,j,isize,jsize);
-            
-            if(j >= ghostWidth-1 && j <= jsize-ghostWidth  &&
-               i >= ghostWidth-1 && i <= isize-ghostWidth ) {
-              
-              // local primitive variables
-              HydroState qLoc; // local primitive variables
-              
-              // local primitive variables in neighborbood
-              HydroState qNeighbors_0;
-              HydroState qNeighbors_1;
-              HydroState qNeighbors_2;
-              HydroState qNeighbors_3;
-              
-              // Local slopes and neighbor slopes
-              HydroState dqX;
-              HydroState dqY;
-              
-              // get primitive variables state vector
-              qLoc[ID]         = Q_ID(ij);
-              qNeighbors_0[ID] = Q_ID(ij+di);
-              qNeighbors_1[ID] = Q_ID(ij-di);
-              qNeighbors_2[ID] = Q_ID(ij+dj);
-              qNeighbors_3[ID] = Q_ID(ij-dj);
+	} // end if j
 
-              qLoc[IP]         = Q_IP(ij);
-              qNeighbors_0[IP] = Q_IP(ij+di);
-              qNeighbors_1[IP] = Q_IP(ij-di);
-              qNeighbors_2[IP] = Q_IP(ij+dj);
-              qNeighbors_3[IP] = Q_IP(ij-dj);
-              
-              qLoc[IU]         = Q_IU(ij);
-              qNeighbors_0[IU] = Q_IU(ij+di);
-              qNeighbors_1[IU] = Q_IU(ij-di);
-              qNeighbors_2[IU] = Q_IU(ij+dj);
-              qNeighbors_3[IU] = Q_IU(ij-dj);
-              
-              qLoc[IV]         = Q_IV(ij);
-              qNeighbors_0[IV] = Q_IV(ij+di);
-              qNeighbors_1[IV] = Q_IV(ij-di);
-              qNeighbors_2[IV] = Q_IV(ij+dj);
-              qNeighbors_3[IV] = Q_IV(ij-dj);
-              
-              slope_unsplit_hydro_2d(qLoc, 
-                                     qNeighbors_0, qNeighbors_1, 
-                                     qNeighbors_2, qNeighbors_3,
-                                     dqX, dqY);
-              
-              // copy back slopes in global arrays
-              Slopes_x_ID(ij) = dqX[ID];
-              Slopes_y_ID(ij) = dqY[ID];
-              
-              Slopes_x_IP(ij) = dqX[IP];
-              Slopes_y_IP(ij) = dqY[IP];
-              
-              Slopes_x_IU(ij) = dqX[IU];
-              Slopes_y_IU(ij) = dqY[IU];
-              
-              Slopes_x_IV(ij) = dqX[IV];
-              Slopes_y_IV(ij) = dqY[IV];
-              
-            } // end if
+      }); // end thread range
 
-          }); // end vector range
-      });
-    
-  } // end team policy functor
-  
+  } // end team policy functor 
+
   DataArray Qdata;
   DataArray Slopes_x, Slopes_y;
-  
-}; // ComputeSlopesFunctor
 
+}; // ComputeSlopesFunctor
+                                                                                                          
 /*************************************************/
 /*************************************************/
 /*************************************************/

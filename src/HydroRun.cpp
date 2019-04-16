@@ -200,23 +200,23 @@ void HydroRun::godunov_unsplit_cpu(DataArray data_in,
     // call device functor to compute slopes
     ComputeSlopesFunctor::apply(params, Q, Slopes_x, Slopes_y);
 
-    // now trace along X axis
-    ComputeTraceAndFluxes_Functor<XDIR>::apply(params, Q,
-					       Slopes_x, Slopes_y,
-					       Fluxes_x,
-					       dtdx, dtdy);
+    // // now trace along X axis
+    // ComputeTraceAndFluxes_Functor<XDIR>::apply(params, Q,
+    // 					       Slopes_x, Slopes_y,
+    // 					       Fluxes_x,
+    // 					       dtdx, dtdy);
     
-    // and update along X axis
-    UpdateDirFunctor<XDIR>::apply(params, data_out, Fluxes_x);
+    // // and update along X axis
+    // UpdateDirFunctor<XDIR>::apply(params, data_out, Fluxes_x);
     
-    // now trace along Y axis
-    ComputeTraceAndFluxes_Functor<YDIR>::apply(params, Q,
-					       Slopes_x, Slopes_y,
-					       Fluxes_y,
-					       dtdx, dtdy);
+    // // now trace along Y axis
+    // ComputeTraceAndFluxes_Functor<YDIR>::apply(params, Q,
+    // 					       Slopes_x, Slopes_y,
+    // 					       Fluxes_y,
+    // 					       dtdx, dtdy);
     
-    // and update along Y axis
-    UpdateDirFunctor<YDIR>::apply(params, data_out, Fluxes_y);
+    // // and update along Y axis
+    // UpdateDirFunctor<YDIR>::apply(params, data_out, Fluxes_y);
     
   } // end params.implementationVersion == 1
   
