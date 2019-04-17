@@ -792,7 +792,7 @@ public:
               
               // Solve Riemann problem at X-interfaces and compute X-fluxes
               //riemann_2d(qleft,qright,&qgdnv,&flux_x);
-              riemann_hllc(qleft,qright,qgdnv,flux_x);
+              riemann_hllc(qleft,qright,flux_x);
               
               //
               // store fluxes X
@@ -854,7 +854,7 @@ public:
               swapValues(&(qleft[IU]) ,&(qleft[IV]) );
               swapValues(&(qright[IU]),&(qright[IV]));
               //riemann_2d(qleft,qright,qgdnv,flux_y);
-              riemann_hllc(qleft,qright,qgdnv,flux_y);
+              riemann_hllc(qleft,qright,flux_y);
               
               //
               // store fluxes Y
@@ -1576,7 +1576,7 @@ public:
                                            FACE_XMAX, qleft);
                 
                 // Solve Riemann problem at X-interfaces and compute X-fluxes
-                riemann_hllc(qleft, qright, qgdnv, flux);
+                riemann_hllc(qleft, qright, flux);
                 
                 //
                 // store fluxes
@@ -1616,7 +1616,7 @@ public:
                 // Solve Riemann problem at Y-interfaces and compute Y-fluxes
                 swapValues(&(qleft[IU]), &(qleft[IV]));
                 swapValues(&(qright[IU]), &(qright[IV]));
-                riemann_hllc(qleft, qright, qgdnv, flux);
+                riemann_hllc(qleft, qright, flux);
 
                 //
                 // update hydro array

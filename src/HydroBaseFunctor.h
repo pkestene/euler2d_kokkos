@@ -73,6 +73,73 @@ public:
   } // eos
   
   /**
+   * Compute speed_of_sound from pressure and density 
+   * using the "calorically perfect gas" equation
+   * of state : \f$ eint=\frac{p}{\rho (\gamma-1)} \f$
+   * Recall that \f$ \gamma \f$ is equal to the ratio of specific heats
+   *  \f$ \left[ c_p/c_v \right] \f$.
+   * 
+   * @param[in]  rho  density
+   * @param[in]  pressure pressure
+   *
+   * @return speed of sound
+   */
+  KOKKOS_INLINE_FUNCTION
+  real_t compute_speed_of_sound(real_t rho,
+                                real_t pressure) const
+  {
+    const real_t gamma0 = params.settings.gamma0;
+    const real_t smallp = params.settings.smallp;
+    const real_t smallc = params.settings.smallc;
+
+    return SQRT( FMAX ( (gamma0 * pressure) / rho, smallc*smallc ) );
+    
+  } // compute_speed_of_sound
+  
+  /**
+   * Compute internal energy from density and pressure 
+   * using the "calorically perfect gas" equation
+   * of state : \f$ eint=\frac{p}{\rho (\gamma-1)} \f$
+   * Recall that \f$ \gamma \f$ is equal to the ratio of specific heats
+   *  \f$ \left[ c_p/c_v \right] \f$.
+   * 
+   * @param[in]  rho  density
+   * @param[in]  pressure pressure
+   *
+   * @return internal energy
+   */
+  KOKKOS_INLINE_FUNCTION
+  real_t compute_internal_energy(real_t rho,
+                                 real_t pressure) const
+  {
+
+    const real_t gamma0 = params.settings.gamma0;
+    
+    return pressure / (gamma0 - 1);
+    
+  } // compute_internal_energy
+
+    /**
+   * Compute kinetic energy from primitive variables
+   * using the "calorically perfect gas" equation
+   * of state : \f$ eint=\frac{p}{\rho (\gamma-1)} \f$
+   * Recall that \f$ \gamma \f$ is equal to the ratio of specific heats
+   *  \f$ \left[ c_p/c_v \right] \f$.
+   * 
+   * @param[in]  rho  density
+   * @param[in]  pressure pressure
+   *
+   * @return internal energy
+   */
+  KOKKOS_INLINE_FUNCTION
+  real_t compute_ekin_from_prim(const HydroState& q) const
+  {
+
+    return HALF_F * q[ID] * (q[IU]*q[IU] + q[IV]*q[IV]);
+
+  } // compute_ekin_from_prim
+  
+  /**
    * Convert conservative variables (rho, rho*u, rho*v, e) to 
    * primitive variables (rho,u,v,p)
    * @param[in]  u  conservative variables array
@@ -719,10 +786,10 @@ public:
   /** 
    * Riemann solver HLLC
    *
-   * @param[in] qleft : input left state
-   * @param[in] qright : input right state
+   * @param[in] qleft : input left state (primitive variables)
+   * @param[in] qright : input right state (primitive variables)
    * @param[out] qgdnv : output Godunov state
-   * @param[out] flux  : output flux
+   * @param[out] flux  : output flux (conservative variables)
    */
   KOKKOS_INLINE_FUNCTION
   void riemann_hllc(const HydroState& qleft,
@@ -786,7 +853,7 @@ public:
     
     // Sample the solution at x/t=0
     real_t ro, uo, ptoto, etoto;
-    if (SL > ZERO_F) {
+    if (SL > ZERO_F) { // use qL
       ro=rl;
       uo=ul;
       ptoto=ptotl;
@@ -801,7 +868,7 @@ public:
       uo=ustar;
       ptoto=ptotstar;
       etoto=etotstarr;
-    } else {
+    } else { // use qR
       ro=rr;
       uo=ur;
       ptoto=ptotr;
@@ -810,14 +877,78 @@ public:
       
     // Compute the Godunov flux
     flux[ID] = ro*uo;
-    flux[IU] = ro*uo*uo+ptoto;
     flux[IP] = (etoto+ptoto)*uo;
+    flux[IU] = ro*uo*uo+ptoto;
     if (flux[ID] > ZERO_F) {
       flux[IV] = flux[ID]*qleft[IV];
     } else {
       flux[IV] = flux[ID]*qright[IV];
     }
   
+  } // riemann_hllc
+
+  /** 
+   * Riemann solver HLLC
+   *
+   * @param[in]    qL : input left state (primitive variables)
+   * @param[in]    qR : input right state (primitive variables)
+   * @param[out] flux : output flux (conservative variables)
+   */
+  KOKKOS_INLINE_FUNCTION
+  void riemann_hllc(const HydroState &qL, 
+                    const HydroState &qR,
+                    HydroState &flux) const 
+  {
+    const real_t gamma0 = params.settings.gamma0;
+    const real_t smallr = params.settings.smallr;
+    const real_t smallp = params.settings.smallp;
+    const real_t smallc = params.settings.smallc;
+
+    // left variables
+    const real_t rL = FMAX(qL[ID], smallr);
+    const real_t pL = FMAX(qL[IP], rL*smallp);
+    const real_t uL =      qL[IU];
+
+    // right variables
+    const real_t rR = FMAX(qR[ID], smallr);
+    const real_t pR = FMAX(qR[IP], rR*smallp);
+    const real_t uR =      qR[IU];
+
+    //const real_t cL = compute_speed_of_sound( qL[ID], qL[IP] );
+    //const real_t cR = compute_speed_of_sound( qR[ID], qR[IP] );
+    const real_t cL = compute_speed_of_sound( rL, pL );
+    const real_t cR = compute_speed_of_sound( rR, pR );
+
+    const real_t SL = FMIN(uL, uR) - FMAX(cL, cR);
+    const real_t SR = FMAX(uL, uR) + FMAX(cL, cR);
+
+    //const real_t rcL = qL[ID]*(SL-uL);
+    //const real_t rcR = qR[ID]*(SR-uR);
+    //const real_t rcL = rL*(SL-uL); // change of sign
+    const real_t rcL = rL*(uL-SL);
+    const real_t rcR = rR*(SR-uR);
+
+    // Compute acoustic star states
+    const real_t ustar = (rcR*uR + rcL*uL + (pL-pR)) / (rcR+rcL);
+    const real_t pstar = (rcR*pL + rcL*pR + rcL*rcR*(uL-uR)) / (rcR+rcL);
+
+    const HydroState q {ustar > ZERO_F ? qL : qR};
+    const real_t S     {ustar > ZERO_F ? SL : SR};
+    const real_t u     {ustar > ZERO_F ? uL : uR};
+    const real_t eint  {compute_internal_energy(q[ID], q[IP])};
+    const real_t ekin  {compute_ekin_from_prim(q)};
+    const real_t etot  {eint + ekin};
+
+    const real_t uo    {SL*SR > ZERO_F ? u     : ustar};
+    const real_t ro    {SL*SR > ZERO_F ? q[ID] : (S-u)/(S-ustar) * q[ID]};
+    const real_t etoto {SL*SR > ZERO_F ? etot  : (S-u)/(S-ustar) * etot + (pstar*ustar-q[IP]*u)/(S-ustar)};
+    const real_t ptoto {SL*SR > ZERO_F ? q[IP] : pstar};
+
+    flux[ID] = ro * uo;
+    flux[IE] = (etoto + ptoto) * uo;    
+    flux[IU] = ro * uo * uo + ptoto;
+    flux[IV] = ro * q[IV] * uo;
+
   } // riemann_hllc
 
 }; // class HydroBaseFunctor

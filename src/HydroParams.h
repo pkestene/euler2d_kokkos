@@ -19,7 +19,8 @@
 //! hydro field indexes
 enum ComponentIndex {
   ID=0,  /*!< ID Density field index */
-  IP=1,  /*!< IP Pressure/Energy field index */
+  IE=1,  /*!< Energy field index */
+  IP=1,  /*!< IP Pressure */
   IU=2,  /*!< X velocity / momentum index */
   IV=3  /*!< Y velocity / momentum index */ 
 };
