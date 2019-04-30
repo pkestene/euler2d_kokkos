@@ -1,5 +1,7 @@
 ![blast2d_1024x1536](https://github.com/pkestene/euler2d_kokkos/blob/master/blast2d.gif)
 
+This miniapp solves the [compressible fluid dynamics (Euler) equations](https://en.wikipedia.org/wiki/Euler_equations_(fluid_dynamics)) using 2D cartesian grids, parallelized for shared memory system. The full application for 2D/3D grids with [MPI](https://www.mpi-forum.org/) and [Kokkos](https://github.com/kokkos/kokkos) is available here : https://github.com/pkestene/euler_kokkos
+
 # Get the source
 
 Our miniApp uses kokkos as a git submodule, configured to use the `develop` branch of kokkos.
