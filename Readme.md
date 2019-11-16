@@ -26,7 +26,7 @@ We strongly recommend the out-of-source build, so that one can have one build di
 To build for Kokkos/OpenMP backend (which is the default backend):
 ```shell
 mkdir build_openmp; cd build_openmp
-cmake -DKOKKOS_ENABLE_OPENMP=ON ..
+cmake -DKokkos_ENABLE_OPENMP=ON ..
 make
 ```
 
@@ -36,7 +36,7 @@ cd src
 ./euler2d ./test_implode.ini
 ```
 
-Optionally, you can (recommended) activate HWLOC support by turning ON the flag KOKKOS_ENABLE_HWLOC.
+Optionally, you can (recommended) activate HWLOC support by turning ON the flag Kokkos_ENABLE_HWLOC.
 
 
 ## build for Kokkos/CUDA
@@ -48,8 +48,8 @@ Then you need to
     export CXX=/complete/path/to/kokos/bin/nvcc_wrapper
     ```
  2. activate CUDA backend in the ccmake interface. 
-    * Just turn on KOKKOS_ENABLE_CUDA 
-    * select cuda architecture, e.g. set KOKKOS_GPU_ARCH to Kepler37 (for Nvidia K80 boards)
+    * Just turn on Kokkos_ENABLE_CUDA 
+    * select cuda architecture, e.g. set Kokkos_ARCH_KEPLER37=ON (for Nvidia K80 boards)
 
 then `make` should give you a working executable `euler2d` running on GPU.
 
