@@ -1,9 +1,13 @@
-cmake_minimum_required(VERSION 3.1)
-project(euler2d CXX C)
+cmake_minimum_required(VERSION 3.10)
+project(
+  euler2d
+  DESCRIPTION "euler2d_kokkos is mini application using C++/Kokkos library, used for teaching purpose"
+  LANGUAGES CXX C)
 
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
+# build kokkos, provided as a git submodule
 add_subdirectory(external/kokkos)
 
 option (USE_DOUBLE "build with double precision" ON)
