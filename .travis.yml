@@ -1,0 +1,31 @@
+language: cpp
+
+dist: bionic
+
+compiler:
+- g++
+
+os:
+- linux
+
+branches: master
+
+addons:
+  apt:
+    packages:
+      - gcc
+      - g++
+      - cmake
+      - libhwloc-dev
+      - openmpi-bin
+      - libopenmpi-dev
+
+before_script:
+  - mkdir build_openmp
+  - cd build_openmp
+  - ccmake -DKokkos_ENABLE_OPENMP=ON -DKokkos_ENABLE_HWLOC ..
+
+script:
+  - make
+
+
