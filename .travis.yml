@@ -23,7 +23,7 @@ addons:
 before_script:
   - mkdir build_openmp
   - cd build_openmp
-  - ccmake -DKokkos_ENABLE_OPENMP=ON -DKokkos_ENABLE_HWLOC ..
+  - cmake -DKokkos_ENABLE_OPENMP=ON -DKokkos_ENABLE_HWLOC=ON ..
 
 script:
   - make
