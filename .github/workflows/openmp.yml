@@ -9,10 +9,12 @@ on:
 jobs:
   build:
 
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-18.04
 
     steps:
-    # apparently checkout@v2 is not capable of initializing git submodules ?
+    - name: Install dependencies
+      run: sudo apt-get install -y libhwloc-dev
+    # make sure to explicitely checkout git submodule !
     - name: checkout repository
       uses: actions/checkout@v2
       with: 
