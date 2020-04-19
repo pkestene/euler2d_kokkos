@@ -12,7 +12,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v2
+    # apparently checkout@v2 is not capable of initializing git submodules ?
+    - name: checkout repository
+      uses: actions/checkout@v2
+      with: 
+        submodules: true
     - name: configure
       run: mkdir build_openmp && cd build_openmp && cmake -DKokkos_ENABLE_OPENMP=ON -DKokkos_ENABLE_HWLOC=ON ..
     - name: make
