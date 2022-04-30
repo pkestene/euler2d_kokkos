@@ -21,7 +21,7 @@ void HydroParams::setup(ConfigMap &configMap)
   nOutput  = configMap.getInteger("run","noutput",100);
   if (nOutput == -1)
     enableOutput = false;
-  
+
   /* initialize MESH parameters */
   nx = configMap.getInteger("mesh","nx", 2);
   ny = configMap.getInteger("mesh","ny", 2);
@@ -57,7 +57,7 @@ void HydroParams::setup(ConfigMap &configMap)
     std::cout << "Use the default one : approx\n";
     riemannSolverType = RIEMANN_APPROX;
   }
-    
+
   std::string problemStr = std::string(configMap.getString("hydro","problem", "unknown"));
   if ( !problemStr.compare("implode") ) {
     problemType = PROBLEM_IMPLODE;
@@ -97,21 +97,21 @@ void HydroParams::init()
   // set other parameters
   imax = nx - 1 + 2*ghostWidth;
   jmax = ny - 1 + 2*ghostWidth;
-  
+
   isize = imax - imin + 1;
   jsize = jmax - jmin + 1;
-  
+
   dx = (xmax - xmin) / nx;
   dy = (ymax - ymin) / ny;
-  
+
   settings.smallp  = settings.smallc*settings.smallc/
     settings.gamma0;
   settings.smallpp = settings.smallr*settings.smallp;
   settings.gamma6  = (settings.gamma0 + ONE_F)/(TWO_F * settings.gamma0);
-  
+
   // check that given parameters are valid
-  if ( (implementationVersion != 0) && 
-       (implementationVersion != 1) && 
+  if ( (implementationVersion != 0) &&
+       (implementationVersion != 1) &&
        (implementationVersion != 2) ) {
     fprintf(stderr, "The implementation version parameter should 0,1 or 2 !!!");
     fprintf(stderr, "Check your parameter file, section OTHER");
@@ -127,7 +127,7 @@ void HydroParams::init()
 // =======================================================
 void HydroParams::print()
 {
-  
+
   printf( "##########################\n");
   printf( "Simulation run parameters:\n");
   printf( "##########################\n");
@@ -137,8 +137,8 @@ void HydroParams::print()
   printf( "dy         : %f\n", dy);
   printf( "imin       : %d\n", imin);
   printf( "imax       : %d\n", imax);
-  printf( "jmin       : %d\n", jmin);      
-  printf( "jmax       : %d\n", jmax);      
+  printf( "jmin       : %d\n", jmin);
+  printf( "jmax       : %d\n", jmax);
   printf( "nStepmax   : %d\n", nStepmax);
   printf( "tEnd       : %f\n", tEnd);
   printf( "nOutput    : %d\n", nOutput);
@@ -153,5 +153,5 @@ void HydroParams::print()
   printf( "problem    : %d\n", problemType);
   printf( "implementation version : %d\n",implementationVersion);
   printf( "##########################\n");
-  
+
 } // HydroParams::print

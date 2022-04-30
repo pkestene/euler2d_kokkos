@@ -1,4 +1,4 @@
-#include <string> 
+#include <string>
 #include <cstdio>
 #include <cstdbool>
 #include <sstream>
@@ -50,7 +50,7 @@ HydroRun::HydroRun(HydroParams& params, ConfigMap& configMap) :
 
     Fluxes_x = DataArray("Fluxes_x", isize, jsize);
     Fluxes_y = DataArray("Fluxes_y", isize, jsize);
-    
+
   } else if (params.implementationVersion == 1) {
 
     Slopes_x = DataArray("Slope_x", isize, jsize);
@@ -59,14 +59,14 @@ HydroRun::HydroRun(HydroParams& params, ConfigMap& configMap) :
     // direction splitting (only need one flux array)
     Fluxes_x = DataArray("Fluxes_x", isize, jsize);
     Fluxes_y = Fluxes_x;
-    
-  } 
-  
+
+  }
+
   // default riemann solver
   // riemann_solver_fn = &HydroRun::riemann_approx;
   // if (!riemannSolverStr.compare("hllc"))
   //   riemann_solver_fn = &HydroRun::riemann_hllc;
-  
+
   /*
    * initialize hydro array at t=0
    */
@@ -119,7 +119,7 @@ real_t HydroRun::compute_dt(int useU)
   real_t dt;
   real_t invDt = ZERO_F;
   DataArray Udata;
-  
+
   // which array is the current one ?
   if (useU == 0)
     Udata = U;
@@ -128,7 +128,7 @@ real_t HydroRun::compute_dt(int useU)
 
   // call device functor
   ComputeDtFunctor::apply(params, Udata, invDt);
-    
+
   dt = params.settings.cfl/invDt;
 
   return dt;
@@ -142,13 +142,13 @@ real_t HydroRun::compute_dt(int useU)
 // ///////////////////////////////////////////
 void HydroRun::godunov_unsplit(int nStep, real_t dt)
 {
-  
+
   if ( nStep % 2 == 0 ) {
     godunov_unsplit_cpu(U , U2, dt, nStep);
   } else {
     godunov_unsplit_cpu(U2, U , dt, nStep);
   }
-  
+
 } // HydroRun::godunov_unsplit
 
 // =======================================================
@@ -156,15 +156,15 @@ void HydroRun::godunov_unsplit(int nStep, real_t dt)
 // ///////////////////////////////////////////
 // Actual CPU computation of Godunov scheme
 // ///////////////////////////////////////////
-void HydroRun::godunov_unsplit_cpu(DataArray data_in, 
-				   DataArray data_out, 
-				   real_t dt, 
+void HydroRun::godunov_unsplit_cpu(DataArray data_in,
+				   DataArray data_out,
+				   real_t dt,
 				   int nStep)
 {
 
   real_t dtdx;
   real_t dtdy;
-  
+
   dtdx = dt / params.dx;
   dtdy = dt / params.dy;
 
@@ -172,11 +172,11 @@ void HydroRun::godunov_unsplit_cpu(DataArray data_in,
   boundaries_timer.start();
   make_boundaries(data_in);
   boundaries_timer.stop();
-    
+
   // copy data_in into data_out (not necessary)
   // data_out = data_in;
   Kokkos::deep_copy(data_out, data_in);
-  
+
   // start main computation
   godunov_timer.start();
 
@@ -184,7 +184,7 @@ void HydroRun::godunov_unsplit_cpu(DataArray data_in,
   convertToPrimitives(data_in);
 
   if (params.implementationVersion == 0) {
-    
+
     // compute fluxes
     ComputeAndStoreFluxesFunctor::apply(params, Q,
 					Fluxes_x, Fluxes_y,
@@ -193,7 +193,7 @@ void HydroRun::godunov_unsplit_cpu(DataArray data_in,
     // actual update
     UpdateFunctor::apply(params, data_out,
 			 Fluxes_x, Fluxes_y);
-    
+
   } else if (params.implementationVersion == 1) {
 
     // call device functor to compute slopes
@@ -204,23 +204,23 @@ void HydroRun::godunov_unsplit_cpu(DataArray data_in,
 					       Slopes_x, Slopes_y,
 					       Fluxes_x,
 					       dtdx, dtdy);
-    
+
     // and update along X axis
     UpdateDirFunctor<XDIR>::apply(params, data_out, Fluxes_x);
-    
+
     // now trace along Y axis
     ComputeTraceAndFluxes_Functor<YDIR>::apply(params, Q,
 					       Slopes_x, Slopes_y,
 					       Fluxes_y,
 					       dtdx, dtdy);
-    
+
     // and update along Y axis
     UpdateDirFunctor<YDIR>::apply(params, data_out, Fluxes_y);
-    
+
   } // end params.implementationVersion == 1
-  
+
   godunov_timer.stop();
-  
+
 } // HydroRun::godunov_unsplit_cpu
 
 // =======================================================
@@ -232,7 +232,7 @@ void HydroRun::convertToPrimitives(DataArray Udata)
 {
   // call device functor
   ConvertToPrimitivesFunctor::apply(params, Udata, Q);
-  
+
 } // HydroRun::convertToPrimitives
 
 // =======================================================
@@ -252,7 +252,7 @@ void HydroRun::make_boundaries(DataArray Udata)
   MakeBoundariesFunctor<FACE_XMAX>::apply(params, Udata);
   MakeBoundariesFunctor<FACE_YMIN>::apply(params, Udata);
   MakeBoundariesFunctor<FACE_YMAX>::apply(params, Udata);
-  
+
 } // HydroRun::make_boundaries
 
 // =======================================================
@@ -263,9 +263,9 @@ void HydroRun::make_boundaries(DataArray Udata)
  */
 void HydroRun::init_implode(DataArray Udata)
 {
-  
+
   InitImplodeFunctor::apply(params, Udata);
-  
+
 } // init_implode
 
 // =======================================================
@@ -276,7 +276,7 @@ void HydroRun::init_implode(DataArray Udata)
  */
 void HydroRun::init_blast(DataArray Udata)
 {
-  
+
   InitBlastFunctor::apply(params, Udata);
 
 } // HydroRun::init_blast
@@ -303,35 +303,35 @@ void HydroRun::saveVTK(DataArray Udata,
   const int jmin = params.jmin;
   const int jmax = params.jmax;
   const int ghostWidth = params.ghostWidth;
-  
+
   // copy device data to host
   Kokkos::deep_copy(Uhost, Udata);
-  
+
   // local variables
   int i,j,iVar;
   std::string outputDir    = configMap.getString("output", "outputDir", "./");
   std::string outputPrefix = configMap.getString("output", "outputPrefix", "output");
-    
+
   // check scalar data type
   bool useDouble = false;
 
   if (sizeof(real_t) == sizeof(double)) {
     useDouble = true;
   }
-  
+
   // write iStep in string stepNum
   std::ostringstream stepNum;
   stepNum.width(7);
   stepNum.fill('0');
   stepNum << iStep;
-  
+
   // concatenate file prefix + file number + suffix
   std::string filename     = outputDir + "/" + outputPrefix+"_"+stepNum.str() + ".vti";
-  
-  // open file 
+
+  // open file
   std::fstream outFile;
   outFile.open(filename.c_str(), std::ios_base::out);
-  
+
   // write header
   outFile << "<?xml version=\"1.0\"?>\n";
   if (isBigEndian()) {
@@ -354,7 +354,7 @@ void HydroRun::saveVTK(DataArray Udata,
 	  << 0 << " " << ny << " "
 	  << 0 << " " << 0  << " "
 	  << "\">\n";
-  
+
   outFile << "    <PointData>\n";
   outFile << "    </PointData>\n";
   outFile << "    <CellData>\n";
@@ -390,8 +390,7 @@ void HydroRun::saveVTK(DataArray Udata,
   outFile << "  </Piece>\n";
   outFile << "  </ImageData>\n";
   outFile << "</VTKFile>\n";
-  
+
   outFile.close();
 
 } // HydroRun::saveVTK
-

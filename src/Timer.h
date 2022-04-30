@@ -24,14 +24,14 @@ class Timer
 public:
   /** default constructor, timing starts rightaway */
   Timer();
-    
+
   Timer(double t);
   Timer(Timer const& aTimer);
   virtual ~Timer();
 
   /** start time measure */
   virtual void start();
-    
+
   /** stop time measure and add result to total_time */
   virtual void stop();
 

@@ -4,7 +4,7 @@
  *
  * \author P. Kestener
  * \date 25-03-2010
- * 
+ *
  */
 #ifndef REAL_TYPE_H_
 #define REAL_TYPE_H_

@@ -15,7 +15,7 @@
 class ComputeDtFunctor : public HydroBaseFunctor {
 
 public:
-  
+
   ComputeDtFunctor(HydroParams params,
 		   DataArray Udata) :
     HydroBaseFunctor(params),
@@ -36,7 +36,7 @@ public:
   {
     // The identity under max is -Inf.
     // Kokkos does not come with a portable way to access
-    // floating-point Inf and NaN. 
+    // floating-point Inf and NaN.
 #ifdef __CUDA_ARCH__
     dst = -CUDART_INF;
 #else
@@ -53,18 +53,18 @@ public:
     const int ghostWidth = params.ghostWidth;
     const real_t dx = params.dx;
     const real_t dy = params.dy;
-    
+
     int i,j;
     index2coord(index,i,j,isize,jsize);
 
     if(j >= ghostWidth && j < jsize - ghostWidth &&
        i >= ghostWidth && i < isize - ghostWidth) {
-      
+
       HydroState uLoc; // conservative    variables in current cell
       HydroState qLoc; // primitive    variables in current cell
       real_t c=0.0;
       real_t vx, vy;
-      
+
       // get local conservative variable
       uLoc[ID] = Udata(i,j,ID);
       uLoc[IP] = Udata(i,j,IP);
@@ -77,9 +77,9 @@ public:
       vy = c+FABS(qLoc[IV]);
 
       invDt = FMAX(invDt, vx/dx + vy/dy);
-      
+
     }
-	    
+
   } // operator ()
 
 
@@ -97,9 +97,9 @@ public:
     }
   } // join
 
-  
+
   DataArray Udata;
-  
+
 }; // ComputeDtFunctor
 
 /*************************************************/
@@ -113,7 +113,7 @@ public:
 			     DataArray Udata,
 			     DataArray Qdata) :
     HydroBaseFunctor(params), Udata(Udata), Qdata(Qdata)  {};
-  
+
   // static method which does it all: create and execute functor
   static void apply(HydroParams params,
 		    DataArray Udata,
@@ -130,23 +130,23 @@ public:
     const int isize = params.isize;
     const int jsize = params.jsize;
     //const int ghostWidth = params.ghostWidth;
-    
+
     int i,j;
     index2coord(index,i,j,isize,jsize);
-    
+
     if(j >= 0 && j < jsize  &&
        i >= 0 && i < isize ) {
-      
+
       HydroState uLoc; // conservative    variables in current cell
       HydroState qLoc; // primitive    variables in current cell
       real_t c;
-      
+
       // get local conservative variable
       uLoc[ID] = Udata(i,j,ID);
       uLoc[IP] = Udata(i,j,IP);
       uLoc[IU] = Udata(i,j,IU);
       uLoc[IV] = Udata(i,j,IV);
-      
+
       // get primitive variables in current cell
       computePrimitives(uLoc, &c, qLoc);
 
@@ -155,14 +155,14 @@ public:
       Qdata(i,j,IP) = qLoc[IP];
       Qdata(i,j,IU) = qLoc[IU];
       Qdata(i,j,IV) = qLoc[IV];
-      
+
     }
-    
+
   }
-  
+
   DataArray Udata;
   DataArray Qdata;
-    
+
 }; // ConvertToPrimitivesFunctor
 
 /*************************************************/
@@ -184,7 +184,7 @@ public:
 //     HydroBaseFunctor(params), Udata(Udata),
 //     Qm_x(Qm_x), Qm_y(Qm_y), Qp_x(Qp_x), Qp_y(Qp_y),
 //     dtdx(dtdx), dtdy(dtdy) {};
-  
+
 //   // static method which does it all: create and execute functor
 //   static void apply(HydroParams params,
 // 		    DataArray Udata,
@@ -209,13 +209,13 @@ public:
 //     const int isize = params.isize;
 //     const int jsize = params.jsize;
 //     const int ghostWidth = params.ghostWidth;
-    
+
 //     int i,j;
 //     index2coord(index_,i,j,isize,jsize);
-    
+
 //     if(j >= ghostWidth && j <= jsize - ghostWidth &&
 //        i >= ghostWidth && i <= isize - ghostWidth) {
-      
+
 //       HydroState qleft, qright;
 //       HydroState flux_x, flux_y;
 //       HydroState qgdnv;
@@ -228,12 +228,12 @@ public:
 //       qleft[IP]   = Qm_x(i-1,j , IP);
 //       qleft[IU]   = Qm_x(i-1,j , IU);
 //       qleft[IV]   = Qm_x(i-1,j , IV);
-      
+
 //       qright[ID]  = Qp_x(i  ,j , ID);
 //       qright[IP]  = Qp_x(i  ,j , IP);
 //       qright[IU]  = Qp_x(i  ,j , IU);
 //       qright[IV]  = Qp_x(i  ,j , IV);
-      
+
 //       // compute hydro flux_x
 //       riemann_hllc(qleft,qright,qgdnv,flux_x);
 
@@ -249,10 +249,10 @@ public:
 //       qright[IP]  = Qp_y(i  ,j , IP);
 //       qright[IU]  = Qp_y(i  ,j , IV); // watchout IU, IV permutation
 //       qright[IV]  = Qp_y(i  ,j , IU); // watchout IU, IV permutation
-      
+
 //       // compute hydro flux_y
 //       riemann_hllc(qleft,qright,qgdnv,flux_y);
-            
+
 //       //
 //       // update hydro array
 //       //
@@ -275,15 +275,15 @@ public:
 //       Udata(i  ,j  , IP) +=   flux_y[IP]*dtdy;
 //       Udata(i  ,j  , IU) +=   flux_y[IV]*dtdy; // watchout IU and IV swapped
 //       Udata(i  ,j  , IV) +=   flux_y[IU]*dtdy; // watchout IU and IV swapped
-      
+
 //     }
-    
+
 //   }
-  
+
 //   DataArray Udata;
 //   DataArray Qm_x, Qm_y, Qp_x, Qp_y;
 //   real_t dtdx, dtdy;
-  
+
 // }; // ComputeFluxesAndUpdateFunctor
 
 /*************************************************/
@@ -306,7 +306,7 @@ public:
 //     Qdata(Qdata),
 //     Qm_x(Qm_x), Qm_y(Qm_y), Qp_x(Qp_x), Qp_y(Qp_y),
 //     dtdx(dtdx), dtdy(dtdy) {};
-  
+
 //   // static method which does it all: create and execute functor
 //   static void apply(HydroParams params,
 // 		    DataArray Qdata,
@@ -324,7 +324,7 @@ public:
 // 					    Qp_x, Qp_y,
 // 					    dtdx, dtdy);
 //     Kokkos::parallel_for(ijsize, computeTraceFunctor);
-    
+
 //   }
 
 
@@ -334,10 +334,10 @@ public:
 //     const int isize = params.isize;
 //     const int jsize = params.jsize;
 //     const int ghostWidth = params.ghostWidth;
-    
+
 //     int i,j;
 //     index2coord(index,i,j,isize,jsize);
-    
+
 //     if(j >= 1 && j <= jsize - ghostWidth &&
 //        i >= 1 && i <= isize - ghostWidth) {
 
@@ -354,7 +354,7 @@ public:
 //       HydroState qmY;
 //       HydroState qpX;
 //       HydroState qpY;
-      
+
 //       // get primitive variables state vector
 //       {
 // 	qLoc   [ID] = Qdata(i  ,j  , ID);
@@ -381,18 +381,18 @@ public:
 // 	qPlusY [IV] = Qdata(i  ,j+1, IV);
 // 	qMinusY[IV] = Qdata(i  ,j-1, IV);
 
-//       } // 
-      
+//       } //
+
 //       // get hydro slopes dq
-//       slope_unsplit_hydro_2d(qLoc, 
-// 			     qPlusX, qMinusX, 
-// 			     qPlusY, qMinusY, 
+//       slope_unsplit_hydro_2d(qLoc,
+// 			     qPlusX, qMinusX,
+// 			     qPlusY, qMinusY,
 // 			     dqX, dqY);
-      
+
 //       // compute qm, qp
-//       trace_unsplit_hydro_2d(qLoc, 
+//       trace_unsplit_hydro_2d(qLoc,
 // 			     dqX, dqY,
-// 			     dtdx, dtdy, 
+// 			     dtdx, dtdy,
 // 			     qmX, qmY,
 // 			     qpX, qpY);
 
@@ -401,29 +401,29 @@ public:
 //       Qp_x(i  ,j  , ID) = qpX[ID];
 //       Qm_y(i  ,j  , ID) = qmY[ID];
 //       Qp_y(i  ,j  , ID) = qpY[ID];
-      
+
 //       Qm_x(i  ,j  , IP) = qmX[IP];
 //       Qp_x(i  ,j  , IP) = qpX[IP];
 //       Qm_y(i  ,j  , IP) = qmY[IP];
 //       Qp_y(i  ,j  , IP) = qpY[IP];
-      
+
 //       Qm_x(i  ,j  , IU) = qmX[IU];
 //       Qp_x(i  ,j  , IU) = qpX[IU];
 //       Qm_y(i  ,j  , IU) = qmY[IU];
 //       Qp_y(i  ,j  , IU) = qpY[IU];
-      
+
 //       Qm_x(i  ,j  , IV) = qmX[IV];
 //       Qp_x(i  ,j  , IV) = qpX[IV];
 //       Qm_y(i  ,j  , IV) = qmY[IV];
 //       Qp_y(i  ,j  , IV) = qpY[IV];
-      
+
 //     }
 //   }
 
 //   DataArray Qdata;
 //   DataArray Qm_x, Qm_y, Qp_x, Qp_y;
 //   real_t dtdx, dtdy;
-  
+
 // }; // ComputeTraceFunctor
 
 
@@ -437,21 +437,21 @@ public:
   ComputeAndStoreFluxesFunctor(HydroParams params,
 			       DataArray Qdata,
 			       DataArray FluxData_x,
-			       DataArray FluxData_y,		       
+			       DataArray FluxData_y,
 			       real_t dtdx,
 			       real_t dtdy) :
     HydroBaseFunctor(params),
     Qdata(Qdata),
     FluxData_x(FluxData_x),
-    FluxData_y(FluxData_y), 
+    FluxData_y(FluxData_y),
     dtdx(dtdx),
     dtdy(dtdy) {};
-  
+
   // static method which does it all: create and execute functor
   static void apply(HydroParams params,
 		    DataArray Qdata,
 		    DataArray FluxData_x,
-		    DataArray FluxData_y,		       
+		    DataArray FluxData_y,
 		    real_t dtdx,
 		    real_t dtdy)
   {
@@ -460,7 +460,7 @@ public:
 					 FluxData_x, FluxData_y,
 					 dtdx, dtdy);
     Kokkos::parallel_for(ijsize, functor);
-    
+
   }
 
   KOKKOS_INLINE_FUNCTION
@@ -469,25 +469,25 @@ public:
     const int isize = params.isize;
     const int jsize = params.jsize;
     const int ghostWidth = params.ghostWidth;
-    
+
     int i,j;
     index2coord(index,i,j,isize,jsize);
-    
+
     if(j >= ghostWidth && j <= jsize-ghostWidth  &&
        i >= ghostWidth && i <= isize-ghostWidth ) {
-      
+
       // local primitive variables
       HydroState qLoc; // local primitive variables
-      
+
       // local primitive variables in neighbor cell
       HydroState qLocNeighbor;
-      
+
       // local primitive variables in neighborbood
       HydroState qNeighbors_0;
       HydroState qNeighbors_1;
       HydroState qNeighbors_2;
       HydroState qNeighbors_3;
-      
+
       // Local slopes and neighbor slopes
       HydroState dqX;
       HydroState dqY;
@@ -504,85 +504,85 @@ public:
       //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
       // deal with left interface along X !
       //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-      
+
       // get primitive variables state vector
       qLoc[ID]         = Qdata(i  ,j  , ID);
       qNeighbors_0[ID] = Qdata(i+1,j  , ID);
       qNeighbors_1[ID] = Qdata(i-1,j  , ID);
       qNeighbors_2[ID] = Qdata(i  ,j+1, ID);
       qNeighbors_3[ID] = Qdata(i  ,j-1, ID);
-      
+
       qLoc[IP]         = Qdata(i  ,j  , IP);
       qNeighbors_0[IP] = Qdata(i+1,j  , IP);
       qNeighbors_1[IP] = Qdata(i-1,j  , IP);
       qNeighbors_2[IP] = Qdata(i  ,j+1, IP);
       qNeighbors_3[IP] = Qdata(i  ,j-1, IP);
-      
+
       qLoc[IU]         = Qdata(i  ,j  , IU);
       qNeighbors_0[IU] = Qdata(i+1,j  , IU);
       qNeighbors_1[IU] = Qdata(i-1,j  , IU);
       qNeighbors_2[IU] = Qdata(i  ,j+1, IU);
       qNeighbors_3[IU] = Qdata(i  ,j-1, IU);
-      
+
       qLoc[IV]         = Qdata(i  ,j  , IV);
       qNeighbors_0[IV] = Qdata(i+1,j  , IV);
       qNeighbors_1[IV] = Qdata(i-1,j  , IV);
       qNeighbors_2[IV] = Qdata(i  ,j+1, IV);
       qNeighbors_3[IV] = Qdata(i  ,j-1, IV);
-      
-      slope_unsplit_hydro_2d(qLoc, 
-			     qNeighbors_0, qNeighbors_1, 
+
+      slope_unsplit_hydro_2d(qLoc,
+			     qNeighbors_0, qNeighbors_1,
 			     qNeighbors_2, qNeighbors_3,
 			     dqX, dqY);
-	
-      // slopes at left neighbor along X      
+
+      // slopes at left neighbor along X
       qLocNeighbor[ID] = Qdata(i-1,j  , ID);
       qNeighbors_0[ID] = Qdata(i  ,j  , ID);
       qNeighbors_1[ID] = Qdata(i-2,j  , ID);
       qNeighbors_2[ID] = Qdata(i-1,j+1, ID);
       qNeighbors_3[ID] = Qdata(i-1,j-1, ID);
-      
+
       qLocNeighbor[IP] = Qdata(i-1,j  , IP);
       qNeighbors_0[IP] = Qdata(i  ,j  , IP);
       qNeighbors_1[IP] = Qdata(i-2,j  , IP);
       qNeighbors_2[IP] = Qdata(i-1,j+1, IP);
       qNeighbors_3[IP] = Qdata(i-1,j-1, IP);
-      
+
       qLocNeighbor[IU] = Qdata(i-1,j  , IU);
       qNeighbors_0[IU] = Qdata(i  ,j  , IU);
       qNeighbors_1[IU] = Qdata(i-2,j  , IU);
       qNeighbors_2[IU] = Qdata(i-1,j+1, IU);
       qNeighbors_3[IU] = Qdata(i-1,j-1, IU);
-      
+
       qLocNeighbor[IV] = Qdata(i-1,j  , IV);
       qNeighbors_0[IV] = Qdata(i  ,j  , IV);
       qNeighbors_1[IV] = Qdata(i-2,j  , IV);
       qNeighbors_2[IV] = Qdata(i-1,j+1, IV);
       qNeighbors_3[IV] = Qdata(i-1,j-1, IV);
-      
-      slope_unsplit_hydro_2d(qLocNeighbor, 
-			     qNeighbors_0, qNeighbors_1, 
+
+      slope_unsplit_hydro_2d(qLocNeighbor,
+			     qNeighbors_0, qNeighbors_1,
 			     qNeighbors_2, qNeighbors_3,
 			     dqX_neighbor, dqY_neighbor);
-      
+
       //
       // compute reconstructed states at left interface along X
       //
-      
+
       // left interface : right state
       trace_unsplit_2d_along_dir(qLoc,
 				 dqX, dqY,
 				 dtdx, dtdy, FACE_XMIN, qright);
-      
+
       // left interface : left state
       trace_unsplit_2d_along_dir(qLocNeighbor,
 				 dqX_neighbor,dqY_neighbor,
 				 dtdx, dtdy, FACE_XMAX, qleft);
-      
+
       // Solve Riemann problem at X-interfaces and compute X-fluxes
       //riemann_2d(qleft,qright,&qgdnv,&flux_x);
       riemann_hllc(qleft,qright,qgdnv,flux_x);
-	
+
       //
       // store fluxes X
       //
@@ -590,7 +590,7 @@ public:
       FluxData_x(i  ,j  , IP) = flux_x[IP] * dtdx;
       FluxData_x(i  ,j  , IU) = flux_x[IU] * dtdx;
       FluxData_x(i  ,j  , IV) = flux_x[IV] * dtdx;
-      
+
       //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
       // deal with left interface along Y !
       //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -601,34 +601,34 @@ public:
       qNeighbors_1[ID] = Qdata(i-1,j-1, ID);
       qNeighbors_2[ID] = Qdata(i  ,j  , ID);
       qNeighbors_3[ID] = Qdata(i  ,j-2, ID);
-      
+
       qLocNeighbor[IP] = Qdata(i  ,j-1, IP);
       qNeighbors_0[IP] = Qdata(i+1,j-1, IP);
       qNeighbors_1[IP] = Qdata(i-1,j-1, IP);
       qNeighbors_2[IP] = Qdata(i  ,j  , IP);
       qNeighbors_3[IP] = Qdata(i  ,j-2, IP);
-      
+
       qLocNeighbor[IU] = Qdata(i  ,j-1, IU);
       qNeighbors_0[IU] = Qdata(i+1,j-1, IU);
       qNeighbors_1[IU] = Qdata(i-1,j-1, IU);
       qNeighbors_2[IU] = Qdata(i  ,j  , IU);
       qNeighbors_3[IU] = Qdata(i  ,j-2, IU);
-      
+
       qLocNeighbor[IV] = Qdata(i  ,j-1, IV);
       qNeighbors_0[IV] = Qdata(i+1,j-1, IV);
       qNeighbors_1[IV] = Qdata(i-1,j-1, IV);
       qNeighbors_2[IV] = Qdata(i  ,j  , IV);
       qNeighbors_3[IV] = Qdata(i  ,j-2, IV);
-	
-      slope_unsplit_hydro_2d(qLocNeighbor, 
-			     qNeighbors_0, qNeighbors_1, 
+
+      slope_unsplit_hydro_2d(qLocNeighbor,
+			     qNeighbors_0, qNeighbors_1,
 			     qNeighbors_2, qNeighbors_3,
 			     dqX_neighbor, dqY_neighbor);
 
       //
       // compute reconstructed states at left interface along Y
       //
-	
+
       // left interface : right state
       trace_unsplit_2d_along_dir(qLoc,
 				 dqX, dqY,
@@ -652,18 +652,18 @@ public:
       FluxData_y(i  ,j  , IP) = flux_y[IP] * dtdy;
       FluxData_y(i  ,j  , IU) = flux_y[IV] * dtdy; //
       FluxData_y(i  ,j  , IV) = flux_y[IU] * dtdy; //
-          
+
     } // end if
-    
+
   } // end operator ()
-  
+
   DataArray Qdata;
   DataArray FluxData_x;
   DataArray FluxData_y;
   real_t dtdx, dtdy;
-  
+
 }; // ComputeAndStoreFluxesFunctor
-  
+
 /*************************************************/
 /*************************************************/
 /*************************************************/
@@ -676,10 +676,10 @@ public:
 		DataArray FluxData_x,
 		DataArray FluxData_y) :
     HydroBaseFunctor(params),
-    Udata(Udata), 
+    Udata(Udata),
     FluxData_x(FluxData_x),
     FluxData_y(FluxData_y) {};
-  
+
   // static method which does it all: create and execute functor
   static void apply(HydroParams params,
 		    DataArray Udata,
@@ -698,7 +698,7 @@ public:
     const int isize = params.isize;
     const int jsize = params.jsize;
     const int ghostWidth = params.ghostWidth;
-    
+
     int i,j;
     index2coord(index,i,j,isize,jsize);
 
@@ -714,25 +714,25 @@ public:
       Udata(i  ,j  , IP) -=  FluxData_x(i+1,j  , IP);
       Udata(i  ,j  , IU) -=  FluxData_x(i+1,j  , IU);
       Udata(i  ,j  , IV) -=  FluxData_x(i+1,j  , IV);
-      
+
       Udata(i  ,j  , ID) +=  FluxData_y(i  ,j  , ID);
       Udata(i  ,j  , IP) +=  FluxData_y(i  ,j  , IP);
       Udata(i  ,j  , IU) +=  FluxData_y(i  ,j  , IU);
       Udata(i  ,j  , IV) +=  FluxData_y(i  ,j  , IV);
-      
+
       Udata(i  ,j  , ID) -=  FluxData_y(i  ,j+1, ID);
       Udata(i  ,j  , IP) -=  FluxData_y(i  ,j+1, IP);
       Udata(i  ,j  , IU) -=  FluxData_y(i  ,j+1, IU);
       Udata(i  ,j  , IV) -=  FluxData_y(i  ,j+1, IV);
 
     } // end if
-    
+
   } // end operator ()
-  
+
   DataArray Udata;
   DataArray FluxData_x;
   DataArray FluxData_y;
-  
+
 }; // UpdateFunctor
 
 
@@ -748,9 +748,9 @@ public:
 		   DataArray Udata,
 		   DataArray FluxData) :
     HydroBaseFunctor(params),
-    Udata(Udata), 
+    Udata(Udata),
     FluxData(FluxData) {};
-  
+
   // static method which does it all: create and execute functor
   static void apply(HydroParams params,
 		    DataArray Udata,
@@ -767,10 +767,10 @@ public:
     const int isize = params.isize;
     const int jsize = params.jsize;
     const int ghostWidth = params.ghostWidth;
-    
+
     int i,j;
     index2coord(index,i,j,isize,jsize);
-    
+
     if(j >= ghostWidth && j < jsize-ghostWidth  &&
        i >= ghostWidth && i < isize-ghostWidth ) {
 
@@ -792,38 +792,38 @@ public:
 	Udata(i  ,j  , IP) +=  FluxData(i  ,j  , IP);
 	Udata(i  ,j  , IU) +=  FluxData(i  ,j  , IU);
 	Udata(i  ,j  , IV) +=  FluxData(i  ,j  , IV);
-	
+
 	Udata(i  ,j  , ID) -=  FluxData(i  ,j+1, ID);
 	Udata(i  ,j  , IP) -=  FluxData(i  ,j+1, IP);
 	Udata(i  ,j  , IU) -=  FluxData(i  ,j+1, IU);
 	Udata(i  ,j  , IV) -=  FluxData(i  ,j+1, IV);
 
       }
-      
+
     } // end if
-    
+
   } // end operator ()
-  
+
   DataArray Udata;
   DataArray FluxData;
-  
+
 }; // UpdateDirFunctor
 
-    
+
 /*************************************************/
 /*************************************************/
 /*************************************************/
 class ComputeSlopesFunctor : public HydroBaseFunctor {
-  
+
 public:
-  
+
   ComputeSlopesFunctor(HydroParams params,
 		       DataArray Qdata,
 		       DataArray Slopes_x,
 		       DataArray Slopes_y) :
     HydroBaseFunctor(params), Qdata(Qdata),
     Slopes_x(Slopes_x), Slopes_y(Slopes_y) {};
-  
+
   // static method which does it all: create and execute functor
   static void apply(HydroParams params,
 		    DataArray Qdata,
@@ -873,44 +873,44 @@ public:
 	qNeighbors_1[IP] = Qdata(i-1,j  , IP);
 	qNeighbors_2[IP] = Qdata(i  ,j+1, IP);
 	qNeighbors_3[IP] = Qdata(i  ,j-1, IP);
-	
+
 	qLoc[IU]         = Qdata(i  ,j  , IU);
 	qNeighbors_0[IU] = Qdata(i+1,j  , IU);
 	qNeighbors_1[IU] = Qdata(i-1,j  , IU);
 	qNeighbors_2[IU] = Qdata(i  ,j+1, IU);
 	qNeighbors_3[IU] = Qdata(i  ,j-1, IU);
-	
+
 	qLoc[IV]         = Qdata(i  ,j  , IV);
 	qNeighbors_0[IV] = Qdata(i+1,j  , IV);
 	qNeighbors_1[IV] = Qdata(i-1,j  , IV);
 	qNeighbors_2[IV] = Qdata(i  ,j+1, IV);
 	qNeighbors_3[IV] = Qdata(i  ,j-1, IV);
-	
-	slope_unsplit_hydro_2d(qLoc, 
-			       qNeighbors_0, qNeighbors_1, 
+
+	slope_unsplit_hydro_2d(qLoc,
+			       qNeighbors_0, qNeighbors_1,
 			       qNeighbors_2, qNeighbors_3,
 			       dqX, dqY);
-	
+
 	// copy back slopes in global arrays
 	Slopes_x(i  ,j, ID) = dqX[ID];
 	Slopes_y(i  ,j, ID) = dqY[ID];
-	
+
 	Slopes_x(i  ,j, IP) = dqX[IP];
 	Slopes_y(i  ,j, IP) = dqY[IP];
-	
+
 	Slopes_x(i  ,j, IU) = dqX[IU];
 	Slopes_y(i  ,j, IU) = dqY[IU];
-	
+
 	Slopes_x(i  ,j, IV) = dqX[IV];
 	Slopes_y(i  ,j, IV) = dqY[IV];
-      
+
     } // end if
-    
+
   } // end operator ()
-  
+
   DataArray Qdata;
   DataArray Slopes_x, Slopes_y;
-  
+
 }; // ComputeSlopesFunctor
 
 /*************************************************/
@@ -918,9 +918,9 @@ public:
 /*************************************************/
 template <Direction dir>
 class ComputeTraceAndFluxes_Functor : public HydroBaseFunctor {
-  
+
 public:
-  
+
   ComputeTraceAndFluxes_Functor(HydroParams params,
 				DataArray Qdata,
 				DataArray Slopes_x,
@@ -932,7 +932,7 @@ public:
     Slopes_x(Slopes_x), Slopes_y(Slopes_y),
     Fluxes(Fluxes),
     dtdx(dtdx), dtdy(dtdy) {};
-  
+
   // static method which does it all: create and execute functor
   static void apply(HydroParams params,
 		    DataArray Qdata,
@@ -943,7 +943,7 @@ public:
 		    real_t    dtdy)
   {
     const int ijsize = params.isize*params.jsize;
-    ComputeTraceAndFluxes_Functor<dir> functor(params, Qdata, 
+    ComputeTraceAndFluxes_Functor<dir> functor(params, Qdata,
                                                Slopes_x, Slopes_y,
                                                Fluxes,
 					       dtdx, dtdy);
@@ -956,10 +956,10 @@ public:
     const int isize = params.isize;
     const int jsize = params.jsize;
     const int ghostWidth = params.ghostWidth;
-    
+
     int i,j;
     index2coord(index,i,j,isize,jsize);
-    
+
     if(j >= ghostWidth && j <= jsize-ghostWidth  &&
        i >= ghostWidth && i <= isize-ghostWidth ) {
 
@@ -987,15 +987,15 @@ public:
 	qLoc[ID] = Qdata   (i  ,j, ID);
 	dqX[ID]  = Slopes_x(i  ,j, ID);
 	dqY[ID]  = Slopes_y(i  ,j, ID);
-	
+
 	qLoc[IP] = Qdata   (i  ,j, IP);
 	dqX[IP]  = Slopes_x(i  ,j, IP);
 	dqY[IP]  = Slopes_y(i  ,j, IP);
-	
+
 	qLoc[IU] = Qdata   (i  ,j, IU);
 	dqX[IU]  = Slopes_x(i  ,j, IU);
 	dqY[IU]  = Slopes_y(i  ,j, IU);
-	
+
 	qLoc[IV] = Qdata   (i  ,j, IV);
 	dqX[IV]  = Slopes_x(i  ,j, IV);
 	dqY[IV]  = Slopes_y(i  ,j, IV);
@@ -1006,34 +1006,34 @@ public:
 	  trace_unsplit_2d_along_dir(qLoc,
 				     dqX, dqY,
 				     dtdx, dtdy, FACE_XMIN, qright);
-	  
+
 	  qLocNeighbor[ID] = Qdata   (i-1,j  , ID);
 	  dqX_neighbor[ID] = Slopes_x(i-1,j  , ID);
 	  dqY_neighbor[ID] = Slopes_y(i-1,j  , ID);
-	  
+
 	  qLocNeighbor[IP] = Qdata   (i-1,j  , IP);
 	  dqX_neighbor[IP] = Slopes_x(i-1,j  , IP);
 	  dqY_neighbor[IP] = Slopes_y(i-1,j  , IP);
-	  
+
 	  qLocNeighbor[IU] = Qdata   (i-1,j  , IU);
 	  dqX_neighbor[IU] = Slopes_x(i-1,j  , IU);
 	  dqY_neighbor[IU] = Slopes_y(i-1,j  , IU);
-	  
+
 	  qLocNeighbor[IV] = Qdata   (i-1,j  , IV);
 	  dqX_neighbor[IV] = Slopes_x(i-1,j  , IV);
 	  dqY_neighbor[IV] = Slopes_y(i-1,j  , IV);
-	  
+
 	  // left interface : left state
 	  trace_unsplit_2d_along_dir(qLocNeighbor,
 				     dqX_neighbor,dqY_neighbor,
 				     dtdx, dtdy, FACE_XMAX, qleft);
-	  
+
 	  // Solve Riemann problem at X-interfaces and compute X-fluxes
 	  riemann_hllc(qleft,qright,qgdnv,flux);
 
 	  //
 	  // store fluxes
-	  //	
+	  //
 	  Fluxes(i  ,j , ID) =  flux[ID]*dtdx;
 	  Fluxes(i  ,j , IP) =  flux[IP]*dtdx;
 	  Fluxes(i  ,j , IU) =  flux[IU]*dtdx;
@@ -1045,54 +1045,54 @@ public:
 	  trace_unsplit_2d_along_dir(qLoc,
 				     dqX, dqY,
 				     dtdx, dtdy, FACE_YMIN, qright);
-	  
+
 	  qLocNeighbor[ID] = Qdata   (i  ,j-1, ID);
 	  dqX_neighbor[ID] = Slopes_x(i  ,j-1, ID);
 	  dqY_neighbor[ID] = Slopes_y(i  ,j-1, ID);
-	  
+
 	  qLocNeighbor[IP] = Qdata   (i  ,j-1, IP);
 	  dqX_neighbor[IP] = Slopes_x(i  ,j-1, IP);
 	  dqY_neighbor[IP] = Slopes_y(i  ,j-1, IP);
-	  
+
 	  qLocNeighbor[IU] = Qdata   (i  ,j-1, IU);
 	  dqX_neighbor[IU] = Slopes_x(i  ,j-1, IU);
 	  dqY_neighbor[IU] = Slopes_y(i  ,j-1, IU);
-	  
+
 	  qLocNeighbor[IV] = Qdata   (i  ,j-1, IV);
 	  dqX_neighbor[IV] = Slopes_x(i  ,j-1, IV);
 	  dqY_neighbor[IV] = Slopes_y(i  ,j-1, IV);
-	  
+
 	  // left interface : left state
 	  trace_unsplit_2d_along_dir(qLocNeighbor,
 				     dqX_neighbor,dqY_neighbor,
 				     dtdx, dtdy, FACE_YMAX, qleft);
-	  
+
 	  // Solve Riemann problem at Y-interfaces and compute Y-fluxes
 	  swapValues(&(qleft[IU]) ,&(qleft[IV]) );
 	  swapValues(&(qright[IU]),&(qright[IV]));
 	  riemann_hllc(qleft,qright,qgdnv,flux);
-	  
+
 	  //
 	  // update hydro array
-	  //	  
+	  //
 	  Fluxes(i  ,j  , ID) =  flux[ID]*dtdy;
 	  Fluxes(i  ,j  , IP) =  flux[IP]*dtdy;
 	  Fluxes(i  ,j  , IU) =  flux[IV]*dtdy; // IU/IV swapped
 	  Fluxes(i  ,j  , IV) =  flux[IU]*dtdy; // IU/IV swapped
 
 	}
-	      
+
     } // end if
-    
+
   } // end operator ()
-  
+
   DataArray Qdata;
   DataArray Slopes_x, Slopes_y;
   DataArray Fluxes;
   real_t dtdx, dtdy;
-  
+
 }; // ComputeTraceAndFluxes_Functor
-    
+
 /*************************************************/
 /*************************************************/
 /*************************************************/
@@ -1102,7 +1102,7 @@ public:
   InitImplodeFunctor(HydroParams params,
 		     DataArray Udata) :
     HydroBaseFunctor(params), Udata(Udata)  {};
-  
+
   // static method which does it all: create and execute functor
   static void apply(HydroParams params,
 		    DataArray Udata)
@@ -1119,20 +1119,20 @@ public:
     const int isize = params.isize;
     const int jsize = params.jsize;
     const int ghostWidth = params.ghostWidth;
-    
+
     const real_t xmin = params.xmin;
     const real_t ymin = params.ymin;
     const real_t dx = params.dx;
     const real_t dy = params.dy;
-    
+
     const real_t gamma0 = params.settings.gamma0;
-    
+
     int i,j;
     index2coord(index,i,j,isize,jsize);
-    
+
     real_t x = xmin + dx/2 + (i-ghostWidth)*dx;
     real_t y = ymin + dy/2 + (j-ghostWidth)*dy;
-    
+
     real_t tmp = x+y*y;
     if (tmp > 0.5 && tmp < 1.5) {
       Udata(i  ,j  , ID) = 1.0;
@@ -1145,13 +1145,13 @@ public:
       Udata(i  ,j  , IU) = 0.0;
       Udata(i  ,j  , IV) = 0.0;
     }
-    
+
   } // end operator ()
 
   DataArray Udata;
 
 }; // InitImplodeFunctor
-  
+
 /*************************************************/
 /*************************************************/
 /*************************************************/
@@ -1161,7 +1161,7 @@ public:
   InitBlastFunctor(HydroParams params,
 		   DataArray Udata) :
     HydroBaseFunctor(params), Udata(Udata)  {};
-  
+
   // static method which does it all: create and execute functor
   static void apply(HydroParams params,
 		    DataArray Udata)
@@ -1178,12 +1178,12 @@ public:
     const int isize = params.isize;
     const int jsize = params.jsize;
     const int ghostWidth = params.ghostWidth;
-    
+
     const real_t xmin = params.xmin;
     const real_t ymin = params.ymin;
     const real_t dx = params.dx;
     const real_t dy = params.dy;
-    
+
     const real_t gamma0 = params.settings.gamma0;
 
     // blast problem parameters
@@ -1195,18 +1195,18 @@ public:
     const real_t blast_density_out = params.blast_density_out;
     const real_t blast_pressure_in = params.blast_pressure_in;
     const real_t blast_pressure_out= params.blast_pressure_out;
-  
+
 
     int i,j;
     index2coord(index,i,j,isize,jsize);
-    
+
     real_t x = xmin + dx/2 + (i-ghostWidth)*dx;
     real_t y = ymin + dy/2 + (j-ghostWidth)*dy;
 
-    real_t d2 = 
+    real_t d2 =
       (x-blast_center_x)*(x-blast_center_x)+
-      (y-blast_center_y)*(y-blast_center_y);    
-    
+      (y-blast_center_y)*(y-blast_center_y);
+
     if (d2 < radius2) {
       Udata(i  ,j  , ID) = blast_density_in;
       Udata(i  ,j  , IP) = blast_pressure_in/(gamma0-1.0);
@@ -1218,26 +1218,26 @@ public:
       Udata(i  ,j  , IU) = 0.0;
       Udata(i  ,j  , IV) = 0.0;
     }
-    
+
   } // end operator ()
-  
+
   DataArray Udata;
-  
+
 }; // InitBlastFunctor
-  
+
 
 /*************************************************/
 /*************************************************/
 /*************************************************/
 template <FaceIdType faceId>
 class MakeBoundariesFunctor : public HydroBaseFunctor {
-  
+
 public:
-  
+
   MakeBoundariesFunctor(HydroParams params,
 			DataArray Udata) :
     HydroBaseFunctor(params), Udata(Udata)  {};
-  
+
 
   // static method which does it all: create and execute functor
   static void apply(HydroParams params,
@@ -1245,46 +1245,46 @@ public:
   {
     int nbIter = params.ghostWidth*std::max(params.isize,
 					    params.jsize);
-    
+
     MakeBoundariesFunctor<faceId> functor(params, Udata);
     Kokkos::parallel_for(nbIter, functor);
   }
-  
+
   KOKKOS_INLINE_FUNCTION
   void operator()(const int& index) const
   {
     const int nx = params.nx;
     const int ny = params.ny;
-    
+
     //const int isize = params.isize;
     //const int jsize = params.jsize;
     const int ghostWidth = params.ghostWidth;
-    
+
     const int imin = params.imin;
     const int imax = params.imax;
-    
+
     const int jmin = params.jmin;
     const int jmax = params.jmax;
-    
+
     int i,j;
 
     int i0, j0;
 
     if (faceId == FACE_XMIN) {
-      
+
       // boundary xmin
       int boundary_type = params.boundary_type_xmin;
 
       j = index / ghostWidth;
       i = index - j*ghostWidth;
-      
+
       if(j >= jmin && j <= jmax    &&
 	 i >= 0    && i <ghostWidth) {
-	
+
 	for ( int iVar=0; iVar<NBVAR; iVar++ ) {
-	  
+
 	  real_t sign=1.0;
-	  
+
 	  if ( boundary_type == BC_DIRICHLET ) {
 	    i0=2*ghostWidth-1-i;
 	    if (iVar==IU) sign=-1.0;
@@ -1293,16 +1293,16 @@ public:
 	  } else { // periodic
 	    i0=nx+i;
 	  }
-	  
+
 	  Udata(i  ,j  , iVar) = Udata(i0  ,j  , iVar)*sign;
-	  
+
 	}
-	
+
       }
     }
 
     if (faceId == FACE_XMAX) {
-      
+
       // boundary xmax
       int boundary_type = params.boundary_type_xmax;
 
@@ -1312,11 +1312,11 @@ public:
 
       if(j >= jmin          && j <= jmax             &&
 	 i >= nx+ghostWidth && i <= nx+2*ghostWidth-1) {
-	
+
 	for ( int iVar=0; iVar<NBVAR; iVar++ ) {
-	  
+
 	  real_t sign=1.0;
-	  
+
 	  if ( boundary_type == BC_DIRICHLET ) {
 	    i0=2*nx+2*ghostWidth-1-i;
 	    if (iVar==IU) sign=-1.0;
@@ -1325,15 +1325,15 @@ public:
 	  } else { // periodic
 	    i0=i-nx;
 	  }
-	  
+
 	  Udata(i  ,j  , iVar) = Udata(i0 ,j  , iVar)*sign;
-	  
+
 	}
       }
     }
-    
+
     if (faceId == FACE_YMIN) {
-      
+
       // boundary ymin
       int boundary_type = params.boundary_type_ymin;
 
@@ -1342,7 +1342,7 @@ public:
 
       if(i >= imin && i <= imax    &&
 	 j >= 0    && j <ghostWidth) {
-	
+
 	for ( int iVar=0; iVar<NBVAR; iVar++ ) {
 
 	  real_t sign=1.0;
@@ -1355,7 +1355,7 @@ public:
 	  } else { // periodic
 	    j0=ny+j;
 	  }
-	  
+
 	  Udata(i  ,j  , iVar) = Udata(i  ,j0 , iVar)*sign;
 	}
       }
@@ -1369,14 +1369,14 @@ public:
       i = index / ghostWidth;
       j = index - i*ghostWidth;
       j += (ny+ghostWidth);
-      
+
       if(i >= imin          && i <= imax              &&
 	 j >= ny+ghostWidth && j <= ny+2*ghostWidth-1) {
-	
+
 	for ( int iVar=0; iVar<NBVAR; iVar++ ) {
-	  
+
 	  real_t sign=1.0;
-	  
+
 	  if ( boundary_type == BC_DIRICHLET ) {
 	    j0=2*ny+2*ghostWidth-1-j;
 	    if (iVar==IV) sign=-1.0;
@@ -1385,19 +1385,18 @@ public:
 	  } else { // periodic
 	    j0=j-ny;
 	  }
-	  
+
 	  Udata(i  ,j  , iVar) = Udata(i  ,j0  , iVar)*sign;
-	  
+
 	}
 
       }
     }
-    
+
   } // end operator ()
 
   DataArray Udata;
-  
-}; // MakeBoundariesFunctor
-  
-#endif // HYDRO_RUN_FUNCTORS_H_
 
+}; // MakeBoundariesFunctor
+
+#endif // HYDRO_RUN_FUNCTORS_H_
