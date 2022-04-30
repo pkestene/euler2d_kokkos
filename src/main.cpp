@@ -78,6 +78,8 @@ int main(int argc, char *argv[]) {
   hydro->make_boundaries(hydro->U);
   hydro->make_boundaries(hydro->U2);
 
+  Kokkos::Profiling::pushRegion("main_loop");
+
   // start computation
   std::cout << "Start computation....\n";
   total_timer.start();
@@ -91,6 +93,7 @@ int main(int argc, char *argv[]) {
 
     // output
     if (params.enableOutput) {
+      Kokkos::Profiling::pushRegion("output");
       if (params.nOutput > 0 and nStep % params.nOutput == 0) {
         std::cout << "Output results at time t=" << t << " step " << nStep
                   << " dt=" << dt << std::endl;
@@ -101,6 +104,7 @@ int main(int argc, char *argv[]) {
           hydro->saveVTK(hydro->U2, nStep, "U");
         io_timer.stop();
       } // end output
+      Kokkos::Profiling::popRegion();
     }   // end enable output
 
     // compute new dt
@@ -133,6 +137,7 @@ int main(int argc, char *argv[]) {
 
   // end of computation
   total_timer.stop();
+  Kokkos::Profiling::popRegion();
 
   // print monitoring information
   {

@@ -126,10 +126,12 @@ real_t HydroRun::compute_dt(int useU)
   else
     Udata = U2;
 
+  Kokkos::Profiling::pushRegion("compute_dt");
   // call device functor
   ComputeDtFunctor::apply(params, Udata, invDt);
 
   dt = params.settings.cfl/invDt;
+  Kokkos::Profiling::popRegion();
 
   return dt;
 
@@ -169,9 +171,11 @@ void HydroRun::godunov_unsplit_cpu(DataArray data_in,
   dtdy = dt / params.dy;
 
   // fill ghost cell in data_in
+  Kokkos::Profiling::pushRegion("make_boundaries");
   boundaries_timer.start();
   make_boundaries(data_in);
   boundaries_timer.stop();
+  Kokkos::Profiling::popRegion();
 
   // copy data_in into data_out (not necessary)
   // data_out = data_in;
@@ -181,10 +185,13 @@ void HydroRun::godunov_unsplit_cpu(DataArray data_in,
   godunov_timer.start();
 
   // convert conservative variable into primitives ones for the entire domain
+  Kokkos::Profiling::pushRegion("compute_primitives");
   convertToPrimitives(data_in);
+  Kokkos::Profiling::popRegion();
 
   if (params.implementationVersion == 0) {
 
+    Kokkos::Profiling::pushRegion("hydro_impl0");
     // compute fluxes
     ComputeAndStoreFluxesFunctor::apply(params, Q,
 					Fluxes_x, Fluxes_y,
@@ -193,8 +200,11 @@ void HydroRun::godunov_unsplit_cpu(DataArray data_in,
     // actual update
     UpdateFunctor::apply(params, data_out,
 			 Fluxes_x, Fluxes_y);
+    Kokkos::Profiling::popRegion();
 
   } else if (params.implementationVersion == 1) {
+
+    Kokkos::Profiling::pushRegion("hydro_impl1");
 
     // call device functor to compute slopes
     ComputeSlopesFunctor::apply(params, Q, Slopes_x, Slopes_y);
@@ -216,6 +226,7 @@ void HydroRun::godunov_unsplit_cpu(DataArray data_in,
 
     // and update along Y axis
     UpdateDirFunctor<YDIR>::apply(params, data_out, Fluxes_y);
+    Kokkos::Profiling::popRegion();
 
   } // end params.implementationVersion == 1
 
