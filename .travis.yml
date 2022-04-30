@@ -1,6 +1,6 @@
 language: cpp
 
-dist: bionic
+dist: focal
 
 compiler:
 - g++
@@ -27,5 +27,3 @@ before_script:
 
 script:
   - make
-
-
