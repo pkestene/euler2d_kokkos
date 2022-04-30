@@ -85,8 +85,8 @@ public:
     real_t e = u[IP] / d - eken;
 
     // compute pressure and speed of sound
-    p = fmax((gamma0 - 1.0) * d * e, d * smallp);
-    *c = sqrt(gamma0 * (p) / d);
+    p = FMAX((gamma0 - 1.0) * d * e, d * smallp);
+    *c = SQRT(gamma0 * (p) / d);
 
     q[ID] = d;
     q[IP] = p;
