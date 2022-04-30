@@ -243,9 +243,6 @@ void HydroRun::convertToPrimitives(DataArray Udata)
 // //////////////////////////////////////////////////
 void HydroRun::make_boundaries(DataArray Udata)
 {
-  const int ghostWidth=params.ghostWidth;
-  const int isize = params.isize;
-  const int jsize = params.jsize;
 
   // call device functors
   MakeBoundariesFunctor<FACE_XMIN>::apply(params, Udata);
