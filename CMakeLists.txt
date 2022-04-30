@@ -21,7 +21,7 @@ endif()
 # build kokkos, provided as a git submodule
 add_subdirectory(external/kokkos)
 
-option (USE_DOUBLE "build with double precision" ON)
+option (USE_DOUBLE "build with double precision" OFF)
 if (USE_DOUBLE)
   add_compile_options(-DUSE_DOUBLE)
   # cmake version also have this
