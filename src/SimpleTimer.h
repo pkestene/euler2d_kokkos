@@ -1,33 +1,32 @@
 /**
- * \file Timer.h
+ * \file SimpleTimer.h
  * \brief A simple timer class.
  *
  * \author Pierre Kestener
  * \date 29 Oct 2010
  *
  */
-#ifndef MONITORING_TIMER_H_
-#define MONITORING_TIMER_H_
+#ifndef SIMPLE_TIMER_H_
+#define SIMPLE_TIMER_H_
 
 #include <time.h>
 #include <sys/time.h> // for gettimeofday and struct timeval
 
 typedef struct timeval timeval_t;
 
-
 /**
  * \brief a simple Timer class.
  * If MPI is enabled, should we use MPI_WTime instead of gettimeofday (?!?)
  */
-class Timer
+class SimpleTimer
 {
 public:
   /** default constructor, timing starts rightaway */
-  Timer();
+  SimpleTimer();
 
-  Timer(double t);
-  Timer(Timer const& aTimer);
-  virtual ~Timer();
+  SimpleTimer(double t);
+  SimpleTimer(SimpleTimer const& aTimer);
+  virtual ~SimpleTimer();
 
   /** start time measure */
   virtual void start();
@@ -44,7 +43,7 @@ protected:
   /** store total accumulated timings */
   double    total_time;
 
-}; // class Timer
+}; // class SimpleTimer
 
 
-#endif // MONITORING_TIMER_H_
+#endif // SIMPLE_TIMER_H_
