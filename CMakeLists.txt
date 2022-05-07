@@ -18,6 +18,9 @@ if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
     "Debug" "Release" "MinSizeRel" "RelWithDebInfo")
 endif()
 
+# always export compile commands database
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
 # build kokkos, provided as a git submodule
 add_subdirectory(external/kokkos)
 

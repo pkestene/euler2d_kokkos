@@ -13,12 +13,8 @@
 #include "HydroBaseFunctor.h"
 #include "HydroParams.h" // read parameter file
 #include "HydroRun.h"    // memory allocation for hydro arrays
-#include "Timer.h"       // for timer
 #include "real_type.h"   // choose between single and double precision
-
-#ifdef KOKKOS_ENABLE_CUDA
-#include "CudaTimer.h"
-#endif
+#include "Timer.h"       // measure time
 
 int main(int argc, char *argv[]) {
 
