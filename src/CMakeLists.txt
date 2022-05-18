@@ -26,5 +26,6 @@ target_include_directories(euler2d
 target_link_libraries(euler2d Kokkos::kokkos)
 
 configure_file(test_blast.ini test_blast.ini COPYONLY)
+configure_file(test_blast_large.ini test_blast_large.ini COPYONLY)
 configure_file(test_implode.ini test_implode.ini COPYONLY)
 configure_file(test_implode_big.ini test_implode_big.ini COPYONLY)
