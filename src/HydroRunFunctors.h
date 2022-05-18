@@ -29,7 +29,8 @@ public:
 		    real_t& invDt) {
     const int ijsize = params.isize*params.jsize;
     ComputeDtFunctor computeDtFunctor(params, Udata);
-    Kokkos::parallel_reduce(ijsize, computeDtFunctor, invDt);
+    Kokkos::parallel_reduce("Computedt", Kokkos::RangePolicy<>(0,ijsize),
+                            computeDtFunctor, invDt);
   }
 
   // Tell each thread how to initialize its reduction result.
@@ -123,7 +124,8 @@ public:
   {
     const int ijsize = params.isize*params.jsize;
     ConvertToPrimitivesFunctor convertToPrimitivesFunctor(params, Udata, Qdata);
-    Kokkos::parallel_for(ijsize, convertToPrimitivesFunctor);
+    Kokkos::parallel_for("ConvertToPrimitives", Kokkos::RangePolicy<>(0,ijsize),
+                         convertToPrimitivesFunctor);
   }
 
   KOKKOS_INLINE_FUNCTION
@@ -202,7 +204,7 @@ public:
 // 								Qm_x, Qm_y,
 // 								Qp_x, Qp_y,
 // 								dtdx, dtdy);
-//     Kokkos::parallel_for(ijsize, computeFluxesAndUpdateFunctor);
+//     Kokkos::parallel_for("ComputeFluxesAndUpdate", Kokkos::RangePolicy<>(0,ijsize), computeFluxesAndUpdateFunctor);
 //   }
 
 //   KOKKOS_INLINE_FUNCTION
@@ -325,7 +327,7 @@ public:
 // 					    Qm_x, Qm_y,
 // 					    Qp_x, Qp_y,
 // 					    dtdx, dtdy);
-//     Kokkos::parallel_for(ijsize, computeTraceFunctor);
+//     Kokkos::parallel_for("ComputeTrace",Kokkos::RangePolicy<>(0,ijsize), computeTraceFunctor);
 
 //   }
 
@@ -461,7 +463,7 @@ public:
     ComputeAndStoreFluxesFunctor functor(params, Qdata,
 					 FluxData_x, FluxData_y,
 					 dtdx, dtdy);
-    Kokkos::parallel_for(ijsize, functor);
+    Kokkos::parallel_for("ComputeAndStoreFluxes", Kokkos::RangePolicy<>(0,ijsize), functor);
 
   }
 
@@ -691,7 +693,7 @@ public:
     const int ijsize = params.isize*params.jsize;
     UpdateFunctor functor(params, Udata,
 			  FluxData_x, FluxData_y);
-    Kokkos::parallel_for(ijsize, functor);
+    Kokkos::parallel_for("UpdateFunctor", Kokkos::RangePolicy<>(0,ijsize), functor);
   }
 
   KOKKOS_INLINE_FUNCTION
@@ -760,7 +762,7 @@ public:
   {
     const int ijsize = params.isize*params.jsize;
     UpdateDirFunctor<dir> functor(params, Udata, FluxData);
-    Kokkos::parallel_for(ijsize, functor);
+    Kokkos::parallel_for("UpdateDir", Kokkos::RangePolicy<>(0,ijsize), functor);
   }
 
   KOKKOS_INLINE_FUNCTION
@@ -834,7 +836,7 @@ public:
   {
     const int ijsize = params.isize*params.jsize;
     ComputeSlopesFunctor functor(params, Qdata, Slopes_x, Slopes_y);
-    Kokkos::parallel_for(ijsize, functor);
+    Kokkos::parallel_for("ComputeSlopes", Kokkos::RangePolicy<>(0,ijsize), functor);
   }
 
   KOKKOS_INLINE_FUNCTION
@@ -949,7 +951,7 @@ public:
                                                Slopes_x, Slopes_y,
                                                Fluxes,
 					       dtdx, dtdy);
-    Kokkos::parallel_for(ijsize, functor);
+    Kokkos::parallel_for("ComputeTraceAndFluxes", Kokkos::RangePolicy<>(0,ijsize), functor);
   }
 
   KOKKOS_INLINE_FUNCTION
@@ -1111,7 +1113,7 @@ public:
   {
     const int ijsize = params.isize*params.jsize;
     InitImplodeFunctor functor(params, Udata);
-    Kokkos::parallel_for(ijsize, functor);
+    Kokkos::parallel_for("InitImplode", Kokkos::RangePolicy<>(0,ijsize), functor);
   }
 
   KOKKOS_INLINE_FUNCTION
@@ -1170,7 +1172,7 @@ public:
   {
     const int ijsize = params.isize*params.jsize;
     InitBlastFunctor functor(params, Udata);
-    Kokkos::parallel_for(ijsize, functor);
+    Kokkos::parallel_for("InitBlast", Kokkos::RangePolicy<>(0,ijsize), functor);
   }
 
   KOKKOS_INLINE_FUNCTION
@@ -1249,7 +1251,7 @@ public:
 					    params.jsize);
 
     MakeBoundariesFunctor<faceId> functor(params, Udata);
-    Kokkos::parallel_for(nbIter, functor);
+    Kokkos::parallel_for("MakeBoundaries", Kokkos::RangePolicy<>(0,nbIter), functor);
   }
 
   KOKKOS_INLINE_FUNCTION
