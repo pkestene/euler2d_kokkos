@@ -9,6 +9,8 @@
 
 #include "HydroBaseFunctor.h"
 
+namespace euler2d {
+
 /*************************************************/
 /*************************************************/
 /*************************************************/
@@ -73,10 +75,10 @@ public:
 
       // get primitive variables in current cell
       computePrimitives(uLoc, &c, qLoc);
-      vx = c+FABS(qLoc[IU]);
-      vy = c+FABS(qLoc[IV]);
+      vx = c+fabs(qLoc[IU]);
+      vy = c+fabs(qLoc[IV]);
 
-      invDt = FMAX(invDt, vx/dx + vy/dy);
+      invDt = fmax(invDt, vx/dx + vy/dy);
 
     }
 
@@ -1398,5 +1400,7 @@ public:
   DataArray Udata;
 
 }; // MakeBoundariesFunctor
+
+} // namespace euler2d
 
 #endif // HYDRO_RUN_FUNCTORS_H_

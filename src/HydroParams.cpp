@@ -7,6 +7,8 @@
 
 #include "config/inih/ini.h" // our INI file reader
 
+namespace euler2d {
+
 const char * varNames[4] = { "rho", "E", "mx", "my" };
 
 /*
@@ -155,3 +157,5 @@ void HydroParams::print()
   printf( "##########################\n");
 
 } // HydroParams::print
+
+} // namespace euler2d

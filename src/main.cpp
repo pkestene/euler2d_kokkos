@@ -18,6 +18,8 @@
 
 int main(int argc, char *argv[]) {
 
+  using real_t = euler2d::real_t;
+
   /*
    * Initialize kokkos (host + device)
    *
@@ -60,14 +62,14 @@ int main(int argc, char *argv[]) {
   ConfigMap configMap(input_file);
 
   // test: create a HydroParams object
-  HydroParams params = HydroParams();
+  euler2d::HydroParams params = euler2d::HydroParams();
   params.setup(configMap);
 
   // print parameters on screen
   params.print();
 
   // initialize workspace memory (U, U2, ...)
-  HydroRun *hydro = new HydroRun(params, configMap);
+  euler2d::HydroRun *hydro = new euler2d::HydroRun(params, configMap);
   dt = hydro->compute_dt(nStep % 2);
 
   // initialize boundaries

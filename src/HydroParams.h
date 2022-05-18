@@ -16,6 +16,8 @@
 
 #include "hydro_common.h"
 
+namespace euler2d {
+
 //! hydro field indexes
 enum ComponentIndex {
   ID=0,  /*!< ID Density field index */
@@ -189,5 +191,6 @@ struct HydroParams {
 
 }; // struct HydroParams
 
-
+} // namespace euler2d
+  //
 #endif // HYDRO_PARAMS_H_

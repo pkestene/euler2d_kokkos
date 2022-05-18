@@ -15,6 +15,8 @@
 // Kokkos
 #include "kokkos_shared.h"
 
+namespace euler2d {
+
 static bool isBigEndian()
 {
   const int i = 1;
@@ -402,3 +404,5 @@ void HydroRun::saveVTK(DataArray Udata,
   outFile.close();
 
 } // HydroRun::saveVTK
+
+} // namespace euler2d

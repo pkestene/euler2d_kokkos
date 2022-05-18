@@ -5,6 +5,8 @@
 
 #include "HydroParams.h"
 
+namespace euler2d {
+
 /**
  * Base class to derive actual kokkos functor.
  * params is passed by copy.
@@ -54,8 +56,8 @@ public:
     const real_t gamma0 = params.settings.gamma0;
     const real_t smallp = params.settings.smallp;
 
-    *p = FMAX((gamma0 - ONE_F) * rho * eint, rho * smallp);
-    *c = SQRT(gamma0 * (*p) / rho);
+    *p = fmax((gamma0 - ONE_F) * rho * eint, rho * smallp);
+    *c = sqrt(gamma0 * (*p) / rho);
 
   } // eos
 
@@ -85,8 +87,8 @@ public:
     real_t e = u[IP] / d - eken;
 
     // compute pressure and speed of sound
-    p = FMAX((gamma0 - 1.0) * d * e, d * smallp);
-    *c = SQRT(gamma0 * (p) / d);
+    p = fmax((gamma0 - 1.0) * d * e, d * smallp);
+    *c = sqrt(gamma0 * (p) / d);
 
     q[ID] = d;
     q[IP] = p;
@@ -416,22 +418,22 @@ public:
     drgt = slope_type*(qPlusX - q      );
     dcen = HALF_F * (qPlusX - qMinusX);
     dsgn = (dcen >= ZERO_F) ? ONE_F : -ONE_F;
-    slop = fmin( FABS(dlft), FABS(drgt) );
+    slop = fmin( fabs(dlft), fabs(drgt) );
     dlim = slop;
     if ( (dlft*drgt) <= ZERO_F )
       dlim = ZERO_F;
-    *dqX = dsgn * fmin( dlim, FABS(dcen) );
+    *dqX = dsgn * fmin( dlim, fabs(dcen) );
 
     // slopes in second coordinate direction
     dlft = slope_type*(q      - qMinusY);
     drgt = slope_type*(qPlusY - q      );
     dcen = HALF_F * (qPlusY - qMinusY);
     dsgn = (dcen >= ZERO_F) ? ONE_F : -ONE_F;
-    slop = fmin( FABS(dlft), FABS(drgt) );
+    slop = fmin( fabs(dlft), fabs(drgt) );
     dlim = slop;
     if ( (dlft*drgt) <= ZERO_F )
       dlim = ZERO_F;
-    *dqY = dsgn * fmin( dlim, FABS(dcen) );
+    *dqY = dsgn * fmin( dlim, fabs(dcen) );
 
   } // slope_unsplit_hydro_2d_scalar
 
@@ -555,8 +557,8 @@ public:
     real_t cr = gamma0*pr*rr;
 
     // First guess
-    real_t wl = SQRT(cl);
-    real_t wr = SQRT(cr);
+    real_t wl = sqrt(cl);
+    real_t wr = sqrt(cr);
     real_t pstar = fmax(((wr*pl+wl*pr)+wl*wr*(ul-ur))/(wl+wr), (real_t) ZERO_F);
     real_t pold = pstar;
     real_t conv = ONE_F;
@@ -564,8 +566,8 @@ public:
     // Newton-Raphson iterations to find pstar at the required accuracy
     for(int iter = 0; (iter < 10 /*niter_riemann*/) && (conv > 1e-6); ++iter)
       {
-	real_t wwl = SQRT(cl*(ONE_F+gamma6*(pold-pl)/pl));
-	real_t wwr = SQRT(cr*(ONE_F+gamma6*(pold-pr)/pr));
+	real_t wwl = sqrt(cl*(ONE_F+gamma6*(pold-pl)/pl));
+	real_t wwr = sqrt(cr*(ONE_F+gamma6*(pold-pr)/pr));
 	real_t ql = 2.0f*wwl*wwl*wwl/(wwl*wwl+cl);
 	real_t qr = 2.0f*wwr*wwr*wwr/(wwr*wwr+cr);
 	real_t usl = ul-(pold-pl)/wwl;
@@ -573,14 +575,14 @@ public:
 	real_t delp = fmax(qr*ql/(qr+ql)*(usl-usr),-pold);
 
 	pold = pold+delp;
-	conv = FABS(delp/(pold+smallpp));	 // Convergence indicator
+	conv = fabs(delp/(pold+smallpp));	 // Convergence indicator
       }
 
     // Star region pressure
     // for a two-shock Riemann problem
     pstar = pold;
-    wl = SQRT(cl*(ONE_F+gamma6*(pstar-pl)/pl));
-    wr = SQRT(cr*(ONE_F+gamma6*(pstar-pr)/pr));
+    wl = sqrt(cl*(ONE_F+gamma6*(pstar-pl)/pl));
+    wr = sqrt(cr*(ONE_F+gamma6*(pstar-pr)/pr));
 
     // Star region velocity
     // for a two shock Riemann problem
@@ -605,12 +607,12 @@ public:
 	po = pr;
 	wo = wr;
       }
-    real_t co = fmax(smallc, SQRT(FABS(gamma0*po/ro)));
+    real_t co = fmax(smallc, sqrt(fabs(gamma0*po/ro)));
 
     // Star region density (Shock, fmax prevents vacuum formation in star region)
     real_t rstar = fmax((real_t) (ro/(ONE_F+ro*(po-pstar)/(wo*wo))), (real_t) (smallr));
     // Star region sound speed
-    real_t cstar = fmax(smallc, SQRT(FABS(gamma0*pstar/rstar)));
+    real_t cstar = fmax(smallc, sqrt(fabs(gamma0*pstar/rstar)));
 
     // Compute rarefaction head and tail speed
     real_t spout  = co    - sgnm*uo;
@@ -625,7 +627,7 @@ public:
       }
 
     // Sample the solution at x/t=0
-    real_t scr = fmax(spout-spin, smallc+FABS(spout+spin));
+    real_t scr = fmax(spout-spin, smallc+fabs(spout+spin));
     real_t frac = HALF_F * (ONE_F + (spout + spin)/scr);
 
     if (frac != frac) /* Not a Number */
@@ -711,8 +713,8 @@ public:
     real_t ptotr = pr;
 
     // Find the largest eigenvalues in the normal direction to the interface
-    real_t cfastl = SQRT(fmax(gamma0*pl/rl,smallc*smallc));
-    real_t cfastr = SQRT(fmax(gamma0*pr/rr,smallc*smallc));
+    real_t cfastl = sqrt(fmax(gamma0*pl/rl,smallc*smallc));
+    real_t cfastr = sqrt(fmax(gamma0*pr/rr,smallc*smallc));
 
     // Compute HLL wave speed
     real_t SL = fmin(ul,ur) - fmax(cfastl,cfastr);
@@ -771,5 +773,7 @@ public:
   } // riemann_hllc
 
 }; // class HydroBaseFunctor
+
+} // namespace euler2d
 
 #endif // HYDRO_BASE_FUNCTOR_H_

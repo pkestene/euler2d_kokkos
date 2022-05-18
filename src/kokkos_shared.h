@@ -8,6 +8,8 @@
 #include "real_type.h"
 #include "hydro_common.h"
 
+namespace euler2d {
+
 using Device = Kokkos::DefaultExecutionSpace;
 
 // first index is space localtion, second is hydro variable
@@ -44,5 +46,7 @@ int coord2index(int i, int j, int Nx, int Ny) {
   return j + Ny*i; // right layout
 #endif
 }
+
+} // namespace euler2d
 
 #endif // KOKKOS_SHARED_H_

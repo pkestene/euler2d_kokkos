@@ -6,11 +6,9 @@
 #ifdef KOKKOS_ENABLE_CUDA
 #include "CudaTimer.h"
 using Timer = CudaTimer;
-#warning "QQQ2"
 #else
 #include "SimpleTimer.h"
 using Timer = SimpleTimer;
-#warning "QQQ OpenMP2"
 #endif
 
 #endif // EULER_KOKKOS_TIMER_H_

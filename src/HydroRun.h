@@ -8,6 +8,8 @@
 #include "HydroParams.h"
 #include "kokkos_shared.h"
 
+namespace euler2d {
+
 /**
  * Main hydrodynamics data structure.
  */
@@ -68,5 +70,7 @@ public:
   void saveVTK(DataArray Udata, int iStep, std::string name);
 
 }; // class HydroRun
+
+} // namespace euler2d
 
 #endif // HYDRO_RUN_H_
