@@ -2,8 +2,6 @@
 #define KOKKOS_SHARED_H_
 
 #include <Kokkos_Core.hpp>
-#include <Kokkos_Parallel.hpp>
-#include <Kokkos_View.hpp>
 
 #include "real_type.h"
 #include "hydro_common.h"
