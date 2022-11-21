@@ -4,6 +4,12 @@ project(
   DESCRIPTION "euler2d_kokkos is mini application using C++/Kokkos library, used for teaching purpose"
   LANGUAGES CXX C)
 
+#
+# default local cmake macro repository
+#
+list(INSERT CMAKE_MODULE_PATH 0 "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
+
+
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
@@ -21,8 +27,10 @@ endif()
 # always export compile commands database
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-# build kokkos, provided as a git submodule
-add_subdirectory(external/kokkos)
+#
+# Kokkos : https://github.com/kokkos/kokkos
+#
+include(build_or_find_kokkos)
 
 option (USE_DOUBLE "build with double precision" OFF)
 if (USE_DOUBLE)

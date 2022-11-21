@@ -25,12 +25,29 @@ git submodule update
 
 We strongly recommend the out-of-source build, so that one can have one build directory per architecture.
 
-## build for Kokkos/OpenMP
+## If you already have Kokkos installed
+
+Just make sure that your env variable `CMAKE_PREFIX_PATH` point to the location where Kokkos where installed. More precisely if Kokkos is installed in `KOKKOS_ROOT`, you add `$KOKKOS_ROOT/lib/cmake` to your `CMAKE_PREFIX_PATH`; this way kokkos will be find automagically by cmake, and the right Kokkos backend will be selected.
+
+```shell
+mkdir -p build; cd build
+cmake -DEULER2D_KOKKOS_BUILD=OFF ..
+make
+```
+
+You should now have executable *euler2d*. You can run a simply implode test like this
+```shell
+cd src
+./euler2d ./test_implode.ini
+```
+
+
+## Kokkos is not already installed => build for Kokkos/OpenMP
 
 To build for Kokkos/OpenMP backend (which is the default backend):
 ```shell
 mkdir -p build/openmp; cd build/openmp
-cmake -DKokkos_ENABLE_OPENMP=ON ../..
+cmake -DEULER2D_KOKKOS_BUILD=ON -DKokkos_ENABLE_OPENMP=ON ../..
 make
 ```
 
@@ -43,14 +60,14 @@ cd src
 Optionally, you can (recommended) activate HWLOC support by turning ON the flag Kokkos_ENABLE_HWLOC.
 
 
-## build for Kokkos/CUDA
+## Kokkos is not already installed => build for Kokkos/CUDA
 
 Obviously, you need to have Nvidia/CUDA driver and toolkit installed on your platform.
 
 Example configuration:
 ```shell
 mkdir build/cuda; cd build/cuda
-cmake -DKokkos_ENABLE_CUDA=ON -DKokkos_ENABLE_CUDA_LAMBDA=ON -DKokkos_ARCH_TURING75=ON -DKokkos_ENABLE_HWLOC=ON ../..
+cmake -DEULER2D_KOKKOS_BUILD=ON -DKokkos_ENABLE_CUDA=ON -DKokkos_ENABLE_CUDA_LAMBDA=ON -DKokkos_ARCH_TURING75=ON -DKokkos_ENABLE_HWLOC=ON ../..
 make
 ```
 
