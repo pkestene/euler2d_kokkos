@@ -27,7 +27,7 @@ We strongly recommend the out-of-source build, so that one can have one build di
 
 ## If you already have Kokkos installed
 
-Just make sure that your env variable `CMAKE_PREFIX_PATH` point to the location where Kokkos where installed. More precisely if Kokkos is installed in `KOKKOS_ROOT`, you add `$KOKKOS_ROOT/lib/cmake` to your `CMAKE_PREFIX_PATH`; this way kokkos will be find automagically by cmake, and the right Kokkos backend will be selected.
+Just make sure that your env variable `CMAKE_PREFIX_PATH` point to the location where Kokkos where installed. More precisely if Kokkos is installed in `KOKKOS_ROOT`, you add `$KOKKOS_ROOT/lib/cmake` to your `CMAKE_PREFIX_PATH`; this way kokkos will be found automagically by cmake, and the right Kokkos backend will be selected.
 
 ```shell
 mkdir -p build; cd build
