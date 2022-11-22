@@ -9,7 +9,7 @@ on:
 jobs:
   build:
 
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
 
     steps:
     - name: Install dependencies
@@ -20,6 +20,6 @@ jobs:
       with:
         submodules: true
     - name: configure
-      run: mkdir build_openmp && cd build_openmp && cmake -DKokkos_ENABLE_OPENMP=ON -DKokkos_ENABLE_HWLOC=ON ..
+      run: mkdir build_openmp && cd build_openmp && cmake -DEULER2D_KOKKOS_BUILD=ON -DKokkos_ENABLE_OPENMP=ON -DKokkos_ENABLE_HWLOC=ON ..
     - name: make
       run: cd build_openmp && make
