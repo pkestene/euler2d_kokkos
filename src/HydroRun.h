@@ -67,8 +67,10 @@ public:
 
   // host routines (save data to file, device data are copied into host
   // inside this routine)
+  void saveData(DataArray Udata, int iStep, std::string name);
   void saveVTK(DataArray Udata, int iStep, std::string name);
-
+  void saveHDF5(DataArray Udata, int iStep, std::string name);
+  void write_xdmf_xml();
 }; // class HydroRun
 
 } // namespace euler2d

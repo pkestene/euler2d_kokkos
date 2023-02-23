@@ -8,7 +8,7 @@
 #include "HydroRun.h"
 #include "HydroParams.h"
 #include "Timer.h"
-
+#include "hdf5.h"
 // the actual computational functors called in HydroRun
 #include "HydroRunFunctors.h"
 
@@ -291,6 +291,16 @@ void HydroRun::init_blast(DataArray Udata)
 
 } // HydroRun::init_blast
 
+void HydroRun::saveData(DataArray Udata,
+		       int iStep,
+		       std::string name)
+{
+  if (params.ioHDF5) 
+    saveHDF5(Udata, iStep, name);
+  else
+    saveVTK(Udata, iStep, name);
+}
+
 // =======================================================
 // =======================================================
 // ///////////////////////////////////////////////////////
@@ -404,5 +414,197 @@ void HydroRun::saveVTK(DataArray Udata,
   outFile.close();
 
 } // HydroRun::saveVTK
+
+// =======================================================
+// =======================================================
+// ///////////////////////////////////////////////////////
+// Write as HDF5 format.
+// To make sure OpenMP and CUDA version give the same
+// results, we transpose the OpenMP data.
+// ///////////////////////////////////////////////////////
+void HydroRun::saveHDF5(DataArray Udata,
+		       int iStep,
+		       std::string name)
+{
+
+  const int ijsize = params.isize*params.jsize;
+  const int isize  = params.isize;
+  const int nx = params.nx;
+  const int ny = params.ny;
+  const int xysize = nx*ny;
+  const int imin = params.imin;
+  const int imax = params.imax;
+  const int jmin = params.jmin;
+  const int jmax = params.jmax;
+  const int ghostWidth = params.ghostWidth;
+  int i,j,id=0;
+
+  hid_t file, dataset;       /* file and dataset handles */
+  hid_t datatype, dataspace; /* handles */
+  hsize_t dimsf[2];          /* dataset dimensions */
+  H5T_order_t order;         /* little endian or big endian */
+  real_t* E_host = new real_t[xysize];
+  real_t* mx_host = new real_t[xysize];
+  real_t* my_host = new real_t[xysize];
+  real_t* rho_host = new real_t[xysize];
+
+  // copy device data to host
+  Kokkos::deep_copy(Uhost, Udata);
+
+  for (int index=0; index<ijsize; ++index) {
+    j = index / isize;
+    i = index - j*isize;
+
+    if (j>=jmin+ghostWidth and j<=jmax-ghostWidth and
+	  i>=imin+ghostWidth and i<=imax-ghostWidth) {
+      rho_host[id] = Uhost(i,j,0);
+      E_host[id] = Uhost(i,j,1);
+      mx_host[id] = Uhost(i,j,2);
+      my_host[id] = Uhost(i,j,3);
+      id+=1;
+    }
+  }
+
+  // local variables
+  std::string outputDir    = configMap.getString("output", "outputDir", "./");
+  std::string outputPrefix = configMap.getString("output", "outputPrefix", "output");
+
+  // check scalar data type
+
+  if (sizeof(real_t) == sizeof(double)) {
+    datatype = H5Tcopy(H5T_NATIVE_DOUBLE);
+  } else {
+    datatype = H5Tcopy(H5T_NATIVE_FLOAT);
+  }
+
+  if (isBigEndian()) {
+    order = H5T_ORDER_BE;
+  } else {
+    order = H5T_ORDER_LE;
+  }
+
+  // write iStep in string stepNum
+  std::ostringstream stepNum;
+  stepNum.width(7);
+  stepNum.fill('0');
+  stepNum << iStep;
+
+  // concatenate file prefix + file number + suffix
+  std::string filename     = outputDir + "/" + outputPrefix+"_"+stepNum.str() + ".h5";
+
+  /*
+   * Create a new file using H5F_ACC_TRUNC access,
+   * default file creation properties, and default file
+   * access properties.
+   */
+  file = H5Fcreate(filename.c_str(), H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
+
+  /*
+   * Describe the size of the array and create the data space for fixed
+   * size dataset.
+   */
+  dimsf[0] = ny;
+  dimsf[1] = nx;
+  dataspace = H5Screate_simple(2, dimsf, NULL);
+
+  /*
+   * Define datatype for the data in the file.
+   * We will store little endian numbers.
+   */
+  H5Tset_order(datatype, order);
+
+  /*
+   * Create a new dataset within the file using defined dataspace and
+   * datatype and default dataset creation properties.
+   */
+  dataset = H5Dcreate2(file, "/rho", datatype, dataspace, 0, 0, H5P_DEFAULT);
+  H5Dwrite(dataset, datatype, H5S_ALL, H5S_ALL, H5P_DEFAULT, rho_host);
+
+  dataset = H5Dcreate2(file, "/E", datatype, dataspace, 0, 0, H5P_DEFAULT);
+  H5Dwrite(dataset, datatype, H5S_ALL, H5S_ALL, H5P_DEFAULT, E_host);
+
+  dataset = H5Dcreate2(file, "/mx", datatype, dataspace, 0, 0, H5P_DEFAULT);
+  H5Dwrite(dataset, datatype, H5S_ALL, H5S_ALL, H5P_DEFAULT, mx_host);
+
+  dataset = H5Dcreate2(file, "/my", datatype, dataspace, 0, 0, H5P_DEFAULT);
+  H5Dwrite(dataset, datatype, H5S_ALL, H5S_ALL, H5P_DEFAULT, my_host);
+
+  delete []E_host;
+  delete []mx_host;
+  delete []my_host;
+  delete []rho_host;
+  /*
+   * Close/release resources.
+   */
+  H5Sclose(dataspace);
+  H5Tclose(datatype);
+  H5Dclose(dataset);
+  H5Fclose(file);
+
+} // HydroRun::saveHDF5
+
+/* 
+ * write xdmf file to provide metadata of H5 file
+ * can be opened by ParaView
+ * point to data file : xdmf2d.h5
+ */
+void HydroRun::write_xdmf_xml()
+{
+    FILE *xmf = 0;
+    const int nx = params.nx;
+    const int ny = params.ny;
+    const char* type;
+    int precision;
+
+    if (sizeof(real_t) == sizeof(double)) {
+      type = "Double";
+      precision = 8;
+    } else {
+      type = "Float";
+      precision = 4;
+    }
+    /*
+     * Open the file and write the XML description of the mesh..
+     */
+    xmf = fopen("xdmf2d.xmf", "w");
+    fprintf(xmf, "<?xml version=\"1.0\" ?>\n");
+    fprintf(xmf, "<!DOCTYPE Xdmf SYSTEM \"Xdmf.dtd\" []>\n");
+    fprintf(xmf, "<Xdmf Version=\"2.0\">\n");
+    fprintf(xmf, " <Domain>\n");
+    fprintf(xmf, "   <Grid Name=\"mesh1\" GridType=\"Uniform\">\n");
+    fprintf(xmf, "     <Topology TopologyType=\"3DRectMesh\" NumberOfElements=\"%d %d 1\"/>\n", ny+1, nx+1);
+    fprintf(xmf, "     <Geometry GeometryType=\"ORIGIN_DXDYDZ\">\n");
+    fprintf(xmf, "       <DataItem Name=\"origin\" Dimensions=\"3\" NumberType=\"%s\" Precision=\"%d\" Format=\"XML\">\n", type, precision);
+    fprintf(xmf, "        0.0 %f %f\n", params.xmin, params.ymin);
+    fprintf(xmf, "       </DataItem>\n");
+    fprintf(xmf, "       <DataItem Name=\"spacing\" Dimensions=\"3\" NumberType=\"%s\" Precision=\"%d\" Format=\"XML\">\n", type, precision);
+    fprintf(xmf, "        0.0 %f %f\n", params.dx, params.dy);
+    fprintf(xmf, "       </DataItem>\n");
+    fprintf(xmf, "     </Geometry>\n");
+    fprintf(xmf, "     <Attribute Name=\"E\" AttributeType=\"Scalar\" Center=\"Cell\">\n");
+    fprintf(xmf, "       <DataItem Dimensions=\"%d %d\" NumberType=\"%s\" Precision=\"%d\" Format=\"HDF\">\n", ny, nx, type, precision);
+    fprintf(xmf, "        xdmf2d.h5:/E\n");
+    fprintf(xmf, "       </DataItem>\n");
+    fprintf(xmf, "     </Attribute>\n");
+    fprintf(xmf, "     <Attribute Name=\"mx\" AttributeType=\"Scalar\" Center=\"Cell\">\n");
+    fprintf(xmf, "       <DataItem Dimensions=\"%d %d\" NumberType=\"%s\" Precision=\"%d\" Format=\"HDF\">\n", ny, nx, type, precision);
+    fprintf(xmf, "        xdmf2d.h5:/mx\n");
+    fprintf(xmf, "       </DataItem>\n");
+    fprintf(xmf, "     </Attribute>\n");
+    fprintf(xmf, "     <Attribute Name=\"my\" AttributeType=\"Scalar\" Center=\"Cell\">\n");
+    fprintf(xmf, "       <DataItem Dimensions=\"%d %d\" NumberType=\"%s\" Precision=\"%d\" Format=\"HDF\">\n", ny, nx, type, precision);
+    fprintf(xmf, "        xdmf2d.h5:/my\n");
+    fprintf(xmf, "       </DataItem>\n");
+    fprintf(xmf, "     </Attribute>\n");
+    fprintf(xmf, "     <Attribute Name=\"rho\" AttributeType=\"Scalar\" Center=\"Cell\">\n");
+    fprintf(xmf, "       <DataItem Dimensions=\"%d %d\" NumberType=\"%s\" Precision=\"%d\" Format=\"HDF\">\n", ny, nx, type, precision);
+    fprintf(xmf, "        xdmf2d.h5:/rho\n");
+    fprintf(xmf, "       </DataItem>\n");
+    fprintf(xmf, "     </Attribute>\n");
+    fprintf(xmf, "   </Grid>\n");
+    fprintf(xmf, " </Domain>\n");
+    fprintf(xmf, "</Xdmf>\n");
+    fclose(xmf);
+}
 
 } // namespace euler2d

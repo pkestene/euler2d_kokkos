@@ -82,6 +82,8 @@ int main(int argc, char *argv[]) {
   std::cout << "Start computation....\n";
   total_timer.start();
 
+  // write only once
+  if (params.ioHDF5) hydro->write_xdmf_xml();
   // Hydrodynamics solver loop
   while (t < params.tEnd && nStep < params.nStepmax) {
 
@@ -97,9 +99,9 @@ int main(int argc, char *argv[]) {
                   << " dt=" << dt << std::endl;
         io_timer.start();
         if (nStep % 2 == 0)
-          hydro->saveVTK(hydro->U, nStep, "U");
+          hydro->saveData(hydro->U, nStep, "U");
         else
-          hydro->saveVTK(hydro->U2, nStep, "U");
+          hydro->saveData(hydro->U2, nStep, "U");
         io_timer.stop();
       } // end output
       Kokkos::Profiling::popRegion();
@@ -126,9 +128,9 @@ int main(int argc, char *argv[]) {
                 << " dt=" << dt << std::endl;
       io_timer.start();
       if (nStep % 2 == 0)
-        hydro->saveVTK(hydro->U, nStep, "U");
+        hydro->saveData(hydro->U, nStep, "U");
       else
-        hydro->saveVTK(hydro->U2, nStep, "U");
+        hydro->saveData(hydro->U2, nStep, "U");
       io_timer.stop();
     } // end output
   }   // end enable output

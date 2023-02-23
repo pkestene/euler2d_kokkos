@@ -32,11 +32,22 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 #
 include(build_or_find_kokkos)
 
-option (USE_DOUBLE "build with double precision" OFF)
+option (USE_DOUBLE "build with double precision" ON)
 if (USE_DOUBLE)
   add_compile_options(-DUSE_DOUBLE)
   # cmake version also have this
   #add_compile_definitions(-DUSE_DOUBLE)
+endif()
+
+option(ENABLE_HDF5 "Enable HDF5 support" ON)
+if(ENABLE_HDF5)
+    find_package(HDF5 REQUIRED)
+    if(HDF5_FOUND)
+        include_directories(${HDF5_INCLUDE_DIR})
+        set(_hdf5_libs hdf5 hdf5_cpp)
+    else()
+        message("HDF5 not found")
+    endif()
 endif()
 
 add_subdirectory(src)

@@ -24,6 +24,9 @@ void HydroParams::setup(ConfigMap &configMap)
   if (nOutput == -1)
     enableOutput = false;
 
+  ioHDF5 = configMap.getBool("run", "use_HDF5", false);
+  ioVTK = !ioHDF5;
+
   /* initialize MESH parameters */
   nx = configMap.getInteger("mesh","nx", 2);
   ny = configMap.getInteger("mesh","ny", 2);
