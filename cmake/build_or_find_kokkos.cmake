@@ -13,7 +13,7 @@ option(EULER2D_KOKKOS_BUILD "Turn ON if you want to build kokkos (default: OFF)"
 # when using installed kokkos, it is not set, so defaulting to c++-14
 # should be ok until kokkos requires c++-17 or later
 if (NOT "${CMAKE_CXX_STANDARD}")
-  set(CMAKE_CXX_STANDARD 14)
+  set(CMAKE_CXX_STANDARD 17)
 endif()
 
 # check if user requested a build of kokkos

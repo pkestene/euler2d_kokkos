@@ -27,6 +27,16 @@ using real_t = double;
 using real_t = float;
 #endif // USE_DOUBLE
 
+#if KOKKOS_VERSION_MAJOR > 3
+using Kokkos::exp;
+using Kokkos::fmax;
+using Kokkos::fmin;
+using Kokkos::sqrt;
+using Kokkos::fabs;
+using Kokkos::fmod;
+using Kokkos::isnan;
+using Kokkos::fmod;
+#else
 using Kokkos::Experimental::exp;
 using Kokkos::Experimental::fmax;
 using Kokkos::Experimental::fmin;
@@ -35,6 +45,7 @@ using Kokkos::Experimental::fabs;
 using Kokkos::Experimental::fmod;
 using Kokkos::Experimental::isnan;
 using Kokkos::Experimental::fmod;
+#endif
 
 #if defined(KOKKOS_ENABLE_CXX17)
 #define KOKKOS_IMPL_MATH_CONSTANT(TRAIT, VALUE) \

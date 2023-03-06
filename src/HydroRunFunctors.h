@@ -91,8 +91,13 @@ public:
   // operation as operator() above. Note that both input
   // arguments MUST be declared volatile.
   KOKKOS_INLINE_FUNCTION
+#if KOKKOS_VERSION_MAJOR > 3
+  void join (real_t& dst,
+	     const real_t& src) const
+#else
   void join (volatile real_t& dst,
 	     const volatile real_t& src) const
+#endif
   {
     // max reduce
     if (dst < src) {
