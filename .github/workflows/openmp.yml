@@ -20,6 +20,6 @@ jobs:
       with:
         submodules: true
     - name: configure
-      run: mkdir build_openmp && cd build_openmp && cmake -DEULER2D_KOKKOS_BUILD=ON -DKokkos_ENABLE_OPENMP=ON -DKokkos_ENABLE_HWLOC=ON ..
+      run: mkdir build_openmp && cd build_openmp && cmake -DEULER2D_KOKKOS_BUILD=ON -DEULER2D_KOKKOS_BACKEND=OpenMP -DKokkos_ENABLE_HWLOC=ON ..
     - name: make
       run: cd build_openmp && make
