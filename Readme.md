@@ -47,7 +47,7 @@ cd src
 To build for Kokkos/OpenMP backend (which is the default backend):
 ```shell
 mkdir -p build/openmp; cd build/openmp
-cmake -DEULER2D_KOKKOS_BUILD=ON -DKokkos_ENABLE_OPENMP=ON ../..
+cmake -DEULER2D_KOKKOS_BUILD=ON -DEULER2D_KOKKOS_BACKEND=OpenMP ../..
 make
 ```
 
@@ -67,7 +67,7 @@ Obviously, you need to have Nvidia/CUDA driver and toolkit installed on your pla
 Example configuration:
 ```shell
 mkdir build/cuda; cd build/cuda
-cmake -DEULER2D_KOKKOS_BUILD=ON -DKokkos_ENABLE_CUDA=ON -DKokkos_ENABLE_CUDA_LAMBDA=ON -DKokkos_ARCH_TURING75=ON -DKokkos_ENABLE_HWLOC=ON ../..
+cmake -DEULER2D_KOKKOS_BUILD=ON -DEULER2D_KOKKOS_BACKEND=Cuda -DKokkos_ENABLE_CUDA_LAMBDA=ON -DKokkos_ENABLE_HWLOC=ON ../..
 make
 ```
 
