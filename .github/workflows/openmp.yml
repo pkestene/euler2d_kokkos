@@ -15,7 +15,7 @@ jobs:
       matrix:
         include:
           - os: ubuntu-22.04
-            cuda: "12.0"
+            cuda: "12.0.0"
 
     env:
       config: "Release"
