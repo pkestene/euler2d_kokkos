@@ -5,21 +5,60 @@ on:
     branches: [ master ]
   pull_request:
     branches: [ master ]
+  workflow_dispatch:
 
 jobs:
   build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-22.04
+            cuda: "12.0"
 
-    runs-on: ubuntu-22.04
+    env:
+      config: "Release"
 
     steps:
-    - name: Install dependencies
-      run: sudo apt-get install -y libhwloc-dev
-    # make sure to explicitely checkout git submodule !
-    - name: checkout repository
-      uses: actions/checkout@v2
-      with:
-        submodules: true
-    - name: configure
-      run: mkdir build_openmp && cd build_openmp && cmake -DEULER2D_KOKKOS_BUILD=ON -DEULER2D_KOKKOS_BACKEND=OpenMP -DKokkos_ENABLE_HWLOC=ON ..
-    - name: make
-      run: cd build_openmp && make
+      - name: Install dependencies
+        run: sudo apt-get install -y libhwloc-dev
+
+      - name: Install CUDA
+        uses: Jimver/cuda-toolkit@v0.2.8
+        if: runner.os == 'Linux'
+        with:
+          sub-packages: '["nvcc", "nvrtc", "cudart"]'
+          cuda: ${{ matrix.cuda }}
+          method: network
+          use-github-cache: false
+
+      - name: nvcc check
+        shell: bash
+        run: |
+          nvcc -V
+          ls "$CUDA_PATH"
+          ls "$CUDA_PATH/bin"
+          ls "$CUDA_PATH/include"
+
+      - name: cmake version
+        shell: bash
+        run: cmake --version
+
+      # make sure to explicitely checkout git submodule !
+      - name: checkout repository
+        uses: actions/checkout@v3
+        with:
+          submodules: true
+
+      - name: configure_openmp
+        run: mkdir build_openmp && cd build_openmp && cmake -DEULER2D_KOKKOS_BUILD=ON -DEULER2D_KOKKOS_BACKEND=OpenMP ..
+
+      - name: make_openmp
+        run: cd build_openmp && make
+
+      - name: configure_cuda
+        run: mkdir build_cuda && cd build_cuda && cmake -DEULER2D_KOKKOS_BUILD=ON -DEULER2D_KOKKOS_BACKEND=Cuda -DKokkos_ARCH_AMPERE80=ON ..
+
+      - name: make_cuda
+        run: cd build_cuda && make
