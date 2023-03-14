@@ -25,7 +25,7 @@ jobs:
         run: sudo apt-get install -y libhwloc-dev
 
       - name: Install CUDA
-        uses: Jimver/cuda-toolkit@v0.2.8
+        uses: Jimver/cuda-toolkit@v0.2.9
         if: runner.os == 'Linux'
         with:
           sub-packages: '["nvcc", "nvrtc", "cudart"]'
