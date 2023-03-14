@@ -46,49 +46,49 @@ if(EULER2D_KOKKOS_BUILD)
   if (EULER2D_KOKKOS_BACKEND MATCHES "Cuda")
 
     if ((NOT DEFINED Kokkos_ENABLE_HWLOC) OR (NOT Kokkos_ENABLE_HWLOC))
-      set(Kokkos_ENABLE_HWLOC ON)
+      set(Kokkos_ENABLE_HWLOC ON CACHE BOOL "")
     endif()
 
     if ((NOT DEFINED Kokkos_ENABLE_OPENMP) OR (NOT Kokkos_ENABLE_OPENMP))
-      set(Kokkos_ENABLE_OPENMP ON)
+      set(Kokkos_ENABLE_OPENMP ON CACHE BOOL "")
     endif()
 
     if ((NOT DEFINED Kokkos_ENABLE_CUDA) OR (NOT Kokkos_ENABLE_CUDA))
-      set(Kokkos_ENABLE_CUDA ON)
+      set(Kokkos_ENABLE_CUDA ON CACHE BOOL "")
     endif()
 
     if ((NOT DEFINED Kokkos_ENABLE_CUDA_LAMBDA) OR (NOT Kokkos_ENABLE_CUDA_LAMBDA))
-      set(Kokkos_ENABLE_CUDA_LAMBDA ON)
+      set(Kokkos_ENABLE_CUDA_LAMBDA ON CACHE BOOL "")
     endif()
 
     if ((NOT DEFINED Kokkos_ENABLE_CUDA_CONSTEXPR) OR (NOT Kokkos_ENABLE_CUDA_CONSTEXPR))
-      set(Kokkos_ENABLE_CUDA_CONSTEXPR ON)
+      set(Kokkos_ENABLE_CUDA_CONSTEXPR ON CACHE BOOL "")
     endif()
 
     # Note : cuda architecture will probed by kokkos cmake configure
 
-  elseif(EULER2D_KOKKOS_BACKEND MATCHES "OpenMP")
-
-    if ((NOT DEFINED Kokkos_ENABLE_HWLOC) OR (NOT Kokkos_ENABLE_HWLOC))
-      set(Kokkos_ENABLE_HWLOC ON)
-    endif()
-
-    if ((NOT DEFINED Kokkos_ENABLE_OPENMP) OR (NOT Kokkos_ENABLE_OPENMP))
-      set(Kokkos_ENABLE_OPENMP ON)
-    endif()
-
   elseif(EULER2D_KOKKOS_BACKEND MATCHES "HIP")
 
     if ((NOT DEFINED Kokkos_ENABLE_HWLOC) OR (NOT Kokkos_ENABLE_HWLOC))
-      set(Kokkos_ENABLE_HWLOC ON)
+      set(Kokkos_ENABLE_HWLOC ON CACHE BOOL "")
     endif()
 
     if ((NOT DEFINED Kokkos_ENABLE_OPENMP) OR (NOT Kokkos_ENABLE_OPENMP))
-      set(Kokkos_ENABLE_OPENMP ON)
+      set(Kokkos_ENABLE_OPENMP ON CACHE BOOL "")
     endif()
 
     if ((NOT DEFINED Kokkos_ENABLE_HIP) OR (NOT Kokkos_ENABLE_HIP))
-      set(Kokkos_ENABLE_HIP ON)
+      set(Kokkos_ENABLE_HIP ON CACHE BOOL "")
+    endif()
+
+  elseif(EULER2D_KOKKOS_BACKEND MATCHES "OpenMP")
+
+    if ((NOT DEFINED Kokkos_ENABLE_HWLOC) OR (NOT Kokkos_ENABLE_HWLOC))
+      set(Kokkos_ENABLE_HWLOC ON CACHE BOOL "")
+    endif()
+
+    if ((NOT DEFINED Kokkos_ENABLE_OPENMP) OR (NOT Kokkos_ENABLE_OPENMP))
+      set(Kokkos_ENABLE_OPENMP ON CACHE BOOL "")
     endif()
 
   elseif(EULER2D_KOKKOS_BACKEND MATCHES "Undefined")
