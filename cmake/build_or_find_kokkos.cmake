@@ -1,6 +1,12 @@
-# Two variants:
-# 1. If user set EULER2D_KOKKOS_BUILD, we download kokkos sources and build them using FetchContent (which actually uses add_subdirectory)
-# 2. If EULER2D_KOKKOS_BUILD=OFF, don't build kokkos, but use find_package for setup (you must have kokkos already installed)
+# Two alternatives:
+# 1. If EULER2D_KOKKOS_BUILD is ON, we download kokkos sources and build them using FetchContent (which actually uses add_subdirectory)
+# 2. If EULER2D_KOKKOS_BUILD is OFF (default), we don't build kokkos, but use find_package for setup (you must have kokkos already installed)
+
+# NOTE about required C++ standard
+# we better chose to set the minimum C++ standard level if not already done:
+# - when building kokkos <  4.0.00, it defaults to c++-14
+# - when building kokkos >= 4.0.00, it defaults to c++-17
+# - when using installed kokkos, we set C++ standard according to kokkos version
 
 #
 # Do we want to build kokkos (https://github.com/kokkos/kokkos) ?
@@ -24,20 +30,10 @@ set(EULER2D_KOKKOS_BACKEND "Undefined" CACHE STRING
 set_property(CACHE EULER2D_KOKKOS_BACKEND PROPERTY STRINGS
   "OpenMP" "Cuda" "HIP" "Undefined")
 
-
-# raise the minimum C++ standard level if not already done
-# when build kokkos, it defaults to c++-17
-# when using installed kokkos, it is not set, so defaulting to c++-17
-# kokkos 4.0.00 requires c++-17 anyway
-if (NOT "${CMAKE_CXX_STANDARD}")
-  set(CMAKE_CXX_STANDARD 17)
-endif()
-
 # check if user requested a build of kokkos
 if(EULER2D_KOKKOS_BUILD)
 
   message("[euler2d / kokkos] Building kokkos from source")
-
 
   # Kokkos default build options
 
@@ -101,6 +97,11 @@ if(EULER2D_KOKKOS_BUILD)
 
   endif()
 
+  # we set c++ standard to c++-17 as kokkos >= 4.0.00 requires at least c++-17
+  if (NOT "${CMAKE_CXX_STANDARD}")
+    set(CMAKE_CXX_STANDARD 17)
+  endif()
+
   #find_package(Git REQUIRED)
   include (FetchContent)
 
@@ -136,6 +137,16 @@ else()
   find_package(Kokkos 3.7.00 REQUIRED)
 
   if(TARGET Kokkos::kokkos)
+
+    # set default c++ standard according to Kokkos version
+    # Kokkos >= 4.0.00 requires c++-17
+    if (NOT "${CMAKE_CXX_STANDARD}")
+      if ( ${Kokkos_VERSION} VERSION_LESS 4.0.00)
+        set(CMAKE_CXX_STANDARD 14)
+      else()
+        set(CMAKE_CXX_STANDARD 17)
+      endif()
+    endif()
 
     # kokkos_check is defined in KokkosConfigCommon.cmake
     kokkos_check( DEVICES "OpenMP" RETURN_VALUE KOKKOS_DEVICE_ENABLE_OPENMP)
