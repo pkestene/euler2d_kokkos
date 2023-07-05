@@ -29,23 +29,10 @@ public:
 		    real_t& invDt) {
     const int ijsize = params.isize*params.jsize;
     ComputeDtFunctor computeDtFunctor(params, Udata);
+    Kokkos::Max<real_t> reducer(invDt);
     Kokkos::parallel_reduce("Computedt", Kokkos::RangePolicy<>(0,ijsize),
-                            computeDtFunctor, invDt);
+                            computeDtFunctor, reducer);
   }
-
-  // Tell each thread how to initialize its reduction result.
-  KOKKOS_INLINE_FUNCTION
-  void init (real_t& dst) const
-  {
-    // The identity under max is -Inf.
-    // Kokkos does not come with a portable way to access
-    // floating-point Inf and NaN.
-#ifdef __CUDA_ARCH__
-    dst = -CUDART_INF;
-#else
-    dst = std::numeric_limits<real_t>::min();
-#endif // __CUDA_ARCH__
-  } // init
 
   /* this is a reduce (max) functor */
   KOKKOS_INLINE_FUNCTION
@@ -84,27 +71,6 @@ public:
     }
 
   } // operator ()
-
-
-  // "Join" intermediate results from different threads.
-  // This should normally implement the same reduction
-  // operation as operator() above. Note that both input
-  // arguments MUST be declared volatile.
-  KOKKOS_INLINE_FUNCTION
-#if KOKKOS_VERSION_MAJOR > 3
-  void join (real_t& dst,
-	     const real_t& src) const
-#else
-  void join (volatile real_t& dst,
-	     const volatile real_t& src) const
-#endif
-  {
-    // max reduce
-    if (dst < src) {
-      dst = src;
-    }
-  } // join
-
 
   DataArray Udata;
 
