@@ -9,3 +9,4 @@ build_openmp
 build_serial
 compile_commands.json
 .ccls-cache/
+.cache
