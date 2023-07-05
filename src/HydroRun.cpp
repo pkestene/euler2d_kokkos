@@ -15,12 +15,14 @@
 // Kokkos
 #include "kokkos_shared.h"
 
-namespace euler2d {
+namespace euler2d
+{
 
-static bool isBigEndian()
+static bool
+isBigEndian()
 {
   const int i = 1;
-  return ( (*(char*)&i) == 0 );
+  return ((*(char *)&i) == 0);
 }
 
 
@@ -29,12 +31,16 @@ static bool isBigEndian()
 /**
  *
  */
-HydroRun::HydroRun(HydroParams& params, ConfigMap& configMap) :
-  params(params),
-  configMap(configMap),
-  U(), U2(), Q(),
-  Fluxes_x(), Fluxes_y(),
-  Slopes_x(), Slopes_y()
+HydroRun::HydroRun(HydroParams & params, ConfigMap & configMap)
+  : params(params)
+  , configMap(configMap)
+  , U()
+  , U2()
+  , Q()
+  , Fluxes_x()
+  , Fluxes_y()
+  , Slopes_x()
+  , Slopes_y()
 {
 
   const int isize = params.isize;
@@ -43,17 +49,19 @@ HydroRun::HydroRun(HydroParams& params, ConfigMap& configMap) :
   /*
    * memory allocation (use sizes with ghosts included)
    */
-  U     = DataArray("U", isize, jsize);
+  U = DataArray("U", isize, jsize);
   Uhost = Kokkos::create_mirror_view(U);
-  U2    = DataArray("U2",isize, jsize);
-  Q     = DataArray("Q", isize, jsize);
+  U2 = DataArray("U2", isize, jsize);
+  Q = DataArray("Q", isize, jsize);
 
-  if (params.implementationVersion == 0) {
+  if (params.implementationVersion == 0)
+  {
 
     Fluxes_x = DataArray("Fluxes_x", isize, jsize);
     Fluxes_y = DataArray("Fluxes_y", isize, jsize);
-
-  } else if (params.implementationVersion == 1) {
+  }
+  else if (params.implementationVersion == 1)
+  {
 
     Slopes_x = DataArray("Slope_x", isize, jsize);
     Slopes_y = DataArray("Slope_y", isize, jsize);
@@ -61,7 +69,6 @@ HydroRun::HydroRun(HydroParams& params, ConfigMap& configMap) :
     // direction splitting (only need one flux array)
     Fluxes_x = DataArray("Fluxes_x", isize, jsize);
     Fluxes_y = Fluxes_x;
-
   }
 
   // default riemann solver
@@ -72,26 +79,27 @@ HydroRun::HydroRun(HydroParams& params, ConfigMap& configMap) :
   /*
    * initialize hydro array at t=0
    */
-  if ( params.problemType == PROBLEM_IMPLODE) {
+  if (params.problemType == PROBLEM_IMPLODE)
+  {
 
     init_implode(U);
-
-  } else if (params.problemType == PROBLEM_BLAST) {
+  }
+  else if (params.problemType == PROBLEM_BLAST)
+  {
 
     init_blast(U);
-
-  } else {
+  }
+  else
+  {
 
     std::cout << "Problem : " << params.problemType
-	      << " is not recognized / implemented in initHydroRun."
-	      << std::endl;
-    std::cout <<  "Use default - implode" << std::endl;
+              << " is not recognized / implemented in initHydroRun." << std::endl;
+    std::cout << "Use default - implode" << std::endl;
     init_implode(U);
-
   }
 
   // copy U into U2
-  Kokkos::deep_copy(U2,U);
+  Kokkos::deep_copy(U2, U);
 
 } // HydroRun::HydroRun
 
@@ -101,10 +109,7 @@ HydroRun::HydroRun(HydroParams& params, ConfigMap& configMap) :
 /**
  *
  */
-HydroRun::~HydroRun()
-{
-
-} // HydroRun::~HydroRun
+HydroRun::~HydroRun() {} // HydroRun::~HydroRun
 
 // =======================================================
 // =======================================================
@@ -115,11 +120,12 @@ HydroRun::~HydroRun()
  *
  * \return dt time step
  */
-real_t HydroRun::compute_dt(int useU)
+real_t
+HydroRun::compute_dt(int useU)
 {
 
-  real_t dt;
-  real_t invDt = ZERO_F;
+  real_t    dt;
+  real_t    invDt = ZERO_F;
   DataArray Udata;
 
   // which array is the current one ?
@@ -132,7 +138,7 @@ real_t HydroRun::compute_dt(int useU)
   // call device functor
   ComputeDtFunctor::apply(params, Udata, invDt);
 
-  dt = params.settings.cfl/invDt;
+  dt = params.settings.cfl / invDt;
   Kokkos::Profiling::popRegion();
 
   return dt;
@@ -144,13 +150,17 @@ real_t HydroRun::compute_dt(int useU)
 // ///////////////////////////////////////////
 // Wrapper to the actual computation routine
 // ///////////////////////////////////////////
-void HydroRun::godunov_unsplit(int nStep, real_t dt)
+void
+HydroRun::godunov_unsplit(int nStep, real_t dt)
 {
 
-  if ( nStep % 2 == 0 ) {
-    godunov_unsplit_cpu(U , U2, dt, nStep);
-  } else {
-    godunov_unsplit_cpu(U2, U , dt, nStep);
+  if (nStep % 2 == 0)
+  {
+    godunov_unsplit_cpu(U, U2, dt, nStep);
+  }
+  else
+  {
+    godunov_unsplit_cpu(U2, U, dt, nStep);
   }
 
 } // HydroRun::godunov_unsplit
@@ -160,10 +170,8 @@ void HydroRun::godunov_unsplit(int nStep, real_t dt)
 // ///////////////////////////////////////////
 // Actual CPU computation of Godunov scheme
 // ///////////////////////////////////////////
-void HydroRun::godunov_unsplit_cpu(DataArray data_in,
-				   DataArray data_out,
-				   real_t dt,
-				   int nStep)
+void
+HydroRun::godunov_unsplit_cpu(DataArray data_in, DataArray data_out, real_t dt, int nStep)
 {
 
   real_t dtdx;
@@ -191,20 +199,19 @@ void HydroRun::godunov_unsplit_cpu(DataArray data_in,
   convertToPrimitives(data_in);
   Kokkos::Profiling::popRegion();
 
-  if (params.implementationVersion == 0) {
+  if (params.implementationVersion == 0)
+  {
 
     Kokkos::Profiling::pushRegion("hydro_impl0");
     // compute fluxes
-    ComputeAndStoreFluxesFunctor::apply(params, Q,
-					Fluxes_x, Fluxes_y,
-					dtdx, dtdy);
+    ComputeAndStoreFluxesFunctor::apply(params, Q, Fluxes_x, Fluxes_y, dtdx, dtdy);
 
     // actual update
-    UpdateFunctor::apply(params, data_out,
-			 Fluxes_x, Fluxes_y);
+    UpdateFunctor::apply(params, data_out, Fluxes_x, Fluxes_y);
     Kokkos::Profiling::popRegion();
-
-  } else if (params.implementationVersion == 1) {
+  }
+  else if (params.implementationVersion == 1)
+  {
 
     Kokkos::Profiling::pushRegion("hydro_impl1");
 
@@ -212,19 +219,13 @@ void HydroRun::godunov_unsplit_cpu(DataArray data_in,
     ComputeSlopesFunctor::apply(params, Q, Slopes_x, Slopes_y);
 
     // now trace along X axis
-    ComputeTraceAndFluxes_Functor<XDIR>::apply(params, Q,
-					       Slopes_x, Slopes_y,
-					       Fluxes_x,
-					       dtdx, dtdy);
+    ComputeTraceAndFluxes_Functor<XDIR>::apply(params, Q, Slopes_x, Slopes_y, Fluxes_x, dtdx, dtdy);
 
     // and update along X axis
     UpdateDirFunctor<XDIR>::apply(params, data_out, Fluxes_x);
 
     // now trace along Y axis
-    ComputeTraceAndFluxes_Functor<YDIR>::apply(params, Q,
-					       Slopes_x, Slopes_y,
-					       Fluxes_y,
-					       dtdx, dtdy);
+    ComputeTraceAndFluxes_Functor<YDIR>::apply(params, Q, Slopes_x, Slopes_y, Fluxes_y, dtdx, dtdy);
 
     // and update along Y axis
     UpdateDirFunctor<YDIR>::apply(params, data_out, Fluxes_y);
@@ -241,7 +242,8 @@ void HydroRun::godunov_unsplit_cpu(DataArray data_in,
 // ///////////////////////////////////////////////////////////////////
 // Convert conservative variables array U into primitive var array Q
 // ///////////////////////////////////////////////////////////////////
-void HydroRun::convertToPrimitives(DataArray Udata)
+void
+HydroRun::convertToPrimitives(DataArray Udata)
 {
   // call device functor
   ConvertToPrimitivesFunctor::apply(params, Udata, Q);
@@ -254,7 +256,8 @@ void HydroRun::convertToPrimitives(DataArray Udata)
 // Fill ghost cells according to border condition :
 // absorbant, reflexive or periodic
 // //////////////////////////////////////////////////
-void HydroRun::make_boundaries(DataArray Udata)
+void
+HydroRun::make_boundaries(DataArray Udata)
 {
 
   // call device functors
@@ -271,7 +274,8 @@ void HydroRun::make_boundaries(DataArray Udata)
  * Hydrodynamical Implosion Test.
  * http://www.astro.princeton.edu/~jstone/Athena/tests/implode/Implode.html
  */
-void HydroRun::init_implode(DataArray Udata)
+void
+HydroRun::init_implode(DataArray Udata)
 {
 
   InitImplodeFunctor::apply(params, Udata);
@@ -284,7 +288,8 @@ void HydroRun::init_implode(DataArray Udata)
  * Hydrodynamical blast Test.
  * http://www.astro.princeton.edu/~jstone/Athena/tests/blast/blast.html
  */
-void HydroRun::init_blast(DataArray Udata)
+void
+HydroRun::init_blast(DataArray Udata)
 {
 
   InitBlastFunctor::apply(params, Udata);
@@ -299,13 +304,12 @@ void HydroRun::init_blast(DataArray Udata)
 // To make sure OpenMP and CUDA version give the same
 // results, we transpose the OpenMP data.
 // ///////////////////////////////////////////////////////
-void HydroRun::saveVTK(DataArray Udata,
-		       int iStep,
-		       std::string name)
+void
+HydroRun::saveVTK(DataArray Udata, int iStep, std::string name)
 {
 
-  const int ijsize = params.isize*params.jsize;
-  const int isize  = params.isize;
+  const int ijsize = params.isize * params.jsize;
+  const int isize = params.isize;
   const int nx = params.nx;
   const int ny = params.ny;
   const int imin = params.imin;
@@ -318,14 +322,15 @@ void HydroRun::saveVTK(DataArray Udata,
   Kokkos::deep_copy(Uhost, Udata);
 
   // local variables
-  int i,j,iVar;
-  std::string outputDir    = configMap.getString("output", "outputDir", "./");
+  int         i, j, iVar;
+  std::string outputDir = configMap.getString("output", "outputDir", "./");
   std::string outputPrefix = configMap.getString("output", "outputPrefix", "output");
 
   // check scalar data type
   bool useDouble = false;
 
-  if (sizeof(real_t) == sizeof(double)) {
+  if (sizeof(real_t) == sizeof(double))
+  {
     useDouble = true;
   }
 
@@ -336,7 +341,7 @@ void HydroRun::saveVTK(DataArray Udata,
   stepNum << iStep;
 
   // concatenate file prefix + file number + suffix
-  std::string filename     = outputDir + "/" + outputPrefix+"_"+stepNum.str() + ".vti";
+  std::string filename = outputDir + "/" + outputPrefix + "_" + stepNum.str() + ".vti";
 
   // open file
   std::fstream outFile;
@@ -344,33 +349,31 @@ void HydroRun::saveVTK(DataArray Udata,
 
   // write header
   outFile << "<?xml version=\"1.0\"?>\n";
-  if (isBigEndian()) {
+  if (isBigEndian())
+  {
     outFile << "<VTKFile type=\"ImageData\" version=\"0.1\" byte_order=\"BigEndian\">\n";
-  } else {
+  }
+  else
+  {
     outFile << "<VTKFile type=\"ImageData\" version=\"0.1\" byte_order=\"LittleEndian\">\n";
   }
 
   // write mesh extent
-  outFile << "  <ImageData WholeExtent=\""
-	  << 0 << " " << nx << " "
-	  << 0 << " " << ny << " "
-	  << 0 << " " << 0  << "\" "
-	  << "Origin=\""
-	  << params.xmin << " " << params.ymin << " " << 0.0 << "\" "
-	  << "Spacing=\""
-	  << params.dx << " " << params.dy << " " << 0.0 << "\">\n";
-  outFile << "  <Piece Extent=\""
-	  << 0 << " " << nx << " "
-	  << 0 << " " << ny << " "
-	  << 0 << " " << 0  << " "
-	  << "\">\n";
+  outFile << "  <ImageData WholeExtent=\"" << 0 << " " << nx << " " << 0 << " " << ny << " " << 0
+          << " " << 0 << "\" "
+          << "Origin=\"" << params.xmin << " " << params.ymin << " " << 0.0 << "\" "
+          << "Spacing=\"" << params.dx << " " << params.dy << " " << 0.0 << "\">\n";
+  outFile << "  <Piece Extent=\"" << 0 << " " << nx << " " << 0 << " " << ny << " " << 0 << " " << 0
+          << " "
+          << "\">\n";
 
   outFile << "    <PointData>\n";
   outFile << "    </PointData>\n";
   outFile << "    <CellData>\n";
 
   // write data array (ascii), remove ghost cells
-  for ( iVar=0; iVar<NBVAR; iVar++) {
+  for (iVar = 0; iVar < NBVAR; iVar++)
+  {
     outFile << "    <DataArray type=\"";
     if (useDouble)
       outFile << "Float64";
@@ -378,17 +381,19 @@ void HydroRun::saveVTK(DataArray Udata,
       outFile << "Float32";
     outFile << "\" Name=\"" << varNames[iVar] << "\" format=\"ascii\" >\n";
 
-    for (int index=0; index<ijsize; ++index) {
-      //index2coord(index,i,j,isize,jsize);
+    for (int index = 0; index < ijsize; ++index)
+    {
+      // index2coord(index,i,j,isize,jsize);
 
       // enforce the use of left layout (Ok for CUDA)
       // but for OpenMP, we will need to transpose
       j = index / isize;
-      i = index - j*isize;
+      i = index - j * isize;
 
-      if (j>=jmin+ghostWidth and j<=jmax-ghostWidth and
-	  i>=imin+ghostWidth and i<=imax-ghostWidth) {
-    	outFile << Uhost(i, j, iVar) << " ";
+      if (j >= jmin + ghostWidth and j <= jmax - ghostWidth and i >= imin + ghostWidth and
+          i <= imax - ghostWidth)
+      {
+        outFile << Uhost(i, j, iVar) << " ";
       }
     }
     outFile << "\n    </DataArray>\n";

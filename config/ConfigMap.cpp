@@ -14,10 +14,9 @@
 
 // =======================================================
 // =======================================================
-ConfigMap::ConfigMap(std::string filename) :
-  INIReader(filename)
-{
-} // ConfigMap::ConfigMap
+ConfigMap::ConfigMap(std::string filename)
+  : INIReader(filename)
+{} // ConfigMap::ConfigMap
 
 // =======================================================
 // =======================================================
@@ -51,22 +50,19 @@ void ConfigMap::setFloat(std::string section, std::string name, float value)
 
 // =======================================================
 // =======================================================
-bool ConfigMap::getBool(std::string section, std::string name, bool default_value) const
+bool
+ConfigMap::getBool(std::string section, std::string name, bool default_value) const
 {
-  bool val = default_value;
+  bool        val = default_value;
   std::string valstr = getString(section, name, "");
-  
-  if (!valstr.compare("1") or 
-      !valstr.compare("yes") or 
-      !valstr.compare("true") or
+
+  if (!valstr.compare("1") or !valstr.compare("yes") or !valstr.compare("true") or
       !valstr.compare("on"))
     val = true;
-  if (!valstr.compare("0") or 
-      !valstr.compare("no") or 
-      !valstr.compare("false") or
+  if (!valstr.compare("0") or !valstr.compare("no") or !valstr.compare("false") or
       !valstr.compare("off"))
-    val=false;
-  
+    val = false;
+
   // if valstr is empty, return the default value
   if (!valstr.size())
     val = default_value;
@@ -86,4 +82,3 @@ void ConfigMap::setBool(std::string section, std::string name, bool value)
     setString(section, name, "false");
 
 } // ConfigMap::setBool
-

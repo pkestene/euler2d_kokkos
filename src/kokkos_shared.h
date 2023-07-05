@@ -6,17 +6,18 @@
 #include "real_type.h"
 #include "hydro_common.h"
 
-namespace euler2d {
+namespace euler2d
+{
 
 using Device = Kokkos::DefaultExecutionSpace;
 
 // first index is space localtion, second is hydro variable
 // number of hydro variables is 4 in 2D, 5 in 3D
-typedef Kokkos::View<real_t**[NBVAR], Device> DataArray;
-typedef DataArray::HostMirror                 DataArrayHost;
+typedef Kokkos::View<real_t ** [NBVAR], Device> DataArray;
+typedef DataArray::HostMirror                   DataArrayHost;
 
 /// a POD data structure to store local conservative / primitive variables
-using HydroState = Kokkos::Array<real_t,NBVAR>;
+using HydroState = Kokkos::Array<real_t, NBVAR>;
 
 /**
  * Retrieve cartesian coordinate from index, using memory layout information.
@@ -26,22 +27,26 @@ using HydroState = Kokkos::Array<real_t,NBVAR>;
  * Prefer right layout for OpenMP execution space.
  */
 KOKKOS_INLINE_FUNCTION
-void index2coord(int index, int &i, int &j, int Nx, int Ny) {
+void
+index2coord(int index, int & i, int & j, int Nx, int Ny)
+{
 #ifdef KOKKOS_ENABLE_CUDA
   j = index / Nx;
-  i = index - j*Nx;
+  i = index - j * Nx;
 #else
   i = index / Ny;
-  j = index - i*Ny;
+  j = index - i * Ny;
 #endif
 }
 
 KOKKOS_INLINE_FUNCTION
-int coord2index(int i, int j, int Nx, int Ny) {
+int
+coord2index(int i, int j, int Nx, int Ny)
+{
 #ifdef KOKKOS_ENABLE_CUDA
-  return i + Nx*j; // left layout
+  return i + Nx * j; // left layout
 #else
-  return j + Ny*i; // right layout
+  return j + Ny * i; // right layout
 #endif
 }
 

@@ -1,7 +1,8 @@
 #ifndef HYDRO_COMMON_H_
 #define HYDRO_COMMON_H_
 
-namespace euler2d {
+namespace euler2d
+{
 
 #define NDIM 2
 #define NBVAR 4

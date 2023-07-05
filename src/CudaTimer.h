@@ -18,39 +18,49 @@ class CudaTimer
 {
 protected:
   cudaEvent_t startEv, stopEv;
-  double total_time;
+  double      total_time;
 
 public:
-  CudaTimer() {
+  CudaTimer()
+  {
     cudaEventCreate(&startEv);
     cudaEventCreate(&stopEv);
     total_time = 0.0;
   }
 
-  ~CudaTimer() {
+  ~CudaTimer()
+  {
     cudaEventDestroy(startEv);
     cudaEventDestroy(stopEv);
   }
 
-  void start() {
+  void
+  start()
+  {
     cudaEventRecord(startEv, 0);
   }
 
-  void reset() {
+  void
+  reset()
+  {
     total_time = 0.0;
   }
 
   /** stop timer and accumulate time in seconds */
-  void stop() {
+  void
+  stop()
+  {
     float gpuTime;
     cudaEventRecord(stopEv, 0);
     cudaEventSynchronize(stopEv);
     cudaEventElapsedTime(&gpuTime, startEv, stopEv);
-    total_time += (double)1e-3*gpuTime;
+    total_time += (double)1e-3 * gpuTime;
   }
 
   /** return elapsed time in seconds (as record in total_time) */
-  double elapsed() const {
+  double
+  elapsed() const
+  {
     return total_time;
   }
 

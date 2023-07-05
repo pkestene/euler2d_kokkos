@@ -16,7 +16,9 @@
 #include "real_type.h"   // choose between single and double precision
 #include "Timer.h"       // measure time
 
-int main(int argc, char *argv[]) {
+int
+main(int argc, char * argv[])
+{
 
   using real_t = euler2d::real_t;
 
@@ -35,31 +37,33 @@ int main(int argc, char *argv[]) {
 
     std::ostringstream msg;
     std::cout << "Kokkos configuration" << std::endl;
-    if (Kokkos::hwloc::available()) {
-      msg << "hwloc( NUMA[" << Kokkos::hwloc::get_available_numa_count()
-          << "] x CORE[" << Kokkos::hwloc::get_available_cores_per_numa()
-          << "] x HT[" << Kokkos::hwloc::get_available_threads_per_core()
-          << "] )" << std::endl;
+    if (Kokkos::hwloc::available())
+    {
+      msg << "hwloc( NUMA[" << Kokkos::hwloc::get_available_numa_count() << "] x CORE["
+          << Kokkos::hwloc::get_available_cores_per_numa() << "] x HT["
+          << Kokkos::hwloc::get_available_threads_per_core() << "] )" << std::endl;
     }
     Kokkos::print_configuration(msg);
     std::cout << msg.str();
     std::cout << "##########################\n";
   }
   real_t t = 0, dt = 0;
-  int nStep = 0;
+  int    nStep = 0;
 
   Timer total_timer, io_timer, dt_timer;
 
-  if (argc != 2) {
-    fprintf(stderr, "Error: wrong number of argument; input filename must be "
-                    "the only parameter on the command line\n");
+  if (argc != 2)
+  {
+    fprintf(stderr,
+            "Error: wrong number of argument; input filename must be "
+            "the only parameter on the command line\n");
     exit(EXIT_FAILURE);
   }
 
   // read parameter file and initialize parameter
   // parse parameters from input file
   std::string input_file = std::string(argv[1]);
-  ConfigMap configMap(input_file);
+  ConfigMap   configMap(input_file);
 
   // test: create a HydroParams object
   euler2d::HydroParams params = euler2d::HydroParams();
@@ -69,7 +73,7 @@ int main(int argc, char *argv[]) {
   params.print();
 
   // initialize workspace memory (U, U2, ...)
-  euler2d::HydroRun *hydro = new euler2d::HydroRun(params, configMap);
+  euler2d::HydroRun * hydro = new euler2d::HydroRun(params, configMap);
   dt = hydro->compute_dt(nStep % 2);
 
   // initialize boundaries
@@ -83,18 +87,22 @@ int main(int argc, char *argv[]) {
   total_timer.start();
 
   // Hydrodynamics solver loop
-  while (t < params.tEnd && nStep < params.nStepmax) {
+  while (t < params.tEnd && nStep < params.nStepmax)
+  {
 
-    if (nStep % 10 == 0) {
+    if (nStep % 10 == 0)
+    {
       std::cout << "time step=" << nStep << std::endl;
     }
 
     // output
-    if (params.enableOutput) {
+    if (params.enableOutput)
+    {
       Kokkos::Profiling::pushRegion("output");
-      if (params.nOutput > 0 and nStep % params.nOutput == 0) {
-        std::cout << "Output results at time t=" << t << " step " << nStep
-                  << " dt=" << dt << std::endl;
+      if (params.nOutput > 0 and nStep % params.nOutput == 0)
+      {
+        std::cout << "Output results at time t=" << t << " step " << nStep << " dt=" << dt
+                  << std::endl;
         io_timer.start();
         if (nStep % 2 == 0)
           hydro->saveVTK(hydro->U, nStep, "U");
@@ -103,7 +111,7 @@ int main(int argc, char *argv[]) {
         io_timer.stop();
       } // end output
       Kokkos::Profiling::popRegion();
-    }   // end enable output
+    } // end enable output
 
     // compute new dt
     dt_timer.start();
@@ -120,10 +128,12 @@ int main(int argc, char *argv[]) {
   } // end solver loop
 
   // save last time step
-  if (params.enableOutput) {
-    if (params.nOutput > 0 and nStep % params.nOutput == 0) {
-      std::cout << "Output results at time t=" << t << " step " << nStep
-                << " dt=" << dt << std::endl;
+  if (params.enableOutput)
+  {
+    if (params.nOutput > 0 and nStep % params.nOutput == 0)
+    {
+      std::cout << "Output results at time t=" << t << " step " << nStep << " dt=" << dt
+                << std::endl;
       io_timer.start();
       if (nStep % 2 == 0)
         hydro->saveVTK(hydro->U, nStep, "U");
@@ -148,14 +158,10 @@ int main(int argc, char *argv[]) {
     real_t t_bound = hydro->boundaries_timer.elapsed();
     real_t t_io = io_timer.elapsed();
     printf("total       time : %5.3f secondes\n", t_tot);
-    printf("godunov     time : %5.3f secondes %5.2f%%\n", t_comp,
-           100 * t_comp / t_tot);
-    printf("compute dt  time : %5.3f secondes %5.2f%%\n", t_dt,
-           100 * t_dt / t_tot);
-    printf("boundaries  time : %5.3f secondes %5.2f%%\n", t_bound,
-           100 * t_bound / t_tot);
-    printf("io          time : %5.3f secondes %5.2f%%\n", t_io,
-           100 * t_io / t_tot);
+    printf("godunov     time : %5.3f secondes %5.2f%%\n", t_comp, 100 * t_comp / t_tot);
+    printf("compute dt  time : %5.3f secondes %5.2f%%\n", t_dt, 100 * t_dt / t_tot);
+    printf("boundaries  time : %5.3f secondes %5.2f%%\n", t_bound, 100 * t_bound / t_tot);
+    printf("io          time : %5.3f secondes %5.2f%%\n", t_io, 100 * t_io / t_tot);
     printf("Perf             : %10.2f number of Mcell-updates/s\n",
            1.0 * nStep * isize * jsize / t_tot * 1e-6);
   }

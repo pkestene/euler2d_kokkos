@@ -4,10 +4,10 @@
 #include <Kokkos_Macros.hpp> // for KOKKOS_ENABLE_XXX
 
 #ifdef KOKKOS_ENABLE_CUDA
-#include "CudaTimer.h"
+#  include "CudaTimer.h"
 using Timer = CudaTimer;
 #else
-#include "SimpleTimer.h"
+#  include "SimpleTimer.h"
 using Timer = SimpleTimer;
 #endif
 

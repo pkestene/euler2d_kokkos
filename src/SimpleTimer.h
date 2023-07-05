@@ -25,23 +25,26 @@ public:
   SimpleTimer();
 
   SimpleTimer(double t);
-  SimpleTimer(SimpleTimer const& aTimer);
+  SimpleTimer(SimpleTimer const & aTimer);
   virtual ~SimpleTimer();
 
   /** start time measure */
-  virtual void start();
+  virtual void
+  start();
 
   /** stop time measure and add result to total_time */
-  virtual void stop();
+  virtual void
+  stop();
 
   /** return elapsed time in seconds (as stored in total_time) */
-  virtual double elapsed() const;
+  virtual double
+  elapsed() const;
 
 protected:
-  double    start_time;
+  double start_time;
 
   /** store total accumulated timings */
-  double    total_time;
+  double total_time;
 
 }; // class SimpleTimer
 
