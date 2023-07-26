@@ -34,9 +34,10 @@ isBigEndian()
 HydroRun::HydroRun(HydroParams & params, ConfigMap & configMap)
   : params(params)
   , configMap(configMap)
-  , U()
-  , U2()
-  , Q()
+  , U(Kokkos::view_alloc(Kokkos::WithoutInitializing, "U"), params.isize, params.jsize)
+  , Uhost(Kokkos::create_mirror_view(Kokkos::WithoutInitializing, U))
+  , U2(Kokkos::view_alloc(Kokkos::WithoutInitializing, "U2"), params.isize, params.jsize)
+  , Q(Kokkos::view_alloc(Kokkos::WithoutInitializing, "Q"), params.isize, params.jsize)
   , Fluxes_x()
   , Fluxes_y()
   , Slopes_x()
@@ -49,20 +50,13 @@ HydroRun::HydroRun(HydroParams & params, ConfigMap & configMap)
   /*
    * memory allocation (use sizes with ghosts included)
    */
-  U = DataArray("U", isize, jsize);
-  Uhost = Kokkos::create_mirror_view(U);
-  U2 = DataArray("U2", isize, jsize);
-  Q = DataArray("Q", isize, jsize);
-
   if (params.implementationVersion == 0)
   {
-
     Fluxes_x = DataArray("Fluxes_x", isize, jsize);
     Fluxes_y = DataArray("Fluxes_y", isize, jsize);
   }
   else if (params.implementationVersion == 1)
   {
-
     Slopes_x = DataArray("Slope_x", isize, jsize);
     Slopes_y = DataArray("Slope_y", isize, jsize);
 
@@ -81,17 +75,14 @@ HydroRun::HydroRun(HydroParams & params, ConfigMap & configMap)
    */
   if (params.problemType == PROBLEM_IMPLODE)
   {
-
     init_implode(U);
   }
   else if (params.problemType == PROBLEM_BLAST)
   {
-
     init_blast(U);
   }
   else
   {
-
     std::cout << "Problem : " << params.problemType
               << " is not recognized / implemented in initHydroRun." << std::endl;
     std::cout << "Use default - implode" << std::endl;
