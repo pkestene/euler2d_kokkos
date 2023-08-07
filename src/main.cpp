@@ -148,8 +148,10 @@ main(int argc, char * argv[])
   Kokkos::Profiling::popRegion();
 
   // write XDMF wrapper
+#ifdef USE_HDF5
   if (params.nOutput > 0 and params.ioHDF5)
     hydro->write_xdmf_time_series();
+#endif
 
   // print monitoring information
   {
