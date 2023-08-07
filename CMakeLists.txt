@@ -39,6 +39,15 @@ if (USE_DOUBLE)
   #add_compile_definitions(-DUSE_DOUBLE)
 endif()
 
+# HDF5 support (optionnal)
+find_package(HDF5 QUIET)
+if(HDF5_FOUND)
+  set(HDF5_ENABLED TRUE)
+  add_compile_options(-DUSE_HDF5)
+else()
+  set(HDF5_ENABLED FALSE)
+endif()
+
 add_subdirectory(src)
 
 ##################### PRINT CONFIGURE STATUS ######################
@@ -111,3 +120,5 @@ else()
 endif()
 
 message("  Kokkos architecture          = ${Kokkos_ARCH}")
+
+message("  HDF5 support                 = ${HDF5_ENABLED}")
