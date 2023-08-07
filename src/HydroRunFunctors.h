@@ -21,26 +21,25 @@ public:
   static void
   apply(HydroParams params, DataArray Udata, real_t & invDt)
   {
-    const int           ijsize = params.isize * params.jsize;
     ComputeDtFunctor    computeDtFunctor(params, Udata);
     Kokkos::Max<real_t> reducer(invDt);
     Kokkos::parallel_reduce(
-      "Computedt", Kokkos::RangePolicy<>(0, ijsize), computeDtFunctor, reducer);
+      "Computedt",
+      Kokkos::MDRangePolicy<Kokkos::Rank<2>>({ 0, 0 }, { params.isize, params.jsize }),
+      computeDtFunctor,
+      reducer);
   }
 
   /* this is a reduce (max) functor */
   KOKKOS_INLINE_FUNCTION
   void
-  operator()(const int & index, real_t & invDt) const
+  operator()(const int & i, const int & j, real_t & invDt) const
   {
     const int    isize = params.isize;
     const int    jsize = params.jsize;
     const int    ghostWidth = params.ghostWidth;
     const real_t dx = params.dx;
     const real_t dy = params.dy;
-
-    int i, j;
-    index2coord(index, i, j, isize, jsize);
 
     if (j >= ghostWidth && j < jsize - ghostWidth && i >= ghostWidth && i < isize - ghostWidth)
     {
@@ -86,22 +85,20 @@ public:
   static void
   apply(HydroParams params, DataArray Udata, DataArray Qdata)
   {
-    const int                  ijsize = params.isize * params.jsize;
     ConvertToPrimitivesFunctor convertToPrimitivesFunctor(params, Udata, Qdata);
     Kokkos::parallel_for(
-      "ConvertToPrimitives", Kokkos::RangePolicy<>(0, ijsize), convertToPrimitivesFunctor);
+      "ConvertToPrimitives",
+      Kokkos::MDRangePolicy<Kokkos::Rank<2>>({ 0, 0 }, { params.isize, params.jsize }),
+      convertToPrimitivesFunctor);
   }
 
   KOKKOS_INLINE_FUNCTION
   void
-  operator()(const int & index) const
+  operator()(const int & i, const int & j) const
   {
     const int isize = params.isize;
     const int jsize = params.jsize;
     // const int ghostWidth = params.ghostWidth;
-
-    int i, j;
-    index2coord(index, i, j, isize, jsize);
 
     if (j >= 0 && j < jsize && i >= 0 && i < isize)
     {
@@ -424,21 +421,20 @@ public:
         real_t      dtdx,
         real_t      dtdy)
   {
-    const int                    ijsize = params.isize * params.jsize;
     ComputeAndStoreFluxesFunctor functor(params, Qdata, FluxData_x, FluxData_y, dtdx, dtdy);
-    Kokkos::parallel_for("ComputeAndStoreFluxes", Kokkos::RangePolicy<>(0, ijsize), functor);
+    Kokkos::parallel_for(
+      "ComputeAndStoreFluxes",
+      Kokkos::MDRangePolicy<Kokkos::Rank<2>>({ 0, 0 }, { params.isize, params.jsize }),
+      functor);
   }
 
   KOKKOS_INLINE_FUNCTION
   void
-  operator()(const int & index) const
+  operator()(const int & i, const int & j) const
   {
     const int isize = params.isize;
     const int jsize = params.jsize;
     const int ghostWidth = params.ghostWidth;
-
-    int i, j;
-    index2coord(index, i, j, isize, jsize);
 
     if (j >= ghostWidth && j <= jsize - ghostWidth && i >= ghostWidth && i <= isize - ghostWidth)
     {
@@ -646,21 +642,20 @@ public:
   static void
   apply(HydroParams params, DataArray Udata, DataArray FluxData_x, DataArray FluxData_y)
   {
-    const int     ijsize = params.isize * params.jsize;
     UpdateFunctor functor(params, Udata, FluxData_x, FluxData_y);
-    Kokkos::parallel_for("UpdateFunctor", Kokkos::RangePolicy<>(0, ijsize), functor);
+    Kokkos::parallel_for(
+      "UpdateFunctor",
+      Kokkos::MDRangePolicy<Kokkos::Rank<2>>({ 0, 0 }, { params.isize, params.jsize }),
+      functor);
   }
 
   KOKKOS_INLINE_FUNCTION
   void
-  operator()(const int & index) const
+  operator()(const int & i, const int & j) const
   {
     const int isize = params.isize;
     const int jsize = params.jsize;
     const int ghostWidth = params.ghostWidth;
-
-    int i, j;
-    index2coord(index, i, j, isize, jsize);
 
     if (j >= ghostWidth && j < jsize - ghostWidth && i >= ghostWidth && i < isize - ghostWidth)
     {
@@ -713,21 +708,20 @@ public:
   static void
   apply(HydroParams params, DataArray Udata, DataArray FluxData)
   {
-    const int             ijsize = params.isize * params.jsize;
     UpdateDirFunctor<dir> functor(params, Udata, FluxData);
-    Kokkos::parallel_for("UpdateDir", Kokkos::RangePolicy<>(0, ijsize), functor);
+    Kokkos::parallel_for(
+      "UpdateDir",
+      Kokkos::MDRangePolicy<Kokkos::Rank<2>>({ 0, 0 }, { params.isize, params.jsize }),
+      functor);
   }
 
   KOKKOS_INLINE_FUNCTION
   void
-  operator()(const int & index) const
+  operator()(const int & i, const int & j) const
   {
     const int isize = params.isize;
     const int jsize = params.jsize;
     const int ghostWidth = params.ghostWidth;
-
-    int i, j;
-    index2coord(index, i, j, isize, jsize);
 
     if (j >= ghostWidth && j < jsize - ghostWidth && i >= ghostWidth && i < isize - ghostWidth)
     {
@@ -786,21 +780,20 @@ public:
   static void
   apply(HydroParams params, DataArray Qdata, DataArray Slopes_x, DataArray Slopes_y)
   {
-    const int            ijsize = params.isize * params.jsize;
     ComputeSlopesFunctor functor(params, Qdata, Slopes_x, Slopes_y);
-    Kokkos::parallel_for("ComputeSlopes", Kokkos::RangePolicy<>(0, ijsize), functor);
+    Kokkos::parallel_for(
+      "ComputeSlopes",
+      Kokkos::MDRangePolicy<Kokkos::Rank<2>>({ 0, 0 }, { params.isize, params.jsize }),
+      functor);
   }
 
   KOKKOS_INLINE_FUNCTION
   void
-  operator()(const int & index) const
+  operator()(const int & i, const int & j) const
   {
     const int isize = params.isize;
     const int jsize = params.jsize;
     const int ghostWidth = params.ghostWidth;
-
-    int i, j;
-    index2coord(index, i, j, isize, jsize);
 
     if (j >= ghostWidth - 1 && j <= jsize - ghostWidth && i >= ghostWidth - 1 &&
         i <= isize - ghostWidth)
@@ -902,22 +895,21 @@ public:
         real_t      dtdx,
         real_t      dtdy)
   {
-    const int                          ijsize = params.isize * params.jsize;
     ComputeTraceAndFluxes_Functor<dir> functor(
       params, Qdata, Slopes_x, Slopes_y, Fluxes, dtdx, dtdy);
-    Kokkos::parallel_for("ComputeTraceAndFluxes", Kokkos::RangePolicy<>(0, ijsize), functor);
+    Kokkos::parallel_for(
+      "ComputeTraceAndFluxes",
+      Kokkos::MDRangePolicy<Kokkos::Rank<2>>({ 0, 0 }, { params.isize, params.jsize }),
+      functor);
   }
 
   KOKKOS_INLINE_FUNCTION
   void
-  operator()(const int & index) const
+  operator()(const int & i, const int & j) const
   {
     const int isize = params.isize;
     const int jsize = params.jsize;
     const int ghostWidth = params.ghostWidth;
-
-    int i, j;
-    index2coord(index, i, j, isize, jsize);
 
     if (j >= ghostWidth && j <= jsize - ghostWidth && i >= ghostWidth && i <= isize - ghostWidth)
     {
@@ -1062,18 +1054,18 @@ public:
   static void
   apply(HydroParams params, DataArray Udata)
   {
-    const int          ijsize = params.isize * params.jsize;
     InitImplodeFunctor functor(params, Udata);
-    Kokkos::parallel_for("InitImplode", Kokkos::RangePolicy<>(0, ijsize), functor);
+    Kokkos::parallel_for(
+      "InitImplode",
+      Kokkos::MDRangePolicy<Kokkos::Rank<2>>({ 0, 0 }, { params.isize, params.jsize }),
+      functor);
   }
 
   KOKKOS_INLINE_FUNCTION
   void
-  operator()(const int & index) const
+  operator()(const int & i, const int & j) const
   {
 
-    const int isize = params.isize;
-    const int jsize = params.jsize;
     const int ghostWidth = params.ghostWidth;
 
     const real_t xmin = params.xmin;
@@ -1082,9 +1074,6 @@ public:
     const real_t dy = params.dy;
 
     const real_t gamma0 = params.settings.gamma0;
-
-    int i, j;
-    index2coord(index, i, j, isize, jsize);
 
     real_t x = xmin + dx / 2 + (i - ghostWidth) * dx;
     real_t y = ymin + dy / 2 + (j - ghostWidth) * dy;
@@ -1126,18 +1115,18 @@ public:
   static void
   apply(HydroParams params, DataArray Udata)
   {
-    const int        ijsize = params.isize * params.jsize;
     InitBlastFunctor functor(params, Udata);
-    Kokkos::parallel_for("InitBlast", Kokkos::RangePolicy<>(0, ijsize), functor);
+    Kokkos::parallel_for(
+      "InitBlast",
+      Kokkos::MDRangePolicy<Kokkos::Rank<2>>({ 0, 0 }, { params.isize, params.jsize }),
+      functor);
   }
 
   KOKKOS_INLINE_FUNCTION
   void
-  operator()(const int & index) const
+  operator()(const int & i, const int & j) const
   {
 
-    const int isize = params.isize;
-    const int jsize = params.jsize;
     const int ghostWidth = params.ghostWidth;
 
     const real_t xmin = params.xmin;
@@ -1156,10 +1145,6 @@ public:
     const real_t blast_density_out = params.blast_density_out;
     const real_t blast_pressure_in = params.blast_pressure_in;
     const real_t blast_pressure_out = params.blast_pressure_out;
-
-
-    int i, j;
-    index2coord(index, i, j, isize, jsize);
 
     real_t x = xmin + dx / 2 + (i - ghostWidth) * dx;
     real_t y = ymin + dy / 2 + (j - ghostWidth) * dy;
