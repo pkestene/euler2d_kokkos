@@ -34,7 +34,6 @@ set_property(CACHE EULER2D_KOKKOS_BACKEND PROPERTY STRINGS
 if(EULER2D_KOKKOS_BUILD)
 
   message("[euler2d / kokkos] Building kokkos from source")
-  message("[euler2d / kokkos] Building kokkos from source using git ? ${EULER2D_KOKKOS_USE_GIT}")
 
   # Kokkos default build options
 
@@ -112,11 +111,13 @@ if(EULER2D_KOKKOS_BUILD)
   endif()
 
   if (EULER2D_KOKKOS_USE_GIT)
+    message("[euler2d / kokkos] Building kokkos from source using git sources")
     FetchContent_Declare( kokkos_external
       GIT_REPOSITORY https://github.com/kokkos/kokkos.git
       GIT_TAG 4.1.00
       )
   else()
+    message("[euler2d / kokkos] Building kokkos from source using archive file/URL ${EULER2D_KOKKOS_SOURCE_ARCHIVE}")
     FetchContent_Declare( kokkos_external
       URL ${EULER2D_KOKKOS_SOURCE_ARCHIVE}
       )
