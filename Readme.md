@@ -12,13 +12,7 @@ Our miniApp uses kokkos as a git submodule, configured to use the `develop` bran
 In order to download the sources all-in-one (miniApp + kokkos):
 
 ```shell
-git clone --recursive git@github.com:pkestene/euler2d_kokkos.git
-```
-
-Alternatively, if you didn't use option `--recursive`, you can afterwards retrieve kokkos like this
-```shell
-git submodule init
-git submodule update
+git clone git@github.com:pkestene/euler2d_kokkos.git
 ```
 
 # Build
