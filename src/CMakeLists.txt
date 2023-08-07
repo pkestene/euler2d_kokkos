@@ -25,6 +25,10 @@ target_include_directories(euler2d
   ${CMAKE_SOURCE_DIR})
 target_link_libraries(euler2d Kokkos::kokkos)
 
+if(HDF5_ENABLED)
+  target_link_libraries(euler2d HDF5::HDF5)
+endif()
+
 configure_file(test_blast.ini test_blast.ini COPYONLY)
 configure_file(test_blast_large.ini test_blast_large.ini COPYONLY)
 configure_file(test_implode.ini test_implode.ini COPYONLY)

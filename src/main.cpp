@@ -105,9 +105,9 @@ main(int argc, char * argv[])
                   << std::endl;
         io_timer.start();
         if (nStep % 2 == 0)
-          hydro->saveVTK(hydro->U, nStep, "U");
+          hydro->saveData(hydro->U, nStep, "U");
         else
-          hydro->saveVTK(hydro->U2, nStep, "U");
+          hydro->saveData(hydro->U2, nStep, "U");
         io_timer.stop();
       } // end output
       Kokkos::Profiling::popRegion();
@@ -136,9 +136,9 @@ main(int argc, char * argv[])
                 << std::endl;
       io_timer.start();
       if (nStep % 2 == 0)
-        hydro->saveVTK(hydro->U, nStep, "U");
+        hydro->saveData(hydro->U, nStep, "U");
       else
-        hydro->saveVTK(hydro->U2, nStep, "U");
+        hydro->saveData(hydro->U2, nStep, "U");
       io_timer.stop();
     } // end output
   }   // end enable output
@@ -146,6 +146,10 @@ main(int argc, char * argv[])
   // end of computation
   total_timer.stop();
   Kokkos::Profiling::popRegion();
+
+  // write XDMF wrapper
+  if (params.nOutput > 0 and params.ioHDF5)
+    hydro->write_xdmf_time_series();
 
   // print monitoring information
   {

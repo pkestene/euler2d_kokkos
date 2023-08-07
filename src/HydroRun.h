@@ -73,8 +73,22 @@ public:
   // host routines (save data to file, device data are copied into host
   // inside this routine)
   void
+  saveData(DataArray Udata, int iStep, std::string name);
+
+  void
   saveVTK(DataArray Udata, int iStep, std::string name);
 
+#ifdef USE_HDF5
+  void
+  saveHDF5(DataArray Udata, int iStep, std::string name);
+
+  /**
+   *  Write a wrapper file using the Xmdf file format (XML) to allow
+   * Paraview/Visit to read these h5 files as a time series.
+   */
+  void
+  write_xdmf_time_series();
+#endif
 }; // class HydroRun
 
 } // namespace euler2d
