@@ -10,7 +10,6 @@ add_executable(euler2d
   HydroParams.h
   HydroParams.cpp
   HydroRun.h
-  HydroRun.cpp
   hydro_common.h
   HydroBaseFunctor.h
   HydroRunFunctors.h
