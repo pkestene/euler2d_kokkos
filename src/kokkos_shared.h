@@ -9,12 +9,15 @@
 namespace euler2d
 {
 
-using Device = Kokkos::DefaultExecutionSpace;
+//using Device = Kokkos::DefaultExecutionSpace;
 
 // first index is space localtion, second is hydro variable
 // number of hydro variables is 4 in 2D, 5 in 3D
-typedef Kokkos::View<real_t ** [NBVAR], Device> DataArray;
-typedef DataArray::HostMirror                   DataArrayHost;
+template <typename device_t>
+using DataArray = Kokkos::View<real_t ** [NBVAR], device_t>;
+
+template <typename device_t>
+using DataArrayHost = typename DataArray<device_t>::HostMirror;
 
 /// a POD data structure to store local conservative / primitive variables
 using HydroState = Kokkos::Array<real_t, NBVAR>;

@@ -19,6 +19,11 @@
 int
 main(int argc, char * argv[])
 {
+  using DefaultDevice =
+      Kokkos::Device<Kokkos::DefaultExecutionSpace, Kokkos::DefaultExecutionSpace::memory_space>;
+  using device = DefaultDevice;
+  // using device = Kokkos::OpenMP::device_type;
+  // using device = Kokkos::CudaSpace::device_type;
 
   using real_t = euler2d::real_t;
 
@@ -73,7 +78,7 @@ main(int argc, char * argv[])
   params.print();
 
   // initialize workspace memory (U, U2, ...)
-  euler2d::HydroRun * hydro = new euler2d::HydroRun(params, configMap);
+  euler2d::HydroRun<device> * hydro = new euler2d::HydroRun<device>(params, configMap);
   dt = hydro->compute_dt(nStep % 2);
 
   // initialize boundaries

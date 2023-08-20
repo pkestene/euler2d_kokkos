@@ -2,6 +2,7 @@
 #define HYDRO_RUN_FUNCTORS_H_
 
 #include "HydroBaseFunctor.h"
+#include "kokkos_shared.h"
 
 namespace euler2d
 {
@@ -9,23 +10,27 @@ namespace euler2d
 /*************************************************/
 /*************************************************/
 /*************************************************/
+template<typename device_t>
 class ComputeDtFunctor : public HydroBaseFunctor
 {
 
 public:
-  ComputeDtFunctor(HydroParams params, DataArray Udata)
+  using DataArray_t = DataArray<device_t>;
+  using exec_space = typename device_t::execution_space;
+
+  ComputeDtFunctor(HydroParams params, DataArray_t Udata)
     : HydroBaseFunctor(params)
     , Udata(Udata){};
 
   // static method which does it all: create and execute functor
   static void
-  apply(HydroParams params, DataArray Udata, real_t & invDt)
+  apply(HydroParams params, DataArray_t Udata, real_t & invDt)
   {
     ComputeDtFunctor    computeDtFunctor(params, Udata);
     Kokkos::Max<real_t> reducer(invDt);
     Kokkos::parallel_reduce(
       "Computedt",
-      Kokkos::MDRangePolicy<Kokkos::Rank<2>>({ 0, 0 }, { params.isize, params.jsize }),
+      Kokkos::MDRangePolicy<exec_space, Kokkos::Rank<2>>({ 0, 0 }, { params.isize, params.jsize }),
       computeDtFunctor,
       reducer);
   }
@@ -65,30 +70,34 @@ public:
 
   } // operator ()
 
-  DataArray Udata;
+  DataArray_t Udata;
 
 }; // ComputeDtFunctor
 
 /*************************************************/
 /*************************************************/
 /*************************************************/
+template<typename device_t>
 class ConvertToPrimitivesFunctor : public HydroBaseFunctor
 {
 
 public:
-  ConvertToPrimitivesFunctor(HydroParams params, DataArray Udata, DataArray Qdata)
+  using DataArray_t = DataArray<device_t>;
+  using exec_space = typename device_t::execution_space;
+
+  ConvertToPrimitivesFunctor(HydroParams params, DataArray_t Udata, DataArray_t Qdata)
     : HydroBaseFunctor(params)
     , Udata(Udata)
     , Qdata(Qdata){};
 
   // static method which does it all: create and execute functor
   static void
-  apply(HydroParams params, DataArray Udata, DataArray Qdata)
+  apply(HydroParams params, DataArray_t Udata, DataArray_t Qdata)
   {
     ConvertToPrimitivesFunctor convertToPrimitivesFunctor(params, Udata, Qdata);
     Kokkos::parallel_for(
       "ConvertToPrimitives",
-      Kokkos::MDRangePolicy<Kokkos::Rank<2>>({ 0, 0 }, { params.isize, params.jsize }),
+      Kokkos::MDRangePolicy<exec_space, Kokkos::Rank<2>>({ 0, 0 }, { params.isize, params.jsize }),
       convertToPrimitivesFunctor);
   }
 
@@ -124,8 +133,8 @@ public:
     }
   }
 
-  DataArray Udata;
-  DataArray Qdata;
+  DataArray_t Udata;
+  DataArray_t Qdata;
 
 }; // ConvertToPrimitivesFunctor
 
@@ -138,11 +147,11 @@ public:
 // public:
 
 //   ComputeFluxesAndUpdateFunctor(HydroParams params,
-// 				DataArray Udata,
-// 				DataArray Qm_x,
-// 				DataArray Qm_y,
-// 				DataArray Qp_x,
-// 				DataArray Qp_y,
+// 				DataArray_t Udata,
+// 				DataArray_t Qm_x,
+// 				DataArray_t Qm_y,
+// 				DataArray_t Qp_x,
+// 				DataArray_t Qp_y,
 // 				real_t dtdx,
 // 				real_t dtdy) :
 //     HydroBaseFunctor(params), Udata(Udata),
@@ -151,11 +160,11 @@ public:
 
 //   // static method which does it all: create and execute functor
 //   static void apply(HydroParams params,
-// 		    DataArray Udata,
-// 		    DataArray Qm_x,
-// 		    DataArray Qm_y,
-// 		    DataArray Qp_x,
-// 		    DataArray Qp_y,
+// 		    DataArray_t Udata,
+// 		    DataArray_t Qm_x,
+// 		    DataArray_t Qm_y,
+// 		    DataArray_t Qp_x,
+// 		    DataArray_t Qp_y,
 // 		    real_t dtdx,
 // 		    real_t dtdy)
 //   {
@@ -164,7 +173,7 @@ public:
 // 								Qm_x, Qm_y,
 // 								Qp_x, Qp_y,
 // 								dtdx, dtdy);
-//     Kokkos::parallel_for("ComputeFluxesAndUpdate", Kokkos::RangePolicy<>(0,ijsize),
+//     Kokkos::parallel_for("ComputeFluxesAndUpdate", Kokkos::RangePolicy<exec_space>(0,ijsize),
 //     computeFluxesAndUpdateFunctor);
 //   }
 
@@ -245,8 +254,8 @@ public:
 
 //   }
 
-//   DataArray Udata;
-//   DataArray Qm_x, Qm_y, Qp_x, Qp_y;
+//   DataArray_t Udata;
+//   DataArray_t Qm_x, Qm_y, Qp_x, Qp_y;
 //   real_t dtdx, dtdy;
 
 // }; // ComputeFluxesAndUpdateFunctor
@@ -260,11 +269,11 @@ public:
 // public:
 
 //   ComputeTraceFunctor(HydroParams params,
-// 		      DataArray Qdata,
-// 		      DataArray Qm_x,
-// 		      DataArray Qm_y,
-// 		      DataArray Qp_x,
-// 		      DataArray Qp_y,
+// 		      DataArray_t Qdata,
+// 		      DataArray_t Qm_x,
+// 		      DataArray_t Qm_y,
+// 		      DataArray_t Qp_x,
+// 		      DataArray_t Qp_y,
 // 		      real_t dtdx,
 // 		      real_t dtdy) :
 //     HydroBaseFunctor(params),
@@ -274,11 +283,11 @@ public:
 
 //   // static method which does it all: create and execute functor
 //   static void apply(HydroParams params,
-// 		    DataArray Qdata,
-// 		    DataArray Qm_x,
-// 		    DataArray Qm_y,
-// 		    DataArray Qp_x,
-// 		    DataArray Qp_y,
+// 		    DataArray_t Qdata,
+// 		    DataArray_t Qm_x,
+// 		    DataArray_t Qm_y,
+// 		    DataArray_t Qp_x,
+// 		    DataArray_t Qp_y,
 // 		    real_t dtdx,
 // 		    real_t dtdy)
 //   {
@@ -288,7 +297,7 @@ public:
 // 					    Qm_x, Qm_y,
 // 					    Qp_x, Qp_y,
 // 					    dtdx, dtdy);
-//     Kokkos::parallel_for("ComputeTrace",Kokkos::RangePolicy<>(0,ijsize), computeTraceFunctor);
+//     Kokkos::parallel_for("ComputeTrace",Kokkos::RangePolicy<exec_space>(0,ijsize), computeTraceFunctor);
 
 //   }
 
@@ -385,8 +394,8 @@ public:
 //     }
 //   }
 
-//   DataArray Qdata;
-//   DataArray Qm_x, Qm_y, Qp_x, Qp_y;
+//   DataArray_t Qdata;
+//   DataArray_t Qm_x, Qm_y, Qp_x, Qp_y;
 //   real_t dtdx, dtdy;
 
 // }; // ComputeTraceFunctor
@@ -395,14 +404,18 @@ public:
 /*************************************************/
 /*************************************************/
 /*************************************************/
+template<typename device_t>
 class ComputeAndStoreFluxesFunctor : public HydroBaseFunctor
 {
 
 public:
+  using DataArray_t = DataArray<device_t>;
+  using exec_space = typename device_t::execution_space;
+
   ComputeAndStoreFluxesFunctor(HydroParams params,
-                               DataArray   Qdata,
-                               DataArray   FluxData_x,
-                               DataArray   FluxData_y,
+                               DataArray_t   Qdata,
+                               DataArray_t   FluxData_x,
+                               DataArray_t   FluxData_y,
                                real_t      dtdx,
                                real_t      dtdy)
     : HydroBaseFunctor(params)
@@ -415,16 +428,16 @@ public:
   // static method which does it all: create and execute functor
   static void
   apply(HydroParams params,
-        DataArray   Qdata,
-        DataArray   FluxData_x,
-        DataArray   FluxData_y,
+        DataArray_t   Qdata,
+        DataArray_t   FluxData_x,
+        DataArray_t   FluxData_y,
         real_t      dtdx,
         real_t      dtdy)
   {
     ComputeAndStoreFluxesFunctor functor(params, Qdata, FluxData_x, FluxData_y, dtdx, dtdy);
     Kokkos::parallel_for(
       "ComputeAndStoreFluxes",
-      Kokkos::MDRangePolicy<Kokkos::Rank<2>>({ 0, 0 }, { params.isize, params.jsize }),
+      Kokkos::MDRangePolicy<exec_space, Kokkos::Rank<2>>({ 0, 0 }, { params.isize, params.jsize }),
       functor);
   }
 
@@ -618,9 +631,9 @@ public:
 
   } // end operator ()
 
-  DataArray Qdata;
-  DataArray FluxData_x;
-  DataArray FluxData_y;
+  DataArray_t Qdata;
+  DataArray_t FluxData_x;
+  DataArray_t FluxData_y;
   real_t    dtdx, dtdy;
 
 }; // ComputeAndStoreFluxesFunctor
@@ -628,11 +641,15 @@ public:
 /*************************************************/
 /*************************************************/
 /*************************************************/
+template<typename device_t>
 class UpdateFunctor : public HydroBaseFunctor
 {
 
 public:
-  UpdateFunctor(HydroParams params, DataArray Udata, DataArray FluxData_x, DataArray FluxData_y)
+  using DataArray_t = DataArray<device_t>;
+  using exec_space = typename device_t::execution_space;
+
+  UpdateFunctor(HydroParams params, DataArray_t Udata, DataArray_t FluxData_x, DataArray_t FluxData_y)
     : HydroBaseFunctor(params)
     , Udata(Udata)
     , FluxData_x(FluxData_x)
@@ -640,12 +657,12 @@ public:
 
   // static method which does it all: create and execute functor
   static void
-  apply(HydroParams params, DataArray Udata, DataArray FluxData_x, DataArray FluxData_y)
+  apply(HydroParams params, DataArray_t Udata, DataArray_t FluxData_x, DataArray_t FluxData_y)
   {
     UpdateFunctor functor(params, Udata, FluxData_x, FluxData_y);
     Kokkos::parallel_for(
       "UpdateFunctor",
-      Kokkos::MDRangePolicy<Kokkos::Rank<2>>({ 0, 0 }, { params.isize, params.jsize }),
+      Kokkos::MDRangePolicy<exec_space, Kokkos::Rank<2>>({ 0, 0 }, { params.isize, params.jsize }),
       functor);
   }
 
@@ -684,9 +701,9 @@ public:
 
   } // end operator ()
 
-  DataArray Udata;
-  DataArray FluxData_x;
-  DataArray FluxData_y;
+  DataArray_t Udata;
+  DataArray_t FluxData_x;
+  DataArray_t FluxData_y;
 
 }; // UpdateFunctor
 
@@ -694,24 +711,27 @@ public:
 /*************************************************/
 /*************************************************/
 /*************************************************/
-template <Direction dir>
+template<typename device_t, Direction dir>
 class UpdateDirFunctor : public HydroBaseFunctor
 {
 
 public:
-  UpdateDirFunctor(HydroParams params, DataArray Udata, DataArray FluxData)
+  using DataArray_t = DataArray<device_t>;
+  using exec_space = typename device_t::execution_space;
+
+  UpdateDirFunctor(HydroParams params, DataArray_t Udata, DataArray_t FluxData)
     : HydroBaseFunctor(params)
     , Udata(Udata)
     , FluxData(FluxData){};
 
   // static method which does it all: create and execute functor
   static void
-  apply(HydroParams params, DataArray Udata, DataArray FluxData)
+  apply(HydroParams params, DataArray_t Udata, DataArray_t FluxData)
   {
-    UpdateDirFunctor<dir> functor(params, Udata, FluxData);
+    UpdateDirFunctor<device_t, dir> functor(params, Udata, FluxData);
     Kokkos::parallel_for(
       "UpdateDir",
-      Kokkos::MDRangePolicy<Kokkos::Rank<2>>({ 0, 0 }, { params.isize, params.jsize }),
+      Kokkos::MDRangePolicy<exec_space, Kokkos::Rank<2>>({ 0, 0 }, { params.isize, params.jsize }),
       functor);
   }
 
@@ -757,8 +777,8 @@ public:
 
   } // end operator ()
 
-  DataArray Udata;
-  DataArray FluxData;
+  DataArray_t Udata;
+  DataArray_t FluxData;
 
 }; // UpdateDirFunctor
 
@@ -766,11 +786,15 @@ public:
 /*************************************************/
 /*************************************************/
 /*************************************************/
+template<typename device_t>
 class ComputeSlopesFunctor : public HydroBaseFunctor
 {
 
 public:
-  ComputeSlopesFunctor(HydroParams params, DataArray Qdata, DataArray Slopes_x, DataArray Slopes_y)
+  using DataArray_t = DataArray<device_t>;
+  using exec_space = typename device_t::execution_space;
+
+  ComputeSlopesFunctor(HydroParams params, DataArray_t Qdata, DataArray_t Slopes_x, DataArray_t Slopes_y)
     : HydroBaseFunctor(params)
     , Qdata(Qdata)
     , Slopes_x(Slopes_x)
@@ -778,12 +802,12 @@ public:
 
   // static method which does it all: create and execute functor
   static void
-  apply(HydroParams params, DataArray Qdata, DataArray Slopes_x, DataArray Slopes_y)
+  apply(HydroParams params, DataArray_t Qdata, DataArray_t Slopes_x, DataArray_t Slopes_y)
   {
     ComputeSlopesFunctor functor(params, Qdata, Slopes_x, Slopes_y);
     Kokkos::parallel_for(
       "ComputeSlopes",
-      Kokkos::MDRangePolicy<Kokkos::Rank<2>>({ 0, 0 }, { params.isize, params.jsize }),
+      Kokkos::MDRangePolicy<exec_space, Kokkos::Rank<2>>({ 0, 0 }, { params.isize, params.jsize }),
       functor);
   }
 
@@ -857,24 +881,27 @@ public:
 
   } // end operator ()
 
-  DataArray Qdata;
-  DataArray Slopes_x, Slopes_y;
+  DataArray_t Qdata;
+  DataArray_t Slopes_x, Slopes_y;
 
 }; // ComputeSlopesFunctor
 
 /*************************************************/
 /*************************************************/
 /*************************************************/
-template <Direction dir>
+template<typename device_t, Direction dir>
 class ComputeTraceAndFluxes_Functor : public HydroBaseFunctor
 {
 
 public:
+  using DataArray_t = DataArray<device_t>;
+  using exec_space = typename device_t::execution_space;
+
   ComputeTraceAndFluxes_Functor(HydroParams params,
-                                DataArray   Qdata,
-                                DataArray   Slopes_x,
-                                DataArray   Slopes_y,
-                                DataArray   Fluxes,
+                                DataArray_t   Qdata,
+                                DataArray_t   Slopes_x,
+                                DataArray_t   Slopes_y,
+                                DataArray_t   Fluxes,
                                 real_t      dtdx,
                                 real_t      dtdy)
     : HydroBaseFunctor(params)
@@ -888,18 +915,18 @@ public:
   // static method which does it all: create and execute functor
   static void
   apply(HydroParams params,
-        DataArray   Qdata,
-        DataArray   Slopes_x,
-        DataArray   Slopes_y,
-        DataArray   Fluxes,
+        DataArray_t   Qdata,
+        DataArray_t   Slopes_x,
+        DataArray_t   Slopes_y,
+        DataArray_t   Fluxes,
         real_t      dtdx,
         real_t      dtdy)
   {
-    ComputeTraceAndFluxes_Functor<dir> functor(
+    ComputeTraceAndFluxes_Functor<device_t, dir> functor(
       params, Qdata, Slopes_x, Slopes_y, Fluxes, dtdx, dtdy);
     Kokkos::parallel_for(
       "ComputeTraceAndFluxes",
-      Kokkos::MDRangePolicy<Kokkos::Rank<2>>({ 0, 0 }, { params.isize, params.jsize }),
+      Kokkos::MDRangePolicy<exec_space, Kokkos::Rank<2>>({ 0, 0 }, { params.isize, params.jsize }),
       functor);
   }
 
@@ -1032,9 +1059,9 @@ public:
 
   } // end operator ()
 
-  DataArray Qdata;
-  DataArray Slopes_x, Slopes_y;
-  DataArray Fluxes;
+  DataArray_t Qdata;
+  DataArray_t Slopes_x, Slopes_y;
+  DataArray_t Fluxes;
   real_t    dtdx, dtdy;
 
 }; // ComputeTraceAndFluxes_Functor
@@ -1042,22 +1069,26 @@ public:
 /*************************************************/
 /*************************************************/
 /*************************************************/
+template<typename device_t>
 class InitImplodeFunctor : public HydroBaseFunctor
 {
 
 public:
-  InitImplodeFunctor(HydroParams params, DataArray Udata)
+  using DataArray_t = DataArray<device_t>;
+  using exec_space = typename device_t::execution_space;
+
+  InitImplodeFunctor(HydroParams params, DataArray_t Udata)
     : HydroBaseFunctor(params)
     , Udata(Udata){};
 
   // static method which does it all: create and execute functor
   static void
-  apply(HydroParams params, DataArray Udata)
+  apply(HydroParams params, DataArray_t Udata)
   {
     InitImplodeFunctor functor(params, Udata);
     Kokkos::parallel_for(
       "InitImplode",
-      Kokkos::MDRangePolicy<Kokkos::Rank<2>>({ 0, 0 }, { params.isize, params.jsize }),
+      Kokkos::MDRangePolicy<exec_space, Kokkos::Rank<2>>({ 0, 0 }, { params.isize, params.jsize }),
       functor);
   }
 
@@ -1096,29 +1127,33 @@ public:
 
   } // end operator ()
 
-  DataArray Udata;
+  DataArray_t Udata;
 
 }; // InitImplodeFunctor
 
 /*************************************************/
 /*************************************************/
 /*************************************************/
+template<typename device_t>
 class InitBlastFunctor : public HydroBaseFunctor
 {
 
 public:
-  InitBlastFunctor(HydroParams params, DataArray Udata)
+  using DataArray_t = DataArray<device_t>;
+  using exec_space = typename device_t::execution_space;
+
+  InitBlastFunctor(HydroParams params, DataArray_t Udata)
     : HydroBaseFunctor(params)
     , Udata(Udata){};
 
   // static method which does it all: create and execute functor
   static void
-  apply(HydroParams params, DataArray Udata)
+  apply(HydroParams params, DataArray_t Udata)
   {
     InitBlastFunctor functor(params, Udata);
     Kokkos::parallel_for(
       "InitBlast",
-      Kokkos::MDRangePolicy<Kokkos::Rank<2>>({ 0, 0 }, { params.isize, params.jsize }),
+      Kokkos::MDRangePolicy<exec_space, Kokkos::Rank<2>>({ 0, 0 }, { params.isize, params.jsize }),
       functor);
   }
 
@@ -1169,31 +1204,34 @@ public:
 
   } // end operator ()
 
-  DataArray Udata;
+  DataArray_t Udata;
 
 }; // InitBlastFunctor
 
 /*************************************************/
 /*************************************************/
 /*************************************************/
-template <FaceIdType faceId>
+template<typename device_t, FaceIdType faceId>
 class MakeBoundariesFunctor : public HydroBaseFunctor
 {
 
 public:
-  MakeBoundariesFunctor(HydroParams params, DataArray Udata)
+  using DataArray_t = DataArray<device_t>;
+  using exec_space = typename device_t::execution_space;
+
+  MakeBoundariesFunctor(HydroParams params, DataArray_t Udata)
     : HydroBaseFunctor(params)
     , Udata(Udata){};
 
 
   // static method which does it all: create and execute functor
   static void
-  apply(HydroParams params, DataArray Udata)
+  apply(HydroParams params, DataArray_t Udata)
   {
     int nbIter = params.ghostWidth * std::max(params.isize, params.jsize);
 
-    MakeBoundariesFunctor<faceId> functor(params, Udata);
-    Kokkos::parallel_for("MakeBoundaries", Kokkos::RangePolicy<>(0, nbIter), functor);
+    MakeBoundariesFunctor<device_t, faceId> functor(params, Udata);
+    Kokkos::parallel_for("MakeBoundaries", Kokkos::RangePolicy<exec_space>(0, nbIter), functor);
   }
 
   KOKKOS_INLINE_FUNCTION
@@ -1369,7 +1407,7 @@ public:
 
   } // end operator ()
 
-  DataArray Udata;
+  DataArray_t Udata;
 
 }; // MakeBoundariesFunctor
 
