@@ -644,7 +644,7 @@ HydroRun<device_t>::saveHDF5(DataArray_t Udata, int iStep, std::string name)
  * can be opened by ParaView
  * point to data file : xdmf2d.h5
  */
-template<typename device_t>
+template <typename device_t>
 void
 HydroRun<device_t>::write_xdmf_time_series()
 {
@@ -654,7 +654,6 @@ HydroRun<device_t>::write_xdmf_time_series()
 
   // get data type as a string for Xdmf
   std::string dataTypeName = sizeof(real_t) == sizeof(double) ? "Double" : "Float";
-  int         precision = sizeof(real_t) == sizeof(double) ? 8 : 4;
 
   /*
    * Open the file and write the XML description of the mesh..
