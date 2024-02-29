@@ -90,7 +90,8 @@ enum ImplementationVersion
 enum ProblemType
 {
   PROBLEM_IMPLODE,
-  PROBLEM_BLAST
+  PROBLEM_BLAST,
+  PROBLEM_FOUR_QUADRANT
 };
 
 // variable names in the order as in component index

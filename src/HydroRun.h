@@ -36,7 +36,7 @@ isBigEndian()
 /**
  * Main hydrodynamics data structure.
  */
-template<typename device_t>
+template <typename device_t>
 class HydroRun
 {
 
@@ -95,6 +95,8 @@ public:
   init_implode(DataArray_t Udata);
   void
   init_blast(DataArray_t Udata);
+  void
+  init_four_quadrant(DataArray_t Udata);
 
   // host routines (save data to file, device data are copied into host
   // inside this routine)
@@ -123,7 +125,7 @@ public:
 /**
  *
  */
-template<typename device_t>
+template <typename device_t>
 HydroRun<device_t>::HydroRun(HydroParams & params, ConfigMap & configMap)
   : params(params)
   , configMap(configMap)
@@ -173,6 +175,10 @@ HydroRun<device_t>::HydroRun(HydroParams & params, ConfigMap & configMap)
   else if (params.problemType == PROBLEM_BLAST)
   {
     init_blast(U);
+  }
+  else if (params.problemType == PROBLEM_FOUR_QUADRANT)
+  {
+    init_four_quadrant(U);
   }
   else
   {
@@ -381,7 +387,29 @@ HydroRun<device_t>::init_blast(DataArray_t Udata)
 
 // =======================================================
 // =======================================================
-template<typename device_t>
+/**
+ * Hydrodynamical four quadrant Test.
+ *
+ * In the 2D case, there are 19 different possible configurations (see
+ * article by Lax and Liu, "Solution of two-dimensional riemann
+ * problems of gas dynamics by positive schemes",SIAM journal on
+ * scientific computing, 1998, vol. 19, no2, pp. 319-340).
+ *
+ * Here only problem #3 is implemented. See https://github.com/pkestene/euler_kokkos for complete
+ * list of all 19 initial conditions.
+ */
+template <typename device_t>
+void
+HydroRun<device_t>::init_four_quadrant(DataArray_t Udata)
+{
+
+  InitFourQuadrantFunctor<device_t>::apply(params, Udata);
+
+} // HydroRun<device_t>::init_four_quadrant
+
+// =======================================================
+// =======================================================
+template <typename device_t>
 void
 HydroRun<device_t>::saveData(DataArray_t Udata, int iStep, std::string name)
 {

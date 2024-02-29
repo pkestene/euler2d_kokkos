@@ -1211,7 +1211,128 @@ public:
 /*************************************************/
 /*************************************************/
 /*************************************************/
-template<typename device_t, FaceIdType faceId>
+template <typename device_t>
+class InitFourQuadrantFunctor : public HydroBaseFunctor
+{
+
+public:
+  using DataArray_t = DataArray<device_t>;
+  using exec_space = typename device_t::execution_space;
+
+  InitFourQuadrantFunctor(HydroParams params, DataArray_t Udata)
+    : HydroBaseFunctor(params)
+    , Udata(Udata){};
+
+  // static method which does it all: create and execute functor
+  static void
+  apply(HydroParams params, DataArray_t Udata)
+  {
+    InitFourQuadrantFunctor functor(params, Udata);
+    Kokkos::parallel_for(
+      "InitFourQuadrant",
+      Kokkos::MDRangePolicy<exec_space, Kokkos::Rank<2>>({ 0, 0 }, { params.isize, params.jsize }),
+      functor);
+  }
+
+  KOKKOS_FUNCTION void
+  primToCons(Kokkos::Array<real_t, 4> & U, real_t gamma0) const
+  {
+
+    real_t rho = U[ID];
+    real_t p = U[IP];
+    real_t u = U[IU];
+    real_t v = U[IV];
+
+    U[IU] *= rho; // rho*u
+    U[IV] *= rho; // rho*v
+    U[IP] = p / (gamma0 - 1.0) + rho * (u * u + v * v) * 0.5;
+
+  } // primToCons
+
+
+  KOKKOS_INLINE_FUNCTION
+  void
+  operator()(const int & i, const int & j) const
+  {
+
+    const int ghostWidth = params.ghostWidth;
+
+    const real_t xmin = params.xmin;
+    const real_t ymin = params.ymin;
+    const real_t dx = params.dx;
+    const real_t dy = params.dy;
+
+    // four quadrant problem parameters
+    const real_t xt = 0.8;
+    const real_t yt = 0.8;
+
+    const real_t gamma0 = params.settings.gamma0;
+
+    // clang-format off
+    // primitive variables
+    Kokkos::Array<real_t, 4> U0{ 1.5   , 1.5  , 0.0  , 0.0   };
+    Kokkos::Array<real_t, 4> U1{ 0.5323, 0.3  , 1.206, 0.0   };
+    Kokkos::Array<real_t, 4> U2{ 0.138 , 0.029, 1.206, 1.206 };
+    Kokkos::Array<real_t, 4> U3{ 0.5323, 0.3  , 0.0  , 1.206 };
+    // clang-format on
+
+    primToCons(U0, gamma0);
+    primToCons(U1, gamma0);
+    primToCons(U2, gamma0);
+    primToCons(U3, gamma0);
+
+    real_t x = xmin + dx / 2 + (i - ghostWidth) * dx;
+    real_t y = ymin + dy / 2 + (j - ghostWidth) * dy;
+
+    if (x < xt)
+    {
+      if (y < yt)
+      {
+        // region 2
+        Udata(i, j, ID) = U2[ID];
+        Udata(i, j, IP) = U2[IP];
+        Udata(i, j, IU) = U2[IU];
+        Udata(i, j, IV) = U2[IV];
+      }
+      else
+      {
+        // region 1
+        Udata(i, j, ID) = U1[ID];
+        Udata(i, j, IP) = U1[IP];
+        Udata(i, j, IU) = U1[IU];
+        Udata(i, j, IV) = U1[IV];
+      }
+    }
+    else
+    {
+      if (y < yt)
+      {
+        // region 3
+        Udata(i, j, ID) = U3[ID];
+        Udata(i, j, IP) = U3[IP];
+        Udata(i, j, IU) = U3[IU];
+        Udata(i, j, IV) = U3[IV];
+      }
+      else
+      {
+        // region 0
+        Udata(i, j, ID) = U0[ID];
+        Udata(i, j, IP) = U0[IP];
+        Udata(i, j, IU) = U0[IU];
+        Udata(i, j, IV) = U0[IV];
+      }
+    }
+
+  } // end operator ()
+
+  DataArray_t Udata;
+
+}; // InitFourQuadrantFunctor
+
+/*************************************************/
+/*************************************************/
+/*************************************************/
+template <typename device_t, FaceIdType faceId>
 class MakeBoundariesFunctor : public HydroBaseFunctor
 {
 

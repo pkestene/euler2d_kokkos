@@ -90,6 +90,10 @@ HydroParams::setup(ConfigMap & configMap)
   {
     problemType = PROBLEM_BLAST;
   }
+  else if (!problemStr.compare("four_quadrant"))
+  {
+    problemType = PROBLEM_FOUR_QUADRANT;
+  }
   else
   {
     std::cout << "Problem is invalid\n";
