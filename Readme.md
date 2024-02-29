@@ -24,7 +24,7 @@ We strongly recommend the out-of-source build, so that one can have one build di
 Just make sure that your env variable `CMAKE_PREFIX_PATH` point to the location where Kokkos where installed. More precisely if Kokkos is installed in `KOKKOS_ROOT`, you add `$KOKKOS_ROOT/lib/cmake` to your `CMAKE_PREFIX_PATH`; this way kokkos will be found automagically by cmake, and the right Kokkos backend will be selected.
 
 ```shell
-mkdir -p build; cd build
+mkdir -p _build; cd _build
 cmake -DEULER2D_KOKKOS_BUILD=OFF ..
 make
 ```
@@ -40,7 +40,7 @@ cd src
 
 To build for Kokkos/OpenMP backend (which is the default backend):
 ```shell
-mkdir -p build/openmp; cd build/openmp
+mkdir -p _build/openmp; cd _build/openmp
 cmake -DEULER2D_KOKKOS_BUILD=ON -DEULER2D_KOKKOS_BACKEND=OpenMP ../..
 make
 ```
@@ -57,11 +57,13 @@ Optionally, you can (recommended) activate HWLOC support by turning ON the flag 
 ## Kokkos is not already installed => build for Kokkos/CUDA
 
 Obviously, you need to have Nvidia/CUDA driver and toolkit installed on your platform.
+- if you are building on a machine with a GPU, the Kokkos build system will auto detect the GPU architecture
+- if you are building on a front node of a supercomputer, you will probably need to tell cmake for which GPU architecture you want to build; e.g. add flag `-DKokkos_ARCH_AMPERE80=ON` to build for Nvidia Ampere A100 architecture.
 
 Example configuration:
 ```shell
-mkdir build/cuda; cd build/cuda
-cmake -DEULER2D_KOKKOS_BUILD=ON -DEULER2D_KOKKOS_BACKEND=Cuda -DKokkos_ENABLE_CUDA_LAMBDA=ON -DKokkos_ENABLE_HWLOC=ON ../..
+mkdir _build/cuda; cd _build/cuda
+cmake -DEULER2D_KOKKOS_BUILD=ON -DEULER2D_KOKKOS_BACKEND=Cuda ../..
 make
 ```
 
