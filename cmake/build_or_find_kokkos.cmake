@@ -105,21 +105,17 @@ if(EULER2D_KOKKOS_BUILD)
   #find_package(Git REQUIRED)
   include (FetchContent)
 
-  # set a default value for kokkos archive file to use when not using git
-  if (NOT DEFINED EULER2D_KOKKOS_SOURCE_ARCHIVE)
-    set(EULER2D_KOKKOS_SOURCE_ARCHIVE https://github.com/kokkos/kokkos/archive/refs/tags/4.1.00.tar.gz CACHE STRING "Kokkos source archive (can be a URL or local filepath).")
-  endif()
-
   if (EULER2D_KOKKOS_USE_GIT)
     message("[euler2d / kokkos] Building kokkos from source using git sources")
     FetchContent_Declare( kokkos_external
       GIT_REPOSITORY https://github.com/kokkos/kokkos.git
-      GIT_TAG 4.1.00
+      GIT_TAG 4.2.00
       )
   else()
-    message("[euler2d / kokkos] Building kokkos from source using archive file/URL ${EULER2D_KOKKOS_SOURCE_ARCHIVE}")
+    message("[euler2d / kokkos] Building kokkos from source using git submodule")
     FetchContent_Declare( kokkos_external
-      URL ${EULER2D_KOKKOS_SOURCE_ARCHIVE}
+      #URL https://github.com/kokkos/kokkos/archive/refs/tags/4.2.00.tar.gz
+      SOURCE_DIR ${PROJECT_SOURCE_DIR}/external/kokkos
       )
   endif()
 
@@ -141,7 +137,7 @@ else()
   #
   # check if an already installed kokkos exists
   #
-  find_package(Kokkos 3.7.00 REQUIRED)
+  find_package(Kokkos 4.0.00 CONFIG REQUIRED)
 
   if(TARGET Kokkos::kokkos)
 
