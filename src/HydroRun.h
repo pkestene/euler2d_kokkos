@@ -13,6 +13,7 @@
 #include <string>
 #include <cstdio>
 #include <cstdbool>
+#include <iostream>
 #include <sstream>
 #include <fstream>
 #include <algorithm>
@@ -202,13 +203,13 @@ HydroRun<device_t>::HydroRun(HydroParams & params, ConfigMap & configMap)
  *
  * \return dt time step
  */
-template<typename device_t>
+template <typename device_t>
 real_t
 HydroRun<device_t>::compute_dt(int useU)
 {
 
-  real_t    dt;
-  real_t    invDt = ZERO_F;
+  real_t      dt;
+  real_t      invDt = ZERO_F;
   DataArray_t Udata;
 
   // which array is the current one ?
@@ -233,7 +234,7 @@ HydroRun<device_t>::compute_dt(int useU)
 // ///////////////////////////////////////////
 // Wrapper to the actual computation routine
 // ///////////////////////////////////////////
-template<typename device_t>
+template <typename device_t>
 void
 HydroRun<device_t>::godunov_unsplit(int nStep, real_t dt)
 {
@@ -254,9 +255,12 @@ HydroRun<device_t>::godunov_unsplit(int nStep, real_t dt)
 // ///////////////////////////////////////////
 // Actual CPU computation of Godunov scheme
 // ///////////////////////////////////////////
-template<typename device_t>
+template <typename device_t>
 void
-HydroRun<device_t>::godunov_unsplit_cpu(DataArray_t data_in, DataArray_t data_out, real_t dt, int nStep)
+HydroRun<device_t>::godunov_unsplit_cpu(DataArray_t data_in,
+                                        DataArray_t data_out,
+                                        real_t      dt,
+                                        int         nStep)
 {
 
   real_t dtdx;
@@ -304,13 +308,15 @@ HydroRun<device_t>::godunov_unsplit_cpu(DataArray_t data_in, DataArray_t data_ou
     ComputeSlopesFunctor<device_t>::apply(params, Q, Slopes_x, Slopes_y);
 
     // now trace along X axis
-    ComputeTraceAndFluxes_Functor<device_t, XDIR>::apply(params, Q, Slopes_x, Slopes_y, Fluxes_x, dtdx, dtdy);
+    ComputeTraceAndFluxes_Functor<device_t, XDIR>::apply(
+      params, Q, Slopes_x, Slopes_y, Fluxes_x, dtdx, dtdy);
 
     // and update along X axis
     UpdateDirFunctor<device_t, XDIR>::apply(params, data_out, Fluxes_x);
 
     // now trace along Y axis
-    ComputeTraceAndFluxes_Functor<device_t, YDIR>::apply(params, Q, Slopes_x, Slopes_y, Fluxes_y, dtdx, dtdy);
+    ComputeTraceAndFluxes_Functor<device_t, YDIR>::apply(
+      params, Q, Slopes_x, Slopes_y, Fluxes_y, dtdx, dtdy);
 
     // and update along Y axis
     UpdateDirFunctor<device_t, YDIR>::apply(params, data_out, Fluxes_y);
@@ -327,7 +333,7 @@ HydroRun<device_t>::godunov_unsplit_cpu(DataArray_t data_in, DataArray_t data_ou
 // ///////////////////////////////////////////////////////////////////
 // Convert conservative variables array U into primitive var array Q
 // ///////////////////////////////////////////////////////////////////
-template<typename device_t>
+template <typename device_t>
 void
 HydroRun<device_t>::convertToPrimitives(DataArray_t Udata)
 {
@@ -342,7 +348,7 @@ HydroRun<device_t>::convertToPrimitives(DataArray_t Udata)
 // Fill ghost cells according to border condition :
 // absorbant, reflexive or periodic
 // //////////////////////////////////////////////////
-template<typename device_t>
+template <typename device_t>
 void
 HydroRun<device_t>::make_boundaries(DataArray_t Udata)
 {
@@ -361,7 +367,7 @@ HydroRun<device_t>::make_boundaries(DataArray_t Udata)
  * Hydrodynamical Implosion Test.
  * http://www.astro.princeton.edu/~jstone/Athena/tests/implode/Implode.html
  */
-template<typename device_t>
+template <typename device_t>
 void
 HydroRun<device_t>::init_implode(DataArray_t Udata)
 {
@@ -376,7 +382,7 @@ HydroRun<device_t>::init_implode(DataArray_t Udata)
  * Hydrodynamical blast Test.
  * http://www.astro.princeton.edu/~jstone/Athena/tests/blast/blast.html
  */
-template<typename device_t>
+template <typename device_t>
 void
 HydroRun<device_t>::init_blast(DataArray_t Udata)
 {
@@ -430,7 +436,7 @@ HydroRun<device_t>::saveData(DataArray_t Udata, int iStep, std::string name)
 // To make sure OpenMP and CUDA version give the same
 // results, we transpose the OpenMP data.
 // ///////////////////////////////////////////////////////
-template<typename device_t>
+template <typename device_t>
 void
 HydroRun<device_t>::saveVTK(DataArray_t Udata, int iStep, std::string name)
 {
@@ -487,12 +493,10 @@ HydroRun<device_t>::saveVTK(DataArray_t Udata, int iStep, std::string name)
 
   // write mesh extent
   outFile << "  <ImageData WholeExtent=\"" << 0 << " " << nx << " " << 0 << " " << ny << " " << 0
-          << " " << 0 << "\" "
-          << "Origin=\"" << params.xmin << " " << params.ymin << " " << 0.0 << "\" "
-          << "Spacing=\"" << params.dx << " " << params.dy << " " << 0.0 << "\">\n";
+          << " " << 0 << "\" " << "Origin=\"" << params.xmin << " " << params.ymin << " " << 0.0
+          << "\" " << "Spacing=\"" << params.dx << " " << params.dy << " " << 0.0 << "\">\n";
   outFile << "  <Piece Extent=\"" << 0 << " " << nx << " " << 0 << " " << ny << " " << 0 << " " << 0
-          << " "
-          << "\">\n";
+          << " " << "\">\n";
 
   outFile << "    <PointData>\n";
   outFile << "    </PointData>\n";
@@ -545,7 +549,7 @@ HydroRun<device_t>::saveVTK(DataArray_t Udata, int iStep, std::string name)
 // To make sure OpenMP and CUDA version give the same
 // results, we transpose the OpenMP data.
 // ///////////////////////////////////////////////////////
-template<typename device_t>
+template <typename device_t>
 void
 HydroRun<device_t>::saveHDF5(DataArray_t Udata, int iStep, std::string name)
 {
