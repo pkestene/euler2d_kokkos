@@ -91,7 +91,8 @@ enum ProblemType
 {
   PROBLEM_IMPLODE,
   PROBLEM_BLAST,
-  PROBLEM_FOUR_QUADRANT
+  PROBLEM_FOUR_QUADRANT,
+  PROBLEM_DISCONTINUITY
 };
 
 // variable names in the order as in component index
