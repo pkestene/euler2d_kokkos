@@ -114,9 +114,9 @@ HydroParams::setup(ConfigMap & configMap)
   blast_pressure_out = configMap.getFloat("blast", "pressure_out", 0.1);
 
   implementationVersion = configMap.getFloat("OTHER", "implementationVersion", 0);
-  if (implementationVersion != 0 and implementationVersion != 1)
+  if (implementationVersion != 0 and implementationVersion != 1 and implementationVersion != 2)
   {
-    std::cout << "Implementation version is invalid (must be 0 or 1)\n";
+    std::cout << "Implementation version is invalid (must be 0, 1 or 2)\n";
     std::cout << "Use the default : 0\n";
     implementationVersion = 0;
   }
