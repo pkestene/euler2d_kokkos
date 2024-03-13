@@ -94,6 +94,10 @@ HydroParams::setup(ConfigMap & configMap)
   {
     problemType = PROBLEM_FOUR_QUADRANT;
   }
+  else if (!problemStr.compare("discontinuity"))
+  {
+    problemType = PROBLEM_DISCONTINUITY;
+  }
   else
   {
     std::cout << "Problem is invalid\n";

@@ -1332,6 +1332,70 @@ public:
 /*************************************************/
 /*************************************************/
 /*************************************************/
+template <typename device_t>
+class InitDiscontinuityFunctor : public HydroBaseFunctor
+{
+
+public:
+  using DataArray_t = DataArray<device_t>;
+  using exec_space = typename device_t::execution_space;
+
+  InitDiscontinuityFunctor(HydroParams params, DataArray_t Udata)
+    : HydroBaseFunctor(params)
+    , Udata(Udata){};
+
+  // static method which does it all: create and execute functor
+  static void
+  apply(HydroParams params, DataArray_t Udata)
+  {
+    InitDiscontinuityFunctor functor(params, Udata);
+    Kokkos::parallel_for(
+      "InitDiscontinuity",
+      Kokkos::MDRangePolicy<exec_space, Kokkos::Rank<2>>({ 0, 0 }, { params.isize, params.jsize }),
+      functor);
+  }
+
+  KOKKOS_INLINE_FUNCTION
+  void
+  operator()(const int & i, const int & j) const
+  {
+
+    const int ghostWidth = params.ghostWidth;
+
+    const real_t xmin = params.xmin;
+    const real_t ymin = params.ymin;
+    const real_t dx = params.dx;
+    const real_t dy = params.dy;
+
+    const real_t gamma0 = params.settings.gamma0;
+
+    real_t x = xmin + dx / 2 + (i - ghostWidth) * dx;
+    real_t y = ymin + dy / 2 + (j - ghostWidth) * dy;
+
+    if (x + y < 1)
+    {
+      Udata(i, j, ID) = 1.0 + x * x;
+      Udata(i, j, IP) = 1.0 / (gamma0 - 1.0);
+      Udata(i, j, IU) = 0.0;
+      Udata(i, j, IV) = 0.0;
+    }
+    else
+    {
+      Udata(i, j, ID) = 0.25;
+      Udata(i, j, IP) = 1.0 / (gamma0 - 1.0);
+      Udata(i, j, IU) = 0.0;
+      Udata(i, j, IV) = 0.0;
+    }
+
+  } // end operator ()
+
+  DataArray_t Udata;
+
+}; // InitDiscontinuityFunctor
+
+/*************************************************/
+/*************************************************/
+/*************************************************/
 template <typename device_t, FaceIdType faceId>
 class MakeBoundariesFunctor : public HydroBaseFunctor
 {

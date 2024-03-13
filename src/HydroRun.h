@@ -98,6 +98,8 @@ public:
   init_blast(DataArray_t Udata);
   void
   init_four_quadrant(DataArray_t Udata);
+  void
+  init_discontinuity(DataArray_t Udata);
 
   // host routines (save data to file, device data are copied into host
   // inside this routine)
@@ -180,6 +182,10 @@ HydroRun<device_t>::HydroRun(HydroParams & params, ConfigMap & configMap)
   else if (params.problemType == PROBLEM_FOUR_QUADRANT)
   {
     init_four_quadrant(U);
+  }
+  else if (params.problemType == PROBLEM_DISCONTINUITY)
+  {
+    init_discontinuity(U);
   }
   else
   {
@@ -390,6 +396,21 @@ HydroRun<device_t>::init_blast(DataArray_t Udata)
   InitBlastFunctor<device_t>::apply(params, Udata);
 
 } // HydroRun<device_t>::init_blast
+
+// =======================================================
+// =======================================================
+/**
+ * Hydrodynamical discontinuity Test.
+ *
+ */
+template <typename device_t>
+void
+HydroRun<device_t>::init_discontinuity(DataArray_t Udata)
+{
+
+  InitDiscontinuityFunctor<device_t>::apply(params, Udata);
+
+} // HydroRun<device_t>::init_discontinuity
 
 // =======================================================
 // =======================================================
