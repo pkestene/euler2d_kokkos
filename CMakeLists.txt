@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.16)
+cmake_minimum_required(VERSION 3.22)
 project(
   euler2d
   DESCRIPTION "euler2d_kokkos is mini application using C++/Kokkos library, used for teaching purpose"
