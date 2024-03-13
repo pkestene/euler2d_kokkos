@@ -77,7 +77,7 @@ public:
   godunov_unsplit(int nStep, real_t dt);
 
   void
-  godunov_unsplit_cpu(DataArray_t data_in, DataArray_t data_out, real_t dt, int nStep);
+  godunov_unsplit_impl(DataArray_t data_in, DataArray_t data_out, real_t dt, int nStep);
 
   void
   convertToPrimitives(DataArray_t Udata);
@@ -247,11 +247,11 @@ HydroRun<device_t>::godunov_unsplit(int nStep, real_t dt)
 
   if (nStep % 2 == 0)
   {
-    godunov_unsplit_cpu(U, U2, dt, nStep);
+    godunov_unsplit_impl(U, U2, dt, nStep);
   }
   else
   {
-    godunov_unsplit_cpu(U2, U, dt, nStep);
+    godunov_unsplit_impl(U2, U, dt, nStep);
   }
 
 } // HydroRun<device_t>::godunov_unsplit
@@ -263,10 +263,10 @@ HydroRun<device_t>::godunov_unsplit(int nStep, real_t dt)
 // ///////////////////////////////////////////
 template <typename device_t>
 void
-HydroRun<device_t>::godunov_unsplit_cpu(DataArray_t data_in,
-                                        DataArray_t data_out,
-                                        real_t      dt,
-                                        int         nStep)
+HydroRun<device_t>::godunov_unsplit_impl(DataArray_t data_in,
+                                         DataArray_t data_out,
+                                         real_t      dt,
+                                         int         nStep)
 {
 
   real_t dtdx;
@@ -332,7 +332,7 @@ HydroRun<device_t>::godunov_unsplit_cpu(DataArray_t data_in,
 
   godunov_timer.stop();
 
-} // HydroRun<device_t>::godunov_unsplit_cpu
+} // HydroRun<device_t>::godunov_unsplit_impl
 
 // =======================================================
 // =======================================================
