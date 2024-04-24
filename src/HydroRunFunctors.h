@@ -1499,8 +1499,6 @@ public:
     const real_t dx = params.dx;
     const real_t dy = params.dy;
 
-    const real_t gamma0 = params.settings.gamma0;
-
     // blast problem parameters
     const real_t blast_radius = params.blast_radius;
     const real_t radius2 = blast_radius * blast_radius;

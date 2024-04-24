@@ -84,8 +84,6 @@ public:
     const real_t ymin = params.ymin;
     const real_t xmax = params.xmax;
     const real_t ymax = params.ymax;
-    const real_t dx = params.dx;
-    const real_t dy = params.dy;
 
     // get center of the box coordinates
     Kokkos::Array<real_t, 2> box_center;
