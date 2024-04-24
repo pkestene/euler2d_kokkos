@@ -1384,32 +1384,63 @@ public:
 /*************************************************/
 /*************************************************/
 /*************************************************/
-template<typename device_t>
+/**
+ * Initialize blast test case.
+ *
+ * Two types of initialization:
+ *
+ * - if parameter total_energy_inside is positive, we initialize in total energy
+ * - if parameter total_energy_inside is negative or null, we initialize using pressure in /
+ * pressure out
+ *
+ * If you want to do the well know sedov blast test, you need to initialize using total energy, not
+ * pressure.
+ */
+template <typename device_t>
 class InitBlastFunctor : public HydroBaseFunctor
 {
 
 public:
+  struct TagRegularInit
+  {};
+  struct TagCorrectTotalEnergy
+  {};
+
   using DataArray_t = DataArray<device_t>;
   using exec_space = typename device_t::execution_space;
 
   InitBlastFunctor(HydroParams params, DataArray_t Udata)
     : HydroBaseFunctor(params)
-    , Udata(Udata){};
+    , Udata(Udata) {};
 
   // static method which does it all: create and execute functor
   static void
   apply(HydroParams params, DataArray_t Udata)
   {
+    real_t              volume_inside = ZERO_F;
+    Kokkos::Sum<real_t> reducer(volume_inside);
+
     InitBlastFunctor functor(params, Udata);
-    Kokkos::parallel_for(
-      "InitBlast",
-      Kokkos::MDRangePolicy<exec_space, Kokkos::Rank<2>>({ 0, 0 }, { params.isize, params.jsize }),
-      functor);
+    Kokkos::parallel_reduce("InitBlast - regular",
+                            Kokkos::MDRangePolicy<exec_space, Kokkos::Rank<2>, TagRegularInit>(
+                              { 0, 0 }, { params.isize, params.jsize }),
+                            functor,
+                            reducer);
+
+    if (params.blast_total_energy_inside > 0)
+    {
+      functor.m_volume_inside = volume_inside;
+      Kokkos::parallel_for(
+        "InitBlast - correct total energy",
+        Kokkos::MDRangePolicy<exec_space, Kokkos::Rank<2>, TagCorrectTotalEnergy>(
+          { 0, 0 }, { params.isize, params.jsize }),
+        functor);
+    }
   }
 
   KOKKOS_INLINE_FUNCTION
   void
-  operator()(const int & i, const int & j) const
+  operator()(TagRegularInit const &, const int & i, const int & j, real_t & volume) const
   {
 
     const int ghostWidth = params.ghostWidth;
@@ -1443,6 +1474,8 @@ public:
       Udata(i, j, IP) = blast_pressure_in / (gamma0 - 1.0);
       Udata(i, j, IU) = 0.0;
       Udata(i, j, IV) = 0.0;
+
+      volume += dx * dy;
     }
     else
     {
@@ -1452,9 +1485,44 @@ public:
       Udata(i, j, IV) = 0.0;
     }
 
-  } // end operator ()
+  } // end operator () - TagRegularInit
+
+  KOKKOS_INLINE_FUNCTION
+  void
+  operator()(TagCorrectTotalEnergy const &, const int & i, const int & j) const
+  {
+
+    const int ghostWidth = params.ghostWidth;
+
+    const real_t xmin = params.xmin;
+    const real_t ymin = params.ymin;
+    const real_t dx = params.dx;
+    const real_t dy = params.dy;
+
+    const real_t gamma0 = params.settings.gamma0;
+
+    // blast problem parameters
+    const real_t blast_radius = params.blast_radius;
+    const real_t radius2 = blast_radius * blast_radius;
+    const real_t blast_center_x = params.blast_center_x;
+    const real_t blast_center_y = params.blast_center_y;
+    const real_t blast_total_energy_inside = params.blast_total_energy_inside;
+
+    real_t x = xmin + dx / 2 + (i - ghostWidth) * dx;
+    real_t y = ymin + dy / 2 + (j - ghostWidth) * dy;
+
+    real_t d2 =
+      (x - blast_center_x) * (x - blast_center_x) + (y - blast_center_y) * (y - blast_center_y);
+
+    if (d2 < radius2)
+    {
+      Udata(i, j, IP) = blast_total_energy_inside / m_volume_inside;
+    }
+
+  } // end operator () - TagCorrectTotalEnergy
 
   DataArray_t Udata;
+  real_t      m_volume_inside = 0.0;
 
 }; // InitBlastFunctor
 

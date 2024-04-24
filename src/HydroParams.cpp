@@ -112,6 +112,8 @@ HydroParams::setup(ConfigMap & configMap)
   blast_density_out = configMap.getFloat("blast", "density_out", 1.2);
   blast_pressure_in = configMap.getFloat("blast", "pressure_in", 10.0);
   blast_pressure_out = configMap.getFloat("blast", "pressure_out", 0.1);
+  blast_total_energy_inside = configMap.getFloat("blast", "total_energy_inside", 0.0);
+  blast_nbins = configMap.getInteger("blast", "nbins", 100);
 
   implementationVersion = configMap.getFloat("OTHER", "implementationVersion", 0);
   if (implementationVersion != 0 and implementationVersion != 1 and implementationVersion != 2)

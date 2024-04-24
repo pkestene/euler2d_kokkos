@@ -118,7 +118,7 @@ public:
    * Paraview/Visit to read these h5 files as a time series.
    */
   void
-  write_xdmf_time_series();
+  write_xdmf_time_series(int last_time_step);
 #endif
 }; // class HydroRun
 
@@ -696,7 +696,8 @@ HydroRun<device_t>::godunov_unsplit_impl(DataArray_t data_in,
    * point to data file : xdmf2d.h5
    */
   template <typename device_t>
-  void HydroRun<device_t>::write_xdmf_time_series()
+  void
+  HydroRun<device_t>::write_xdmf_time_series(int last_time_step)
   {
     FILE *      xdmf = 0;
     const int & nx = params.nx;
@@ -722,8 +723,15 @@ HydroRun<device_t>::godunov_unsplit_impl(DataArray_t data_in,
             "    <Grid Name=\"TimeSeries\" GridType=\"Collection\" CollectionType=\"Temporal\">\n");
 
     // for each time step write a <grid> </grid> item
-    for (int iStep = 0; iStep <= params.nStepmax; iStep += params.nOutput)
+    const int nbOutput = (params.nStepmax + params.nOutput - 1) / params.nOutput + 1;
+    for (int iOut = 0; iOut < nbOutput; ++iOut)
     {
+      int iStep = iOut * params.nOutput;
+
+      if (iOut == (nbOutput - 1))
+      {
+        iStep = last_time_step;
+      }
 
       std::ostringstream outNum;
       outNum.width(7);
@@ -786,7 +794,7 @@ HydroRun<device_t>::godunov_unsplit_impl(DataArray_t data_in,
     fprintf(xdmf, "</Xdmf>\n");
     fclose(xdmf);
 
-  }    // HydroRun<device_t>::write_xdmf_xml
+  } // HydroRun<device_t>::write_xdmf_xml
 #endif // USE_HDF5
 
 } // namespace euler2d

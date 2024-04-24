@@ -17,6 +17,8 @@ add_executable(euler2d
   SimpleTimer.h
   SimpleTimer.cpp
   CudaTimer.h
+  cnpy/cnpy.h
+  cnpy/cnpy.cpp
   main.cpp)
 
 target_include_directories(euler2d
@@ -34,3 +36,5 @@ configure_file(test_implode.ini test_implode.ini COPYONLY)
 configure_file(test_implode_big.ini test_implode_big.ini COPYONLY)
 configure_file(test_four_quadrant.ini test_four_quadrant.ini COPYONLY)
 configure_file(test_discontinuity.ini test_discontinuity.ini COPYONLY)
+
+add_subdirectory(sedov_blast)

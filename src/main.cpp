@@ -11,6 +11,7 @@
 #include "kokkos_shared.h"
 
 #include "HydroBaseFunctor.h"
+#include "ComputeRadialProfileFunctor.h"
 #include "HydroParams.h" // read parameter file
 #include "HydroRun.h"    // memory allocation for hydro arrays
 #include "real_type.h"   // choose between single and double precision
@@ -20,7 +21,7 @@ int
 main(int argc, char * argv[])
 {
   using DefaultDevice =
-      Kokkos::Device<Kokkos::DefaultExecutionSpace, Kokkos::DefaultExecutionSpace::memory_space>;
+    Kokkos::Device<Kokkos::DefaultExecutionSpace, Kokkos::DefaultExecutionSpace::memory_space>;
   using device = DefaultDevice;
   // using device = Kokkos::OpenMP::device_type;
   // using device = Kokkos::CudaSpace::device_type;
@@ -121,6 +122,13 @@ main(int argc, char * argv[])
     // compute new dt
     dt_timer.start();
     dt = hydro->compute_dt(nStep % 2);
+
+    // correct dt if necessary
+    if (t + dt > params.tEnd)
+    {
+      dt = params.tEnd - t;
+    }
+
     dt_timer.stop();
 
     // perform one step integration
@@ -135,7 +143,7 @@ main(int argc, char * argv[])
   // save last time step
   if (params.enableOutput)
   {
-    if (params.nOutput > 0 and nStep % params.nOutput == 0)
+    if (params.nOutput > 0)
     {
       std::cout << "Output results at time t=" << t << " step " << nStep << " dt=" << dt
                 << std::endl;
@@ -146,7 +154,7 @@ main(int argc, char * argv[])
         hydro->saveData(hydro->U2, nStep, "U");
       io_timer.stop();
     } // end output
-  }   // end enable output
+  } // end enable output
 
   // end of computation
   total_timer.stop();
@@ -154,9 +162,17 @@ main(int argc, char * argv[])
 
   // write XDMF wrapper
 #ifdef USE_HDF5
+  printf("Last time step is : %d\n", nStep);
+
   if (params.nOutput > 0 and params.ioHDF5)
-    hydro->write_xdmf_time_series();
+    hydro->write_xdmf_time_series(nStep);
 #endif
+
+  // post-processing for Sedov blast
+  if (params.problemType == euler2d::PROBLEM_BLAST and params.blast_total_energy_inside > 0)
+  {
+    euler2d::ComputeRadialProfileFunctor<device>::apply(params, hydro->U);
+  }
 
   // print monitoring information
   {

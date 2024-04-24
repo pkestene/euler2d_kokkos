@@ -183,6 +183,8 @@ struct HydroParams
   real_t blast_density_out;
   real_t blast_pressure_in;
   real_t blast_pressure_out;
+  real_t blast_total_energy_inside;
+  int    blast_nbins;
 
   // other parameters
   int implementationVersion = 0; /*!< triggers which implementation to use (currently 3 versions)*/
@@ -224,6 +226,7 @@ struct HydroParams
     , blast_density_out(1.2)
     , blast_pressure_in(10.0)
     , blast_pressure_out(0.1)
+    , blast_total_energy_inside(0)
     , implementationVersion(0)
   {}
 
