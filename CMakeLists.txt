@@ -4,6 +4,9 @@ project(
   DESCRIPTION "euler2d_kokkos is mini application using C++/Kokkos library, used for teaching purpose"
   LANGUAGES CXX C Fortran)
 
+# external dependencies: zlib (required by cnpy)
+find_package(ZLIB REQUIRED)
+
 #
 # default local cmake macro repository
 #

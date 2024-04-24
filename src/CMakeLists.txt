@@ -24,7 +24,7 @@ add_executable(euler2d
 target_include_directories(euler2d
   PUBLIC
   ${CMAKE_SOURCE_DIR})
-target_link_libraries(euler2d Kokkos::kokkos)
+target_link_libraries(euler2d Kokkos::kokkos ZLIB::ZLIB)
 
 if(HDF5_ENABLED)
   target_link_libraries(euler2d HDF5::HDF5)
