@@ -22,7 +22,7 @@ jobs:
 
     steps:
       - name: Install dependencies
-        run: sudo apt-get install -y libhwloc-dev
+        run: sudo apt-get install -y libhwloc-dev zlib1g-dev
 
       - name: Install CUDA
         uses: Jimver/cuda-toolkit@v0.2.10
