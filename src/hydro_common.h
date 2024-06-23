@@ -4,8 +4,7 @@
 namespace euler2d
 {
 
-#define NDIM 2
-#define NBVAR 4
+constexpr int NBVAR = 4;
 
 } // namespace euler2d
 
