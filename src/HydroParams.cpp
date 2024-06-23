@@ -55,7 +55,6 @@ HydroParams::setup(ConfigMap & configMap)
 
   settings.gamma0 = configMap.getFloat("hydro", "gamma0", 1.4);
   settings.cfl = configMap.getFloat("hydro", "cfl", 0.5);
-  settings.iorder = configMap.getInteger("hydro", "iorder", 2);
   settings.slope_type = configMap.getFloat("hydro", "slope_type", 1.0);
   settings.smallc = configMap.getFloat("hydro", "smallc", 1e-10);
   settings.smallr = configMap.getFloat("hydro", "smallr", 1e-10);
@@ -187,7 +186,6 @@ HydroParams::print()
   printf("smallr     : %12.10f\n", settings.smallr);
   printf("smallc     : %12.10f\n", settings.smallc);
   // printf( "niter_riemann : %d\n", niter_riemann);
-  printf("iorder     : %d\n", settings.iorder);
   printf("slope_type : %f\n", settings.slope_type);
   printf("riemann    : %d\n", riemannSolverType);
   printf("problem    : %d\n", problemType);

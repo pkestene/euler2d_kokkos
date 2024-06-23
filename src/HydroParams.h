@@ -106,7 +106,6 @@ struct HydroSettings
   real_t gamma6;
   real_t cfl;        /*!< Courant-Friedrich-Lewy parameter.*/
   real_t slope_type; /*!< type of slope computation (2 for second order scheme).*/
-  int    iorder;     /*!< */
   real_t smallr;     /*!< small density cut-off*/
   real_t smallc;     /*!< small speed of sound cut-off*/
   real_t smallp;     /*!< small pressure cut-off*/
@@ -118,7 +117,6 @@ struct HydroSettings
     , gamma6(1.0)
     , cfl(1.0)
     , slope_type(2.0)
-    , iorder(1)
     , smallr(1e-8)
     , smallc(1e-8)
     , smallp(1e-6)
