@@ -483,57 +483,61 @@ public:
       //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
       // get primitive variables state vector
+      // clang-format off
       qLoc[ID] = Qdata(i, j, ID);
-      qNeighbors_0[ID] = Qdata(i + 1, j, ID);
-      qNeighbors_1[ID] = Qdata(i - 1, j, ID);
-      qNeighbors_2[ID] = Qdata(i, j + 1, ID);
-      qNeighbors_3[ID] = Qdata(i, j - 1, ID);
+      qNeighbors_0[ID] = Qdata(i + 1, j    , ID);
+      qNeighbors_1[ID] = Qdata(i - 1, j    , ID);
+      qNeighbors_2[ID] = Qdata(i    , j + 1, ID);
+      qNeighbors_3[ID] = Qdata(i    , j - 1, ID);
 
       qLoc[IP] = Qdata(i, j, IP);
-      qNeighbors_0[IP] = Qdata(i + 1, j, IP);
-      qNeighbors_1[IP] = Qdata(i - 1, j, IP);
-      qNeighbors_2[IP] = Qdata(i, j + 1, IP);
-      qNeighbors_3[IP] = Qdata(i, j - 1, IP);
+      qNeighbors_0[IP] = Qdata(i + 1, j    , IP);
+      qNeighbors_1[IP] = Qdata(i - 1, j    , IP);
+      qNeighbors_2[IP] = Qdata(i    , j + 1, IP);
+      qNeighbors_3[IP] = Qdata(i    , j - 1, IP);
 
       qLoc[IU] = Qdata(i, j, IU);
-      qNeighbors_0[IU] = Qdata(i + 1, j, IU);
-      qNeighbors_1[IU] = Qdata(i - 1, j, IU);
-      qNeighbors_2[IU] = Qdata(i, j + 1, IU);
-      qNeighbors_3[IU] = Qdata(i, j - 1, IU);
+      qNeighbors_0[IU] = Qdata(i + 1, j    , IU);
+      qNeighbors_1[IU] = Qdata(i - 1, j    , IU);
+      qNeighbors_2[IU] = Qdata(i    , j + 1, IU);
+      qNeighbors_3[IU] = Qdata(i    , j - 1, IU);
 
       qLoc[IV] = Qdata(i, j, IV);
-      qNeighbors_0[IV] = Qdata(i + 1, j, IV);
-      qNeighbors_1[IV] = Qdata(i - 1, j, IV);
-      qNeighbors_2[IV] = Qdata(i, j + 1, IV);
-      qNeighbors_3[IV] = Qdata(i, j - 1, IV);
+      qNeighbors_0[IV] = Qdata(i + 1, j    , IV);
+      qNeighbors_1[IV] = Qdata(i - 1, j    , IV);
+      qNeighbors_2[IV] = Qdata(i    , j + 1, IV);
+      qNeighbors_3[IV] = Qdata(i    , j - 1, IV);
+      // clang-format on
 
       slope_unsplit_hydro_2d(
         qLoc, qNeighbors_0, qNeighbors_1, qNeighbors_2, qNeighbors_3, dqX, dqY);
 
       // slopes at left neighbor along X
-      qLocNeighbor[ID] = Qdata(i - 1, j, ID);
-      qNeighbors_0[ID] = Qdata(i, j, ID);
-      qNeighbors_1[ID] = Qdata(i - 2, j, ID);
+      // clang-format off
+      qLocNeighbor[ID] = Qdata(i - 1, j    , ID);
+      qNeighbors_0[ID] = Qdata(i    , j    , ID);
+      qNeighbors_1[ID] = Qdata(i - 2, j    , ID);
       qNeighbors_2[ID] = Qdata(i - 1, j + 1, ID);
       qNeighbors_3[ID] = Qdata(i - 1, j - 1, ID);
 
-      qLocNeighbor[IP] = Qdata(i - 1, j, IP);
-      qNeighbors_0[IP] = Qdata(i, j, IP);
-      qNeighbors_1[IP] = Qdata(i - 2, j, IP);
+      qLocNeighbor[IP] = Qdata(i - 1, j    , IP);
+      qNeighbors_0[IP] = Qdata(i    , j    , IP);
+      qNeighbors_1[IP] = Qdata(i - 2, j    , IP);
       qNeighbors_2[IP] = Qdata(i - 1, j + 1, IP);
       qNeighbors_3[IP] = Qdata(i - 1, j - 1, IP);
 
-      qLocNeighbor[IU] = Qdata(i - 1, j, IU);
-      qNeighbors_0[IU] = Qdata(i, j, IU);
-      qNeighbors_1[IU] = Qdata(i - 2, j, IU);
+      qLocNeighbor[IU] = Qdata(i - 1, j    , IU);
+      qNeighbors_0[IU] = Qdata(i    , j    , IU);
+      qNeighbors_1[IU] = Qdata(i - 2, j    , IU);
       qNeighbors_2[IU] = Qdata(i - 1, j + 1, IU);
       qNeighbors_3[IU] = Qdata(i - 1, j - 1, IU);
 
-      qLocNeighbor[IV] = Qdata(i - 1, j, IV);
-      qNeighbors_0[IV] = Qdata(i, j, IV);
-      qNeighbors_1[IV] = Qdata(i - 2, j, IV);
+      qLocNeighbor[IV] = Qdata(i - 1, j    , IV);
+      qNeighbors_0[IV] = Qdata(i    , j    , IV);
+      qNeighbors_1[IV] = Qdata(i - 2, j    , IV);
       qNeighbors_2[IV] = Qdata(i - 1, j + 1, IV);
       qNeighbors_3[IV] = Qdata(i - 1, j - 1, IV);
+      // clang-format on
 
       slope_unsplit_hydro_2d(qLocNeighbor,
                              qNeighbors_0,
@@ -571,29 +575,31 @@ public:
       //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
       // slopes at left neighbor along Y
-      qLocNeighbor[ID] = Qdata(i, j - 1, ID);
+      // clang-format off
+      qLocNeighbor[ID] = Qdata(i    , j - 1, ID);
       qNeighbors_0[ID] = Qdata(i + 1, j - 1, ID);
       qNeighbors_1[ID] = Qdata(i - 1, j - 1, ID);
-      qNeighbors_2[ID] = Qdata(i, j, ID);
-      qNeighbors_3[ID] = Qdata(i, j - 2, ID);
+      qNeighbors_2[ID] = Qdata(i    , j    , ID);
+      qNeighbors_3[ID] = Qdata(i    , j - 2, ID);
 
-      qLocNeighbor[IP] = Qdata(i, j - 1, IP);
+      qLocNeighbor[IP] = Qdata(i    , j - 1, IP);
       qNeighbors_0[IP] = Qdata(i + 1, j - 1, IP);
       qNeighbors_1[IP] = Qdata(i - 1, j - 1, IP);
-      qNeighbors_2[IP] = Qdata(i, j, IP);
-      qNeighbors_3[IP] = Qdata(i, j - 2, IP);
+      qNeighbors_2[IP] = Qdata(i    , j    , IP);
+      qNeighbors_3[IP] = Qdata(i    , j - 2, IP);
 
-      qLocNeighbor[IU] = Qdata(i, j - 1, IU);
+      qLocNeighbor[IU] = Qdata(i    , j - 1, IU);
       qNeighbors_0[IU] = Qdata(i + 1, j - 1, IU);
       qNeighbors_1[IU] = Qdata(i - 1, j - 1, IU);
-      qNeighbors_2[IU] = Qdata(i, j, IU);
-      qNeighbors_3[IU] = Qdata(i, j - 2, IU);
+      qNeighbors_2[IU] = Qdata(i    , j    , IU);
+      qNeighbors_3[IU] = Qdata(i    , j - 2, IU);
 
-      qLocNeighbor[IV] = Qdata(i, j - 1, IV);
+      qLocNeighbor[IV] = Qdata(i    , j - 1, IV);
       qNeighbors_0[IV] = Qdata(i + 1, j - 1, IV);
       qNeighbors_1[IV] = Qdata(i - 1, j - 1, IV);
-      qNeighbors_2[IV] = Qdata(i, j, IV);
-      qNeighbors_3[IV] = Qdata(i, j - 2, IV);
+      qNeighbors_2[IV] = Qdata(i    , j    , IV);
+      qNeighbors_3[IV] = Qdata(i    , j - 2, IV);
+      // clang-format on
 
       slope_unsplit_hydro_2d(qLocNeighbor,
                              qNeighbors_0,
@@ -619,14 +625,15 @@ public:
       swapValues(&(qright[IU]), &(qright[IV]));
       // riemann_2d(qleft,qright,qgdnv,flux_y);
       riemann_hllc(qleft, qright, qgdnv, flux_y);
+      swapValues(&(flux_y[IU]), &(flux_y[IV]));
 
       //
       // store fluxes Y
       //
       FluxData_y(i, j, ID) = flux_y[ID] * dtdy;
       FluxData_y(i, j, IP) = flux_y[IP] * dtdy;
-      FluxData_y(i, j, IU) = flux_y[IV] * dtdy; //
-      FluxData_y(i, j, IV) = flux_y[IU] * dtdy; //
+      FluxData_y(i, j, IU) = flux_y[IU] * dtdy;
+      FluxData_y(i, j, IV) = flux_y[IV] * dtdy;
 
     } // end if
 
@@ -785,57 +792,61 @@ public:
       //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
       // get primitive variables state vector
+      // clang-format off
       qLoc[ID] = Qdata(i, j, ID);
-      qNeighbors_0[ID] = Qdata(i + 1, j, ID);
-      qNeighbors_1[ID] = Qdata(i - 1, j, ID);
-      qNeighbors_2[ID] = Qdata(i, j + 1, ID);
-      qNeighbors_3[ID] = Qdata(i, j - 1, ID);
+      qNeighbors_0[ID] = Qdata(i + 1, j    , ID);
+      qNeighbors_1[ID] = Qdata(i - 1, j    , ID);
+      qNeighbors_2[ID] = Qdata(i    , j + 1, ID);
+      qNeighbors_3[ID] = Qdata(i    , j - 1, ID);
 
       qLoc[IP] = Qdata(i, j, IP);
-      qNeighbors_0[IP] = Qdata(i + 1, j, IP);
-      qNeighbors_1[IP] = Qdata(i - 1, j, IP);
-      qNeighbors_2[IP] = Qdata(i, j + 1, IP);
-      qNeighbors_3[IP] = Qdata(i, j - 1, IP);
+      qNeighbors_0[IP] = Qdata(i + 1, j    , IP);
+      qNeighbors_1[IP] = Qdata(i - 1, j    , IP);
+      qNeighbors_2[IP] = Qdata(i    , j + 1, IP);
+      qNeighbors_3[IP] = Qdata(i    , j - 1, IP);
 
       qLoc[IU] = Qdata(i, j, IU);
-      qNeighbors_0[IU] = Qdata(i + 1, j, IU);
-      qNeighbors_1[IU] = Qdata(i - 1, j, IU);
-      qNeighbors_2[IU] = Qdata(i, j + 1, IU);
-      qNeighbors_3[IU] = Qdata(i, j - 1, IU);
+      qNeighbors_0[IU] = Qdata(i + 1, j    , IU);
+      qNeighbors_1[IU] = Qdata(i - 1, j    , IU);
+      qNeighbors_2[IU] = Qdata(i    , j + 1, IU);
+      qNeighbors_3[IU] = Qdata(i    , j - 1, IU);
 
       qLoc[IV] = Qdata(i, j, IV);
-      qNeighbors_0[IV] = Qdata(i + 1, j, IV);
-      qNeighbors_1[IV] = Qdata(i - 1, j, IV);
-      qNeighbors_2[IV] = Qdata(i, j + 1, IV);
-      qNeighbors_3[IV] = Qdata(i, j - 1, IV);
+      qNeighbors_0[IV] = Qdata(i + 1, j    , IV);
+      qNeighbors_1[IV] = Qdata(i - 1, j    , IV);
+      qNeighbors_2[IV] = Qdata(i    , j + 1, IV);
+      qNeighbors_3[IV] = Qdata(i    , j - 1, IV);
+      // clang-format on
 
       slope_unsplit_hydro_2d(
         qLoc, qNeighbors_0, qNeighbors_1, qNeighbors_2, qNeighbors_3, dqX, dqY);
 
       // slopes at left neighbor along X
-      qLocNeighbor[ID] = Qdata(i - 1, j, ID);
-      qNeighbors_0[ID] = Qdata(i, j, ID);
-      qNeighbors_1[ID] = Qdata(i - 2, j, ID);
+      // clang-format off
+      qLocNeighbor[ID] = Qdata(i - 1, j    , ID);
+      qNeighbors_0[ID] = Qdata(i    , j    , ID);
+      qNeighbors_1[ID] = Qdata(i - 2, j    , ID);
       qNeighbors_2[ID] = Qdata(i - 1, j + 1, ID);
       qNeighbors_3[ID] = Qdata(i - 1, j - 1, ID);
 
-      qLocNeighbor[IP] = Qdata(i - 1, j, IP);
-      qNeighbors_0[IP] = Qdata(i, j, IP);
-      qNeighbors_1[IP] = Qdata(i - 2, j, IP);
+      qLocNeighbor[IP] = Qdata(i - 1, j    , IP);
+      qNeighbors_0[IP] = Qdata(i    , j    , IP);
+      qNeighbors_1[IP] = Qdata(i - 2, j    , IP);
       qNeighbors_2[IP] = Qdata(i - 1, j + 1, IP);
       qNeighbors_3[IP] = Qdata(i - 1, j - 1, IP);
 
-      qLocNeighbor[IU] = Qdata(i - 1, j, IU);
-      qNeighbors_0[IU] = Qdata(i, j, IU);
-      qNeighbors_1[IU] = Qdata(i - 2, j, IU);
+      qLocNeighbor[IU] = Qdata(i - 1, j    , IU);
+      qNeighbors_0[IU] = Qdata(i    , j    , IU);
+      qNeighbors_1[IU] = Qdata(i - 2, j    , IU);
       qNeighbors_2[IU] = Qdata(i - 1, j + 1, IU);
       qNeighbors_3[IU] = Qdata(i - 1, j - 1, IU);
 
-      qLocNeighbor[IV] = Qdata(i - 1, j, IV);
-      qNeighbors_0[IV] = Qdata(i, j, IV);
-      qNeighbors_1[IV] = Qdata(i - 2, j, IV);
+      qLocNeighbor[IV] = Qdata(i - 1, j    , IV);
+      qNeighbors_0[IV] = Qdata(i    , j    , IV);
+      qNeighbors_1[IV] = Qdata(i - 2, j    , IV);
       qNeighbors_2[IV] = Qdata(i - 1, j + 1, IV);
       qNeighbors_3[IV] = Qdata(i - 1, j - 1, IV);
+      // clang-format on
 
       slope_unsplit_hydro_2d(qLocNeighbor,
                              qNeighbors_0,
@@ -870,6 +881,7 @@ public:
         Kokkos::atomic_add(&Udata(i, j, IU), flux_x[IU] * dtdx);
         Kokkos::atomic_add(&Udata(i, j, IV), flux_x[IV] * dtdx);
       }
+
       if (j < jsize - ghostWidth and i > ghostWidth)
       {
         Kokkos::atomic_sub(&Udata(i - 1, j, ID), flux_x[ID] * dtdx);
@@ -883,29 +895,31 @@ public:
       //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
       // slopes at left neighbor along Y
-      qLocNeighbor[ID] = Qdata(i, j - 1, ID);
+      // clang-format off
+      qLocNeighbor[ID] = Qdata(i    , j - 1, ID);
       qNeighbors_0[ID] = Qdata(i + 1, j - 1, ID);
       qNeighbors_1[ID] = Qdata(i - 1, j - 1, ID);
-      qNeighbors_2[ID] = Qdata(i, j, ID);
-      qNeighbors_3[ID] = Qdata(i, j - 2, ID);
+      qNeighbors_2[ID] = Qdata(i    , j    , ID);
+      qNeighbors_3[ID] = Qdata(i    , j - 2, ID);
 
-      qLocNeighbor[IP] = Qdata(i, j - 1, IP);
+      qLocNeighbor[IP] = Qdata(i    , j - 1, IP);
       qNeighbors_0[IP] = Qdata(i + 1, j - 1, IP);
       qNeighbors_1[IP] = Qdata(i - 1, j - 1, IP);
-      qNeighbors_2[IP] = Qdata(i, j, IP);
-      qNeighbors_3[IP] = Qdata(i, j - 2, IP);
+      qNeighbors_2[IP] = Qdata(i    , j    , IP);
+      qNeighbors_3[IP] = Qdata(i    , j - 2, IP);
 
-      qLocNeighbor[IU] = Qdata(i, j - 1, IU);
+      qLocNeighbor[IU] = Qdata(i    , j - 1, IU);
       qNeighbors_0[IU] = Qdata(i + 1, j - 1, IU);
       qNeighbors_1[IU] = Qdata(i - 1, j - 1, IU);
-      qNeighbors_2[IU] = Qdata(i, j, IU);
-      qNeighbors_3[IU] = Qdata(i, j - 2, IU);
+      qNeighbors_2[IU] = Qdata(i    , j    , IU);
+      qNeighbors_3[IU] = Qdata(i    , j - 2, IU);
 
-      qLocNeighbor[IV] = Qdata(i, j - 1, IV);
+      qLocNeighbor[IV] = Qdata(i    , j - 1, IV);
       qNeighbors_0[IV] = Qdata(i + 1, j - 1, IV);
       qNeighbors_1[IV] = Qdata(i - 1, j - 1, IV);
-      qNeighbors_2[IV] = Qdata(i, j, IV);
-      qNeighbors_3[IV] = Qdata(i, j - 2, IV);
+      qNeighbors_2[IV] = Qdata(i    , j    , IV);
+      qNeighbors_3[IV] = Qdata(i    , j - 2, IV);
+      // clang-format off
 
       slope_unsplit_hydro_2d(qLocNeighbor,
                              qNeighbors_0,
