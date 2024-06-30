@@ -943,7 +943,7 @@ public:
         Kokkos::atomic_add(&Udata(i, j, IU), flux_y[IU] * dtdy);
         Kokkos::atomic_add(&Udata(i, j, IV), flux_y[IV] * dtdy);
       }
-      if (j > ghostWidth and i < jsize - ghostWidth)
+      if (j > ghostWidth and i < isize - ghostWidth)
       {
         Kokkos::atomic_sub(&Udata(i, j - 1, ID), flux_y[ID] * dtdy);
         Kokkos::atomic_sub(&Udata(i, j - 1, IP), flux_y[IP] * dtdy);
