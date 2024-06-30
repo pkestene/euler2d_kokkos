@@ -24,6 +24,7 @@ enum ComponentIndex
 {
   ID = 0, /*!< ID Density field index */
   IP = 1, /*!< IP Pressure/Energy field index */
+  IE = 1,
   IU = 2, /*!< X velocity / momentum index */
   IV = 3  /*!< Y velocity / momentum index */
 };
@@ -92,7 +93,8 @@ enum ProblemType
   PROBLEM_IMPLODE,
   PROBLEM_BLAST,
   PROBLEM_FOUR_QUADRANT,
-  PROBLEM_DISCONTINUITY
+  PROBLEM_DISCONTINUITY,
+  PROBLEM_SHOCKED_BUBBLE
 };
 
 // variable names in the order as in component index
@@ -124,6 +126,24 @@ struct HydroSettings
   {}
 
 }; // struct HydroSettings
+
+struct ShockedBubbleParams
+{
+  real_t bubble_radius;
+  real_t bubble_center_x;
+  real_t bubble_center_y;
+  real_t bubble_density;
+  real_t bubble_pressure;
+  real_t preshock_density;
+  real_t preshock_pressure;
+  real_t postshock_density;
+  real_t postshock_pressure;
+  real_t postshock_velocity;
+  real_t shock_loc;
+};
+
+ShockedBubbleParams
+readShockedBubbleParams(const ConfigMap & configMap);
 
 /*
  * Hydro Parameters (declaration)
@@ -183,6 +203,9 @@ struct HydroParams
   real_t blast_pressure_out;
   real_t blast_total_energy_inside;
   int    blast_nbins;
+
+  // shocked bubble parameters
+  ShockedBubbleParams shock_par;
 
   // other parameters
   int implementationVersion = 0; /*!< triggers which implementation to use (currently 3 versions)*/

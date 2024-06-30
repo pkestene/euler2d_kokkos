@@ -12,6 +12,26 @@ namespace euler2d
 
 const char * varNames[4] = { "rho", "E", "mx", "my" };
 
+ShockedBubbleParams
+readShockedBubbleParams(const ConfigMap & configMap)
+{
+  ShockedBubbleParams par;
+
+  par.bubble_radius = configMap.getFloat("shocked_bubble", "bubble_radius", 0.025);
+  par.bubble_center_x = configMap.getFloat("shocked_bubble", "bubble_center_x", 0.225);
+  par.bubble_center_y = configMap.getFloat("shocked_bubble", "bubble_center_y", 0.0445);
+  par.bubble_density = configMap.getFloat("shocked_bubble", "bubble_density", 3.863);
+  par.bubble_pressure = configMap.getFloat("shocked_bubble", "bubble_pressure", 1.0132e5);
+  par.preshock_density = configMap.getFloat("shocked_bubble", "preshock_density", 1.225);
+  par.preshock_pressure = configMap.getFloat("shocked_bubble", "preshock_pressure", 1.0132e5);
+  par.postshock_density = configMap.getFloat("shocked_bubble", "postshock_density", 1.686);
+  par.postshock_pressure = configMap.getFloat("shocked_bubble", "postshock_pressure", 1.59e5);
+  par.postshock_velocity = configMap.getFloat("shocked_bubble", "postshock_velocity", 113.5);
+  par.shock_loc = configMap.getFloat("shocked_bubble", "shock_loc", 0.170);
+
+  return par;
+}
+
 /*
  * Hydro Parameters (read parameter file)
  */
@@ -96,6 +116,11 @@ HydroParams::setup(ConfigMap & configMap)
   else if (!problemStr.compare("discontinuity"))
   {
     problemType = PROBLEM_DISCONTINUITY;
+  }
+  else if (!problemStr.compare("shocked_bubble"))
+  {
+    problemType = PROBLEM_SHOCKED_BUBBLE;
+    shock_par = readShockedBubbleParams(configMap);
   }
   else
   {

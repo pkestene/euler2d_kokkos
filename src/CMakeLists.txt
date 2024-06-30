@@ -36,5 +36,6 @@ configure_file(test_implode.ini test_implode.ini COPYONLY)
 configure_file(test_implode_big.ini test_implode_big.ini COPYONLY)
 configure_file(test_four_quadrant.ini test_four_quadrant.ini COPYONLY)
 configure_file(test_discontinuity.ini test_discontinuity.ini COPYONLY)
+configure_file(test_shocked_bubble.ini test_shocked_bubble.ini COPYONLY)
 
 add_subdirectory(sedov_blast)

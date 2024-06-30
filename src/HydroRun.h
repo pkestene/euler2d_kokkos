@@ -100,6 +100,8 @@ public:
   init_four_quadrant(DataArray_t Udata);
   void
   init_discontinuity(DataArray_t Udata);
+  void
+  init_shocked_bubble(DataArray_t Udata);
 
   // host routines (save data to file, device data are copied into host
   // inside this routine)
@@ -186,6 +188,10 @@ HydroRun<device_t>::HydroRun(HydroParams & params, ConfigMap & configMap)
   else if (params.problemType == PROBLEM_DISCONTINUITY)
   {
     init_discontinuity(U);
+  }
+  else if (params.problemType == PROBLEM_SHOCKED_BUBBLE)
+  {
+    init_shocked_bubble(U);
   }
   else
   {
@@ -415,6 +421,21 @@ HydroRun<device_t>::godunov_unsplit_impl(DataArray_t data_in,
   // =======================================================
   // =======================================================
   /**
+   * Shocked bubble.
+   *
+   */
+  template <typename device_t>
+  void
+  HydroRun<device_t>::init_shocked_bubble(DataArray_t Udata)
+  {
+
+    InitShockedBubbleFunctor<device_t>::apply(params, Udata);
+
+  } // HydroRun<device_t>::init_shocked_bubble
+
+  // =======================================================
+  // =======================================================
+  /**
    * Hydrodynamical four quadrant Test.
    *
    * In the 2D case, there are 19 different possible configurations (see
@@ -426,7 +447,8 @@ HydroRun<device_t>::godunov_unsplit_impl(DataArray_t data_in,
    * list of all 19 initial conditions.
    */
   template <typename device_t>
-  void HydroRun<device_t>::init_four_quadrant(DataArray_t Udata)
+  void
+  HydroRun<device_t>::init_four_quadrant(DataArray_t Udata)
   {
 
     InitFourQuadrantFunctor<device_t>::apply(params, Udata);

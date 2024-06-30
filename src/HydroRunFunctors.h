@@ -1712,6 +1712,98 @@ public:
 /*************************************************/
 /*************************************************/
 /*************************************************/
+template <typename device_t>
+class InitShockedBubbleFunctor : public HydroBaseFunctor
+{
+
+public:
+  using DataArray_t = DataArray<device_t>;
+  using exec_space = typename device_t::execution_space;
+
+  InitShockedBubbleFunctor(HydroParams params, DataArray_t Udata)
+    : HydroBaseFunctor(params)
+    , Udata(Udata)
+    , shock_par(params.shock_par){};
+
+  // static method which does it all: create and execute functor
+  static void
+  apply(HydroParams params, DataArray_t Udata)
+  {
+    InitShockedBubbleFunctor functor(params, Udata);
+    Kokkos::parallel_for(
+      "InitShockedBubble",
+      Kokkos::MDRangePolicy<exec_space, Kokkos::Rank<2>>({ 0, 0 }, { params.isize, params.jsize }),
+      functor);
+  }
+
+  KOKKOS_INLINE_FUNCTION
+  void
+  operator()(const int & i, const int & j) const
+  {
+
+    const int ghostWidth = params.ghostWidth;
+
+    const real_t xmin = params.xmin;
+    const real_t ymin = params.ymin;
+    const real_t dx = params.dx;
+    const real_t dy = params.dy;
+
+    real_t x = xmin + dx / 2 + (i - ghostWidth) * dx;
+    real_t y = ymin + dy / 2 + (j - ghostWidth) * dy;
+
+    const real_t gamma0 = params.settings.gamma0;
+
+    // post shock region (coming from the left)
+    if (x < shock_par.shock_loc)
+    {
+      Udata(i, j, ID) = shock_par.postshock_density;
+      Udata(i, j, IU) = shock_par.postshock_density * shock_par.postshock_velocity;
+      Udata(i, j, IV) = 0.0;
+      const real_t rho_eint = shock_par.postshock_pressure / (gamma0 - 1);
+      Udata(i, j, IE) =
+        rho_eint + 0.5 * (Udata(i, j, IU) * Udata(i, j, IU) + Udata(i, j, IV) * Udata(i, j, IV)) /
+                     Udata(i, j, ID);
+    }
+    else
+    {
+      // inside or outside bubble ?
+      const auto radius = sqrt((x - shock_par.bubble_center_x) * (x - shock_par.bubble_center_x) +
+                               (y - shock_par.bubble_center_y) * (y - shock_par.bubble_center_y));
+
+      if (radius < shock_par.bubble_radius)
+      {
+        // bubble at rest
+        Udata(i, j, ID) = shock_par.bubble_density;
+        Udata(i, j, IU) = 0.0;
+        Udata(i, j, IV) = 0.0;
+        const real_t rho_eint = shock_par.bubble_pressure / (gamma0 - 1);
+        Udata(i, j, IE) =
+          rho_eint + 0.5 * (Udata(i, j, IU) * Udata(i, j, IU) + Udata(i, j, IV) * Udata(i, j, IV)) /
+                       Udata(i, j, ID);
+      }
+      else
+      {
+        // air at rest
+        Udata(i, j, ID) = shock_par.preshock_density;
+        Udata(i, j, IU) = 0.0;
+        Udata(i, j, IV) = 0.0;
+        const real_t rho_eint = shock_par.preshock_pressure / (gamma0 - 1);
+        Udata(i, j, IE) =
+          rho_eint + 0.5 * (Udata(i, j, IU) * Udata(i, j, IU) + Udata(i, j, IV) * Udata(i, j, IV)) /
+                       Udata(i, j, ID);
+      }
+    }
+
+  } // end operator ()
+
+  DataArray_t         Udata;
+  ShockedBubbleParams shock_par;
+
+}; // InitShockedBubbleFunctor
+
+/*************************************************/
+/*************************************************/
+/*************************************************/
 template <typename device_t, FaceIdType faceId>
 class MakeBoundariesFunctor : public HydroBaseFunctor
 {
