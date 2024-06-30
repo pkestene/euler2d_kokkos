@@ -10,7 +10,7 @@ namespace euler2d
 /*************************************************/
 /*************************************************/
 /*************************************************/
-template<typename device_t>
+template <typename device_t>
 class ComputeDtFunctor : public HydroBaseFunctor
 {
 
@@ -77,7 +77,7 @@ public:
 /*************************************************/
 /*************************************************/
 /*************************************************/
-template<typename device_t>
+template <typename device_t>
 class ConvertToPrimitivesFunctor : public HydroBaseFunctor
 {
 
@@ -297,7 +297,8 @@ public:
 // 					    Qm_x, Qm_y,
 // 					    Qp_x, Qp_y,
 // 					    dtdx, dtdy);
-//     Kokkos::parallel_for("ComputeTrace",Kokkos::RangePolicy<exec_space>(0,ijsize), computeTraceFunctor);
+//     Kokkos::parallel_for("ComputeTrace",Kokkos::RangePolicy<exec_space>(0,ijsize),
+//     computeTraceFunctor);
 
 //   }
 
@@ -404,7 +405,7 @@ public:
 /*************************************************/
 /*************************************************/
 /*************************************************/
-template<typename device_t>
+template <typename device_t>
 class ComputeAndStoreFluxesFunctor : public HydroBaseFunctor
 {
 
@@ -413,9 +414,9 @@ public:
   using exec_space = typename device_t::execution_space;
 
   ComputeAndStoreFluxesFunctor(HydroParams params,
-                               DataArray_t   Qdata,
-                               DataArray_t   FluxData_x,
-                               DataArray_t   FluxData_y,
+                               DataArray_t Qdata,
+                               DataArray_t FluxData_x,
+                               DataArray_t FluxData_y,
                                real_t      dtdx,
                                real_t      dtdy)
     : HydroBaseFunctor(params)
@@ -428,9 +429,9 @@ public:
   // static method which does it all: create and execute functor
   static void
   apply(HydroParams params,
-        DataArray_t   Qdata,
-        DataArray_t   FluxData_x,
-        DataArray_t   FluxData_y,
+        DataArray_t Qdata,
+        DataArray_t FluxData_x,
+        DataArray_t FluxData_y,
         real_t      dtdx,
         real_t      dtdy)
   {
@@ -634,14 +635,14 @@ public:
   DataArray_t Qdata;
   DataArray_t FluxData_x;
   DataArray_t FluxData_y;
-  real_t    dtdx, dtdy;
+  real_t      dtdx, dtdy;
 
 }; // ComputeAndStoreFluxesFunctor
 
 /*************************************************/
 /*************************************************/
 /*************************************************/
-template<typename device_t>
+template <typename device_t>
 class UpdateFunctor : public HydroBaseFunctor
 {
 
@@ -649,7 +650,10 @@ public:
   using DataArray_t = DataArray<device_t>;
   using exec_space = typename device_t::execution_space;
 
-  UpdateFunctor(HydroParams params, DataArray_t Udata, DataArray_t FluxData_x, DataArray_t FluxData_y)
+  UpdateFunctor(HydroParams params,
+                DataArray_t Udata,
+                DataArray_t FluxData_x,
+                DataArray_t FluxData_y)
     : HydroBaseFunctor(params)
     , Udata(Udata)
     , FluxData_x(FluxData_x)
@@ -1036,7 +1040,7 @@ public:
 /*************************************************/
 /*************************************************/
 /*************************************************/
-template<typename device_t>
+template <typename device_t>
 class ComputeSlopesFunctor : public HydroBaseFunctor
 {
 
@@ -1044,7 +1048,10 @@ public:
   using DataArray_t = DataArray<device_t>;
   using exec_space = typename device_t::execution_space;
 
-  ComputeSlopesFunctor(HydroParams params, DataArray_t Qdata, DataArray_t Slopes_x, DataArray_t Slopes_y)
+  ComputeSlopesFunctor(HydroParams params,
+                       DataArray_t Qdata,
+                       DataArray_t Slopes_x,
+                       DataArray_t Slopes_y)
     : HydroBaseFunctor(params)
     , Qdata(Qdata)
     , Slopes_x(Slopes_x)
@@ -1139,7 +1146,7 @@ public:
 /*************************************************/
 /*************************************************/
 /*************************************************/
-template<typename device_t, Direction dir>
+template <typename device_t, Direction dir>
 class ComputeTraceAndFluxes_Functor : public HydroBaseFunctor
 {
 
@@ -1148,10 +1155,10 @@ public:
   using exec_space = typename device_t::execution_space;
 
   ComputeTraceAndFluxes_Functor(HydroParams params,
-                                DataArray_t   Qdata,
-                                DataArray_t   Slopes_x,
-                                DataArray_t   Slopes_y,
-                                DataArray_t   Fluxes,
+                                DataArray_t Qdata,
+                                DataArray_t Slopes_x,
+                                DataArray_t Slopes_y,
+                                DataArray_t Fluxes,
                                 real_t      dtdx,
                                 real_t      dtdy)
     : HydroBaseFunctor(params)
@@ -1165,10 +1172,10 @@ public:
   // static method which does it all: create and execute functor
   static void
   apply(HydroParams params,
-        DataArray_t   Qdata,
-        DataArray_t   Slopes_x,
-        DataArray_t   Slopes_y,
-        DataArray_t   Fluxes,
+        DataArray_t Qdata,
+        DataArray_t Slopes_x,
+        DataArray_t Slopes_y,
+        DataArray_t Fluxes,
         real_t      dtdx,
         real_t      dtdy)
   {
@@ -1312,14 +1319,14 @@ public:
   DataArray_t Qdata;
   DataArray_t Slopes_x, Slopes_y;
   DataArray_t Fluxes;
-  real_t    dtdx, dtdy;
+  real_t      dtdx, dtdy;
 
 }; // ComputeTraceAndFluxes_Functor
 
 /*************************************************/
 /*************************************************/
 /*************************************************/
-template<typename device_t>
+template <typename device_t>
 class InitImplodeFunctor : public HydroBaseFunctor
 {
 
@@ -1411,7 +1418,7 @@ public:
 
   InitBlastFunctor(HydroParams params, DataArray_t Udata)
     : HydroBaseFunctor(params)
-    , Udata(Udata) {};
+    , Udata(Udata){};
 
   // static method which does it all: create and execute functor
   static void

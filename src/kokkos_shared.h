@@ -9,7 +9,7 @@
 namespace euler2d
 {
 
-//using Device = Kokkos::DefaultExecutionSpace;
+// using Device = Kokkos::DefaultExecutionSpace;
 
 // first index is space localtion, second is hydro variable
 // number of hydro variables is 4 in 2D, 5 in 3D

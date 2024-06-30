@@ -94,12 +94,16 @@ public:
   // host routines (initialization)
   void
   init_implode(DataArray_t Udata);
+
   void
   init_blast(DataArray_t Udata);
+
   void
   init_four_quadrant(DataArray_t Udata);
+
   void
   init_discontinuity(DataArray_t Udata);
+
   void
   init_shocked_bubble(DataArray_t Udata);
 
@@ -345,478 +349,486 @@ HydroRun<device_t>::godunov_unsplit_impl(DataArray_t data_in,
 
 } // HydroRun<device_t>::godunov_unsplit_impl
 
-  // =======================================================
-  // =======================================================
-  // ///////////////////////////////////////////////////////////////////
-  // Convert conservative variables array U into primitive var array Q
-  // ///////////////////////////////////////////////////////////////////
-  template <typename device_t>
-  void HydroRun<device_t>::convertToPrimitives(DataArray_t Udata)
-  {
-    // call device functor
-    ConvertToPrimitivesFunctor<device_t>::apply(params, Udata, Q);
+// =======================================================
+// =======================================================
+// ///////////////////////////////////////////////////////////////////
+// Convert conservative variables array U into primitive var array Q
+// ///////////////////////////////////////////////////////////////////
+template <typename device_t>
+void
+HydroRun<device_t>::convertToPrimitives(DataArray_t Udata)
+{
+  // call device functor
+  ConvertToPrimitivesFunctor<device_t>::apply(params, Udata, Q);
 
-  } // HydroRun<device_t>::convertToPrimitives
+} // HydroRun<device_t>::convertToPrimitives
 
-  // =======================================================
-  // =======================================================
-  // //////////////////////////////////////////////////
-  // Fill ghost cells according to border condition :
-  // absorbant, reflexive or periodic
-  // //////////////////////////////////////////////////
-  template <typename device_t>
-  void HydroRun<device_t>::make_boundaries(DataArray_t Udata)
-  {
+// =======================================================
+// =======================================================
+// //////////////////////////////////////////////////
+// Fill ghost cells according to border condition :
+// absorbant, reflexive or periodic
+// //////////////////////////////////////////////////
+template <typename device_t>
+void
+HydroRun<device_t>::make_boundaries(DataArray_t Udata)
+{
 
-    // call device functors
-    MakeBoundariesFunctor<device_t, FACE_XMIN>::apply(params, Udata);
-    MakeBoundariesFunctor<device_t, FACE_XMAX>::apply(params, Udata);
-    MakeBoundariesFunctor<device_t, FACE_YMIN>::apply(params, Udata);
-    MakeBoundariesFunctor<device_t, FACE_YMAX>::apply(params, Udata);
+  // call device functors
+  MakeBoundariesFunctor<device_t, FACE_XMIN>::apply(params, Udata);
+  MakeBoundariesFunctor<device_t, FACE_XMAX>::apply(params, Udata);
+  MakeBoundariesFunctor<device_t, FACE_YMIN>::apply(params, Udata);
+  MakeBoundariesFunctor<device_t, FACE_YMAX>::apply(params, Udata);
 
-  } // HydroRun<device_t>::make_boundaries
+} // HydroRun<device_t>::make_boundaries
 
-  // =======================================================
-  // =======================================================
-  /**
-   * Hydrodynamical Implosion Test.
-   * http://www.astro.princeton.edu/~jstone/Athena/tests/implode/Implode.html
-   */
-  template <typename device_t>
-  void HydroRun<device_t>::init_implode(DataArray_t Udata)
-  {
+// =======================================================
+// =======================================================
+/**
+ * Hydrodynamical Implosion Test.
+ * http://www.astro.princeton.edu/~jstone/Athena/tests/implode/Implode.html
+ */
+template <typename device_t>
+void
+HydroRun<device_t>::init_implode(DataArray_t Udata)
+{
 
-    InitImplodeFunctor<device_t>::apply(params, Udata);
+  InitImplodeFunctor<device_t>::apply(params, Udata);
 
-  } // init_implode
+} // init_implode
 
-  // =======================================================
-  // =======================================================
-  /**
-   * Hydrodynamical blast Test.
-   * http://www.astro.princeton.edu/~jstone/Athena/tests/blast/blast.html
-   */
-  template <typename device_t>
-  void HydroRun<device_t>::init_blast(DataArray_t Udata)
-  {
+// =======================================================
+// =======================================================
+/**
+ * Hydrodynamical blast Test.
+ * http://www.astro.princeton.edu/~jstone/Athena/tests/blast/blast.html
+ */
+template <typename device_t>
+void
+HydroRun<device_t>::init_blast(DataArray_t Udata)
+{
 
-    InitBlastFunctor<device_t>::apply(params, Udata);
+  InitBlastFunctor<device_t>::apply(params, Udata);
 
-  } // HydroRun<device_t>::init_blast
+} // HydroRun<device_t>::init_blast
 
-  // =======================================================
-  // =======================================================
-  /**
-   * Hydrodynamical discontinuity Test.
-   *
-   */
-  template <typename device_t>
-  void HydroRun<device_t>::init_discontinuity(DataArray_t Udata)
-  {
+// =======================================================
+// =======================================================
+/**
+ * Hydrodynamical discontinuity Test.
+ *
+ */
+template <typename device_t>
+void
+HydroRun<device_t>::init_discontinuity(DataArray_t Udata)
+{
 
-    InitDiscontinuityFunctor<device_t>::apply(params, Udata);
+  InitDiscontinuityFunctor<device_t>::apply(params, Udata);
 
-  } // HydroRun<device_t>::init_discontinuity
+} // HydroRun<device_t>::init_discontinuity
 
-  // =======================================================
-  // =======================================================
-  /**
-   * Shocked bubble.
-   *
-   */
-  template <typename device_t>
-  void
-  HydroRun<device_t>::init_shocked_bubble(DataArray_t Udata)
-  {
+// =======================================================
+// =======================================================
+/**
+ * Shocked bubble.
+ *
+ */
+template <typename device_t>
+void
+HydroRun<device_t>::init_shocked_bubble(DataArray_t Udata)
+{
 
-    InitShockedBubbleFunctor<device_t>::apply(params, Udata);
+  InitShockedBubbleFunctor<device_t>::apply(params, Udata);
 
-  } // HydroRun<device_t>::init_shocked_bubble
+} // HydroRun<device_t>::init_shocked_bubble
 
-  // =======================================================
-  // =======================================================
-  /**
-   * Hydrodynamical four quadrant Test.
-   *
-   * In the 2D case, there are 19 different possible configurations (see
-   * article by Lax and Liu, "Solution of two-dimensional riemann
-   * problems of gas dynamics by positive schemes",SIAM journal on
-   * scientific computing, 1998, vol. 19, no2, pp. 319-340).
-   *
-   * Here only problem #3 is implemented. See https://github.com/pkestene/euler_kokkos for complete
-   * list of all 19 initial conditions.
-   */
-  template <typename device_t>
-  void
-  HydroRun<device_t>::init_four_quadrant(DataArray_t Udata)
-  {
+// =======================================================
+// =======================================================
+/**
+ * Hydrodynamical four quadrant Test.
+ *
+ * In the 2D case, there are 19 different possible configurations (see
+ * article by Lax and Liu, "Solution of two-dimensional riemann
+ * problems of gas dynamics by positive schemes",SIAM journal on
+ * scientific computing, 1998, vol. 19, no2, pp. 319-340).
+ *
+ * Here only problem #3 is implemented. See https://github.com/pkestene/euler_kokkos for complete
+ * list of all 19 initial conditions.
+ */
+template <typename device_t>
+void
+HydroRun<device_t>::init_four_quadrant(DataArray_t Udata)
+{
 
-    InitFourQuadrantFunctor<device_t>::apply(params, Udata);
+  InitFourQuadrantFunctor<device_t>::apply(params, Udata);
 
-  } // HydroRun<device_t>::init_four_quadrant
+} // HydroRun<device_t>::init_four_quadrant
 
-  // =======================================================
-  // =======================================================
-  template <typename device_t>
-  void HydroRun<device_t>::saveData(DataArray_t Udata, int iStep, std::string name)
-  {
+// =======================================================
+// =======================================================
+template <typename device_t>
+void
+HydroRun<device_t>::saveData(DataArray_t Udata, int iStep, std::string name)
+{
 #ifdef USE_HDF5
-    if (params.ioHDF5)
-      saveHDF5(Udata, iStep, name);
+  if (params.ioHDF5)
+    saveHDF5(Udata, iStep, name);
 #endif
 
-    if (params.ioVTK)
-      saveVTK(Udata, iStep, name);
-  } // HydroRun<device_t>::saveData
+  if (params.ioVTK)
+    saveVTK(Udata, iStep, name);
+} // HydroRun<device_t>::saveData
 
-  // =======================================================
-  // =======================================================
-  // ///////////////////////////////////////////////////////
-  // output routine (VTK file format, ASCII, VtkImageData)
-  // Take care that VTK uses row major (i+j*nx)
-  // To make sure OpenMP and CUDA version give the same
-  // results, we transpose the OpenMP data.
-  // ///////////////////////////////////////////////////////
-  template <typename device_t>
-  void HydroRun<device_t>::saveVTK(DataArray_t Udata, int iStep, std::string name)
+// =======================================================
+// =======================================================
+// ///////////////////////////////////////////////////////
+// output routine (VTK file format, ASCII, VtkImageData)
+// Take care that VTK uses row major (i+j*nx)
+// To make sure OpenMP and CUDA version give the same
+// results, we transpose the OpenMP data.
+// ///////////////////////////////////////////////////////
+template <typename device_t>
+void
+HydroRun<device_t>::saveVTK(DataArray_t Udata, int iStep, std::string name)
+{
+
+  const int ijsize = params.isize * params.jsize;
+  const int isize = params.isize;
+  const int nx = params.nx;
+  const int ny = params.ny;
+  const int imin = params.imin;
+  const int imax = params.imax;
+  const int jmin = params.jmin;
+  const int jmax = params.jmax;
+  const int ghostWidth = params.ghostWidth;
+
+  // copy device data to host
+  Kokkos::deep_copy(Uhost, Udata);
+
+  // local variables
+  int         i, j, iVar;
+  std::string outputDir = configMap.getString("output", "outputDir", "./");
+  std::string outputPrefix = configMap.getString("output", "outputPrefix", "output");
+
+  // check scalar data type
+  bool useDouble = false;
+
+  if (sizeof(real_t) == sizeof(double))
   {
+    useDouble = true;
+  }
 
-    const int ijsize = params.isize * params.jsize;
-    const int isize = params.isize;
-    const int nx = params.nx;
-    const int ny = params.ny;
-    const int imin = params.imin;
-    const int imax = params.imax;
-    const int jmin = params.jmin;
-    const int jmax = params.jmax;
-    const int ghostWidth = params.ghostWidth;
+  // write iStep in string stepNum
+  std::ostringstream stepNum;
+  stepNum.width(7);
+  stepNum.fill('0');
+  stepNum << iStep;
 
-    // copy device data to host
-    Kokkos::deep_copy(Uhost, Udata);
+  // concatenate file prefix + file number + suffix
+  std::string filename = outputDir + "/" + outputPrefix + "_" + stepNum.str() + ".vti";
 
-    // local variables
-    int         i, j, iVar;
-    std::string outputDir = configMap.getString("output", "outputDir", "./");
-    std::string outputPrefix = configMap.getString("output", "outputPrefix", "output");
+  // open file
+  std::fstream outFile;
+  outFile.open(filename.c_str(), std::ios_base::out);
 
-    // check scalar data type
-    bool useDouble = false;
+  // write header
+  outFile << "<?xml version=\"1.0\"?>\n";
+  if (isBigEndian())
+  {
+    outFile << "<VTKFile type=\"ImageData\" version=\"0.1\" byte_order=\"BigEndian\">\n";
+  }
+  else
+  {
+    outFile << "<VTKFile type=\"ImageData\" version=\"0.1\" byte_order=\"LittleEndian\">\n";
+  }
 
-    if (sizeof(real_t) == sizeof(double))
-    {
-      useDouble = true;
-    }
+  // write mesh extent
+  outFile << "  <ImageData WholeExtent=\"" << 0 << " " << nx << " " << 0 << " " << ny << " " << 0
+          << " " << 0 << "\" "
+          << "Origin=\"" << params.xmin << " " << params.ymin << " " << 0.0 << "\" "
+          << "Spacing=\"" << params.dx << " " << params.dy << " " << 0.0 << "\">\n";
+  outFile << "  <Piece Extent=\"" << 0 << " " << nx << " " << 0 << " " << ny << " " << 0 << " " << 0
+          << " "
+          << "\">\n";
 
-    // write iStep in string stepNum
-    std::ostringstream stepNum;
-    stepNum.width(7);
-    stepNum.fill('0');
-    stepNum << iStep;
+  outFile << "    <PointData>\n";
+  outFile << "    </PointData>\n";
+  outFile << "    <CellData>\n";
 
-    // concatenate file prefix + file number + suffix
-    std::string filename = outputDir + "/" + outputPrefix + "_" + stepNum.str() + ".vti";
-
-    // open file
-    std::fstream outFile;
-    outFile.open(filename.c_str(), std::ios_base::out);
-
-    // write header
-    outFile << "<?xml version=\"1.0\"?>\n";
-    if (isBigEndian())
-    {
-      outFile << "<VTKFile type=\"ImageData\" version=\"0.1\" byte_order=\"BigEndian\">\n";
-    }
+  // write data array (ascii), remove ghost cells
+  for (iVar = 0; iVar < NBVAR; iVar++)
+  {
+    outFile << "    <DataArray type=\"";
+    if (useDouble)
+      outFile << "Float64";
     else
+      outFile << "Float32";
+    outFile << "\" Name=\"" << varNames[iVar] << "\" format=\"ascii\" >\n";
+
+    for (int index = 0; index < ijsize; ++index)
     {
-      outFile << "<VTKFile type=\"ImageData\" version=\"0.1\" byte_order=\"LittleEndian\">\n";
-    }
+      // index2coord(index,i,j,isize,jsize);
 
-    // write mesh extent
-    outFile << "  <ImageData WholeExtent=\"" << 0 << " " << nx << " " << 0 << " " << ny << " " << 0
-            << " " << 0 << "\" "
-            << "Origin=\"" << params.xmin << " " << params.ymin << " " << 0.0 << "\" "
-            << "Spacing=\"" << params.dx << " " << params.dy << " " << 0.0 << "\">\n";
-    outFile << "  <Piece Extent=\"" << 0 << " " << nx << " " << 0 << " " << ny << " " << 0 << " "
-            << 0 << " "
-            << "\">\n";
+      // enforce the use of left layout (Ok for CUDA)
+      // but for OpenMP, we will need to transpose
+      j = index / isize;
+      i = index - j * isize;
 
-    outFile << "    <PointData>\n";
-    outFile << "    </PointData>\n";
-    outFile << "    <CellData>\n";
-
-    // write data array (ascii), remove ghost cells
-    for (iVar = 0; iVar < NBVAR; iVar++)
-    {
-      outFile << "    <DataArray type=\"";
-      if (useDouble)
-        outFile << "Float64";
-      else
-        outFile << "Float32";
-      outFile << "\" Name=\"" << varNames[iVar] << "\" format=\"ascii\" >\n";
-
-      for (int index = 0; index < ijsize; ++index)
+      if (j >= jmin + ghostWidth and j <= jmax - ghostWidth and i >= imin + ghostWidth and
+          i <= imax - ghostWidth)
       {
-        // index2coord(index,i,j,isize,jsize);
-
-        // enforce the use of left layout (Ok for CUDA)
-        // but for OpenMP, we will need to transpose
-        j = index / isize;
-        i = index - j * isize;
-
-        if (j >= jmin + ghostWidth and j <= jmax - ghostWidth and i >= imin + ghostWidth and
-            i <= imax - ghostWidth)
-        {
-          outFile << Uhost(i, j, iVar) << " ";
-        }
+        outFile << Uhost(i, j, iVar) << " ";
       }
-      outFile << "\n    </DataArray>\n";
-    } // end for iVar
+    }
+    outFile << "\n    </DataArray>\n";
+  } // end for iVar
 
-    outFile << "    </CellData>\n";
+  outFile << "    </CellData>\n";
 
-    // write footer
-    outFile << "  </Piece>\n";
-    outFile << "  </ImageData>\n";
-    outFile << "</VTKFile>\n";
+  // write footer
+  outFile << "  </Piece>\n";
+  outFile << "  </ImageData>\n";
+  outFile << "</VTKFile>\n";
 
-    outFile.close();
+  outFile.close();
 
-  } // HydroRun<device_t>::saveVTK
+} // HydroRun<device_t>::saveVTK
 
 #ifdef USE_HDF5
-  // =======================================================
-  // =======================================================
-  // ///////////////////////////////////////////////////////
-  // Write as HDF5 format.
-  // To make sure OpenMP and CUDA version give the same
-  // results, we transpose the OpenMP data.
-  // ///////////////////////////////////////////////////////
-  template <typename device_t>
-  void HydroRun<device_t>::saveHDF5(DataArray_t Udata, int iStep, std::string name)
+// =======================================================
+// =======================================================
+// ///////////////////////////////////////////////////////
+// Write as HDF5 format.
+// To make sure OpenMP and CUDA version give the same
+// results, we transpose the OpenMP data.
+// ///////////////////////////////////////////////////////
+template <typename device_t>
+void
+HydroRun<device_t>::saveHDF5(DataArray_t Udata, int iStep, std::string name)
+{
+
+  const int ijsize = params.isize * params.jsize;
+  const int isize = params.isize;
+  const int nx = params.nx;
+  const int ny = params.ny;
+  const int xysize = nx * ny;
+  const int imin = params.imin;
+  const int imax = params.imax;
+  const int jmin = params.jmin;
+  const int jmax = params.jmax;
+  const int ghostWidth = params.ghostWidth;
+
+  hid_t       file, dataset;       /* file and dataset handles */
+  hid_t       datatype, dataspace; /* handles */
+  hsize_t     dimsf[2];            /* dataset dimensions */
+  H5T_order_t order;               /* little endian or big endian */
+
+  // copy device data to host
+  Kokkos::deep_copy(Uhost, Udata);
+
+  // local variables
+  std::string outputDir = configMap.getString("output", "outputDir", "./");
+  std::string outputPrefix = configMap.getString("output", "outputPrefix", "output");
+
+  // check scalar data type
+
+  if (sizeof(real_t) == sizeof(double))
   {
+    datatype = H5Tcopy(H5T_NATIVE_DOUBLE);
+  }
+  else
+  {
+    datatype = H5Tcopy(H5T_NATIVE_FLOAT);
+  }
 
-    const int ijsize = params.isize * params.jsize;
-    const int isize = params.isize;
-    const int nx = params.nx;
-    const int ny = params.ny;
-    const int xysize = nx * ny;
-    const int imin = params.imin;
-    const int imax = params.imax;
-    const int jmin = params.jmin;
-    const int jmax = params.jmax;
-    const int ghostWidth = params.ghostWidth;
+  if (isBigEndian())
+  {
+    order = H5T_ORDER_BE;
+  }
+  else
+  {
+    order = H5T_ORDER_LE;
+  }
 
-    hid_t       file, dataset;       /* file and dataset handles */
-    hid_t       datatype, dataspace; /* handles */
-    hsize_t     dimsf[2];            /* dataset dimensions */
-    H5T_order_t order;               /* little endian or big endian */
+  real_t * data_host = new real_t[xysize];
 
-    // copy device data to host
-    Kokkos::deep_copy(Uhost, Udata);
+  // write iStep in string stepNum
+  std::ostringstream stepNum;
+  stepNum.width(7);
+  stepNum.fill('0');
+  stepNum << iStep;
 
-    // local variables
-    std::string outputDir = configMap.getString("output", "outputDir", "./");
-    std::string outputPrefix = configMap.getString("output", "outputPrefix", "output");
+  // concatenate file prefix + file number + suffix
+  std::string filename = outputDir + "/" + outputPrefix + "_" + stepNum.str() + ".h5";
 
-    // check scalar data type
-
-    if (sizeof(real_t) == sizeof(double))
-    {
-      datatype = H5Tcopy(H5T_NATIVE_DOUBLE);
-    }
-    else
-    {
-      datatype = H5Tcopy(H5T_NATIVE_FLOAT);
-    }
-
-    if (isBigEndian())
-    {
-      order = H5T_ORDER_BE;
-    }
-    else
-    {
-      order = H5T_ORDER_LE;
-    }
-
-    real_t * data_host = new real_t[xysize];
-
-    // write iStep in string stepNum
-    std::ostringstream stepNum;
-    stepNum.width(7);
-    stepNum.fill('0');
-    stepNum << iStep;
-
-    // concatenate file prefix + file number + suffix
-    std::string filename = outputDir + "/" + outputPrefix + "_" + stepNum.str() + ".h5";
-
-    /*
-     * Create a new file using H5F_ACC_TRUNC access,
-     * default file creation properties, and default file
-     * access properties.
-     */
-    file = H5Fcreate(filename.c_str(), H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
-
-    /*
-     * Describe the size of the array and create the data space for fixed
-     * size dataset.
-     */
-    dimsf[0] = ny;
-    dimsf[1] = nx;
-    dataspace = H5Screate_simple(2, dimsf, NULL);
-
-    /*
-     * Define datatype for the data in the file.
-     * We will store little endian numbers.
-     */
-    H5Tset_order(datatype, order);
-
-    // now we write data
-    for (int ivar = 0; ivar < NBVAR; ++ivar)
-    {
-
-      // copy Uhost into data_host by removing ghost border
-      int id = 0;
-      for (int index = 0; index < ijsize; ++index)
-      {
-        int j = index / isize;
-        int i = index - j * isize;
-
-        if (j >= jmin + ghostWidth and j <= jmax - ghostWidth and i >= imin + ghostWidth and
-            i <= imax - ghostWidth)
-        {
-          data_host[id] = Uhost(i, j, ivar);
-          id += 1;
-        }
-      } // end for index
-
-      /*
-       * Create a new dataset within the file using defined dataspace and
-       * datatype and default dataset creation properties.
-       */
-      std::string varName = "/" + std::string(varNames[ivar]);
-      dataset = H5Dcreate2(file, varName.c_str(), datatype, dataspace, 0, 0, H5P_DEFAULT);
-      H5Dwrite(dataset, datatype, H5S_ALL, H5S_ALL, H5P_DEFAULT, data_host);
-    } // end for ivar
-
-    delete[] data_host;
-
-    /*
-     * Close/release resources.
-     */
-    H5Sclose(dataspace);
-    H5Tclose(datatype);
-    H5Dclose(dataset);
-    H5Fclose(file);
-
-  } // HydroRun<device_t>::saveHDF5
-
-  // =======================================================
-  // =======================================================
   /*
-   * write xdmf file to provide metadata of H5 file
-   * can be opened by ParaView
-   * point to data file : xdmf2d.h5
+   * Create a new file using H5F_ACC_TRUNC access,
+   * default file creation properties, and default file
+   * access properties.
    */
-  template <typename device_t>
-  void
-  HydroRun<device_t>::write_xdmf_time_series(int last_time_step)
-  {
-    FILE *      xdmf = 0;
-    const int & nx = params.nx;
-    const int & ny = params.ny;
+  file = H5Fcreate(filename.c_str(), H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
 
-    // get data type as a string for Xdmf
-    std::string dataTypeName = sizeof(real_t) == sizeof(double) ? "Double" : "Float";
+  /*
+   * Describe the size of the array and create the data space for fixed
+   * size dataset.
+   */
+  dimsf[0] = ny;
+  dimsf[1] = nx;
+  dataspace = H5Screate_simple(2, dimsf, NULL);
+
+  /*
+   * Define datatype for the data in the file.
+   * We will store little endian numbers.
+   */
+  H5Tset_order(datatype, order);
+
+  // now we write data
+  for (int ivar = 0; ivar < NBVAR; ++ivar)
+  {
+
+    // copy Uhost into data_host by removing ghost border
+    int id = 0;
+    for (int index = 0; index < ijsize; ++index)
+    {
+      int j = index / isize;
+      int i = index - j * isize;
+
+      if (j >= jmin + ghostWidth and j <= jmax - ghostWidth and i >= imin + ghostWidth and
+          i <= imax - ghostWidth)
+      {
+        data_host[id] = Uhost(i, j, ivar);
+        id += 1;
+      }
+    } // end for index
 
     /*
-     * Open the file and write the XML description of the mesh..
+     * Create a new dataset within the file using defined dataspace and
+     * datatype and default dataset creation properties.
      */
-    std::string outputDir = configMap.getString("output", "outputDir", "./");
-    std::string outputPrefix = configMap.getString("output", "outputPrefix", "output");
-    std::string xdmfFilename = outputPrefix + ".xmf";
+    std::string varName = "/" + std::string(varNames[ivar]);
+    dataset = H5Dcreate2(file, varName.c_str(), datatype, dataspace, 0, 0, H5P_DEFAULT);
+    H5Dwrite(dataset, datatype, H5S_ALL, H5S_ALL, H5P_DEFAULT, data_host);
+  } // end for ivar
 
-    xdmf = fopen(xdmfFilename.c_str(), "w");
+  delete[] data_host;
 
-    fprintf(xdmf, "<?xml version=\"1.0\" ?>\n");
-    fprintf(xdmf, "<!DOCTYPE Xdmf SYSTEM \"Xdmf.dtd\" []>\n");
-    fprintf(xdmf, "<Xdmf xmlns:xi=\"http://www.w3.org/2003/XInclude\" Version=\"2.2\">\n");
-    fprintf(xdmf, "  <Domain>\n");
-    fprintf(xdmf,
-            "    <Grid Name=\"TimeSeries\" GridType=\"Collection\" CollectionType=\"Temporal\">\n");
+  /*
+   * Close/release resources.
+   */
+  H5Sclose(dataspace);
+  H5Tclose(datatype);
+  H5Dclose(dataset);
+  H5Fclose(file);
 
-    // for each time step write a <grid> </grid> item
-    const int nbOutput = (params.nStepmax + params.nOutput - 1) / params.nOutput + 1;
-    for (int iOut = 0; iOut < nbOutput; ++iOut)
+} // HydroRun<device_t>::saveHDF5
+
+// =======================================================
+// =======================================================
+/*
+ * write xdmf file to provide metadata of H5 file
+ * can be opened by ParaView
+ * point to data file : xdmf2d.h5
+ */
+template <typename device_t>
+void
+HydroRun<device_t>::write_xdmf_time_series(int last_time_step)
+{
+  FILE *      xdmf = 0;
+  const int & nx = params.nx;
+  const int & ny = params.ny;
+
+  // get data type as a string for Xdmf
+  std::string dataTypeName = sizeof(real_t) == sizeof(double) ? "Double" : "Float";
+
+  /*
+   * Open the file and write the XML description of the mesh..
+   */
+  std::string outputDir = configMap.getString("output", "outputDir", "./");
+  std::string outputPrefix = configMap.getString("output", "outputPrefix", "output");
+  std::string xdmfFilename = outputPrefix + ".xmf";
+
+  xdmf = fopen(xdmfFilename.c_str(), "w");
+
+  fprintf(xdmf, "<?xml version=\"1.0\" ?>\n");
+  fprintf(xdmf, "<!DOCTYPE Xdmf SYSTEM \"Xdmf.dtd\" []>\n");
+  fprintf(xdmf, "<Xdmf xmlns:xi=\"http://www.w3.org/2003/XInclude\" Version=\"2.2\">\n");
+  fprintf(xdmf, "  <Domain>\n");
+  fprintf(xdmf,
+          "    <Grid Name=\"TimeSeries\" GridType=\"Collection\" CollectionType=\"Temporal\">\n");
+
+  // for each time step write a <grid> </grid> item
+  const int nbOutput = (params.nStepmax + params.nOutput - 1) / params.nOutput + 1;
+  for (int iOut = 0; iOut < nbOutput; ++iOut)
+  {
+    int iStep = iOut * params.nOutput;
+
+    if (iOut == (nbOutput - 1))
     {
-      int iStep = iOut * params.nOutput;
+      iStep = last_time_step;
+    }
 
-      if (iOut == (nbOutput - 1))
-      {
-        iStep = last_time_step;
-      }
+    std::ostringstream outNum;
+    outNum.width(7);
+    outNum.fill('0');
+    outNum << iStep;
 
-      std::ostringstream outNum;
-      outNum.width(7);
-      outNum.fill('0');
-      outNum << iStep;
+    // take care that the following filename must be exactly the same as in routine outputHdf5 !!!
+    std::string baseName = outputPrefix + "_" + outNum.str();
+    std::string hdf5Filename = outputPrefix + "_" + outNum.str() + ".h5";
+    std::string hdf5FilenameFull = outputDir + "/" + outputPrefix + "_" + outNum.str() + ".h5";
 
-      // take care that the following filename must be exactly the same as in routine outputHdf5 !!!
-      std::string baseName = outputPrefix + "_" + outNum.str();
-      std::string hdf5Filename = outputPrefix + "_" + outNum.str() + ".h5";
-      std::string hdf5FilenameFull = outputDir + "/" + outputPrefix + "_" + outNum.str() + ".h5";
+    fprintf(xdmf, "      <Grid Name=\"%s\" GridType=\"Uniform\">\n", baseName.c_str());
+    fprintf(xdmf, "      <Time Value=\"%d\" />\n", iStep);
 
-      fprintf(xdmf, "      <Grid Name=\"%s\" GridType=\"Uniform\">\n", baseName.c_str());
-      fprintf(xdmf, "      <Time Value=\"%d\" />\n", iStep);
+    // topology = CoRectMesh
+    fprintf(xdmf,
+            "        <Topology TopologyType=\"2DCoRectMesh\" NumberOfElements=\"%d %d\"/>\n",
+            ny,
+            nx);
 
-      // topology = CoRectMesh
-      fprintf(xdmf,
-              "        <Topology TopologyType=\"2DCoRectMesh\" NumberOfElements=\"%d %d\"/>\n",
-              ny,
-              nx);
-
-      // geometry
-      fprintf(xdmf, "        <Geometry Type=\"ORIGIN_DXDY\">\n");
-      fprintf(xdmf, "          <DataStructure\n");
-      fprintf(xdmf, "            Name=\"Origin\"\n");
-      fprintf(xdmf, "            DataType=\"%s\"\n", dataTypeName.c_str());
-      fprintf(xdmf, "            Dimensions=\"2\"\n");
-      fprintf(xdmf, "            Format=\"XML\">\n");
-      fprintf(xdmf, "            0 0\n");
-      fprintf(xdmf, "          </DataStructure>\n");
-      fprintf(xdmf, "          <DataStructure\n");
-      fprintf(xdmf, "            Name=\"Spacing\"\n");
-      fprintf(xdmf, "            DataType=\"%s\"\n", dataTypeName.c_str());
-      fprintf(xdmf, "            Dimensions=\"2\"\n");
-      fprintf(xdmf, "            Format=\"XML\">\n");
-      fprintf(xdmf, "            1 1\n");
-      fprintf(xdmf, "          </DataStructure>\n");
-      fprintf(xdmf, "        </Geometry>\n");
+    // geometry
+    fprintf(xdmf, "        <Geometry Type=\"ORIGIN_DXDY\">\n");
+    fprintf(xdmf, "          <DataStructure\n");
+    fprintf(xdmf, "            Name=\"Origin\"\n");
+    fprintf(xdmf, "            DataType=\"%s\"\n", dataTypeName.c_str());
+    fprintf(xdmf, "            Dimensions=\"2\"\n");
+    fprintf(xdmf, "            Format=\"XML\">\n");
+    fprintf(xdmf, "            0 0\n");
+    fprintf(xdmf, "          </DataStructure>\n");
+    fprintf(xdmf, "          <DataStructure\n");
+    fprintf(xdmf, "            Name=\"Spacing\"\n");
+    fprintf(xdmf, "            DataType=\"%s\"\n", dataTypeName.c_str());
+    fprintf(xdmf, "            Dimensions=\"2\"\n");
+    fprintf(xdmf, "            Format=\"XML\">\n");
+    fprintf(xdmf, "            1 1\n");
+    fprintf(xdmf, "          </DataStructure>\n");
+    fprintf(xdmf, "        </Geometry>\n");
 
 
-      // save all scalar field
-      for (int iVar = 0; iVar < NBVAR; iVar++)
-      {
-        fprintf(xdmf, "      <Attribute Center=\"Node\" Name=\"%s\">\n", varNames[iVar]);
-        fprintf(xdmf, "        <DataStructure\n");
-        fprintf(xdmf, "           DataType=\"%s\"\n", dataTypeName.c_str());
-        fprintf(xdmf, "           Dimensions=\"%d %d\"\n", ny, nx);
-        fprintf(xdmf, "           Format=\"HDF\">\n");
-        fprintf(xdmf, "           %s:/%s\n", hdf5Filename.c_str(), varNames[iVar]);
-        fprintf(xdmf, "        </DataStructure>\n");
-        fprintf(xdmf, "      </Attribute>\n");
-      }
+    // save all scalar field
+    for (int iVar = 0; iVar < NBVAR; iVar++)
+    {
+      fprintf(xdmf, "      <Attribute Center=\"Node\" Name=\"%s\">\n", varNames[iVar]);
+      fprintf(xdmf, "        <DataStructure\n");
+      fprintf(xdmf, "           DataType=\"%s\"\n", dataTypeName.c_str());
+      fprintf(xdmf, "           Dimensions=\"%d %d\"\n", ny, nx);
+      fprintf(xdmf, "           Format=\"HDF\">\n");
+      fprintf(xdmf, "           %s:/%s\n", hdf5Filename.c_str(), varNames[iVar]);
+      fprintf(xdmf, "        </DataStructure>\n");
+      fprintf(xdmf, "      </Attribute>\n");
+    }
 
-      // finalize grid file for the current time step
-      fprintf(xdmf, "    </Grid>\n");
-
-    } // end for iStep
-
+    // finalize grid file for the current time step
     fprintf(xdmf, "    </Grid>\n");
-    fprintf(xdmf, "  </Domain>\n");
-    fprintf(xdmf, "</Xdmf>\n");
-    fclose(xdmf);
 
-  } // HydroRun<device_t>::write_xdmf_xml
+  } // end for iStep
+
+  fprintf(xdmf, "    </Grid>\n");
+  fprintf(xdmf, "  </Domain>\n");
+  fprintf(xdmf, "</Xdmf>\n");
+  fclose(xdmf);
+
+} // HydroRun<device_t>::write_xdmf_xml
 #endif // USE_HDF5
 
 } // namespace euler2d
