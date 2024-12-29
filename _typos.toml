@@ -1,0 +1,10 @@
+[files]
+extend-exclude = ["external/*", "doc/Doxyfile.in"]
+
+[default.extend-words]
+IY = "IY"
+
+[default.extend-identifiers]
+gam0 = "gam0"
+gam_int = "gam_int"
+iten = "iten"
