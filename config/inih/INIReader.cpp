@@ -21,20 +21,20 @@ INIReader::INIReader(std::string filename)
 
 // =======================================================
 // =======================================================
-INIReader::~INIReader()
-{
-}
+INIReader::~INIReader() {}
 
 // =======================================================
 // =======================================================
-int INIReader::ParseError()
+int
+INIReader::ParseError()
 {
   return _error;
 }
 
 // =======================================================
 // =======================================================
-std::string INIReader::getString(std::string section, std::string name, std::string default_value) const
+std::string
+INIReader::getString(std::string section, std::string name, std::string default_value) const
 {
   const std::string key = makeKey(section, name);
   // for const correctness use method at instead of operator[]
@@ -43,7 +43,8 @@ std::string INIReader::getString(std::string section, std::string name, std::str
 
 // =======================================================
 // =======================================================
-void INIReader::setString(std::string section, std::string name, std::string value)
+void
+INIReader::setString(std::string section, std::string name, std::string value)
 {
   std::string key = makeKey(section, name);
   _values[key] = value;
@@ -51,11 +52,12 @@ void INIReader::setString(std::string section, std::string name, std::string val
 
 // =======================================================
 // =======================================================
-long INIReader::getInteger(std::string section, std::string name, long default_value) const
+long
+INIReader::getInteger(std::string section, std::string name, long default_value) const
 {
-  std::string valstr = getString(section, name, "");
-  const char* value = valstr.c_str();
-  char* end;
+  std::string  valstr = getString(section, name, "");
+  const char * value = valstr.c_str();
+  char *       end;
   // This parses "1234" (decimal) and also "0x4D2" (hex)
   long n = strtol(value, &end, 0);
   return end > value ? n : default_value;
@@ -63,7 +65,8 @@ long INIReader::getInteger(std::string section, std::string name, long default_v
 
 // =======================================================
 // =======================================================
-void INIReader::setInteger(std::string section, std::string name, long value)
+void
+INIReader::setInteger(std::string section, std::string name, long value)
 {
   std::stringstream ss;
   ss << value;
@@ -73,10 +76,12 @@ void INIReader::setInteger(std::string section, std::string name, long value)
 
 // =======================================================
 // =======================================================
-std::ostream& operator<<(std::ostream &os, const INIReader& cfg)
+std::ostream &
+operator<<(std::ostream & os, const INIReader & cfg)
 {
-  std::map<std::string,std::string>::const_iterator it;
-  for (it=cfg._values.begin(); it != cfg._values.end(); it++){
+  std::map<std::string, std::string>::const_iterator it;
+  for (it = cfg._values.begin(); it != cfg._values.end(); it++)
+  {
     os << (*it).first << " = " << (*it).second << "\n";
   }
   return os;
@@ -84,7 +89,8 @@ std::ostream& operator<<(std::ostream &os, const INIReader& cfg)
 
 // =======================================================
 // =======================================================
-std::string INIReader::makeKey(std::string section, std::string name)
+std::string
+INIReader::makeKey(std::string section, std::string name)
 {
   std::string key = section + "." + name;
   // Convert to lower case to make lookups case-insensitive
@@ -95,10 +101,10 @@ std::string INIReader::makeKey(std::string section, std::string name)
 
 // =======================================================
 // =======================================================
-int INIReader::valueHandler(void* user, const char* section, const char* name,
-                            const char* value)
+int
+INIReader::valueHandler(void * user, const char * section, const char * name, const char * value)
 {
-  INIReader* reader = (INIReader*)user;
+  INIReader * reader = (INIReader *)user;
   reader->_values[makeKey(section, name)] = value;
   return 1;
 }

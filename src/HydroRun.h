@@ -544,12 +544,10 @@ HydroRun<device_t>::saveVTK(DataArray_t Udata, int iStep, std::string name)
 
   // write mesh extent
   outFile << "  <ImageData WholeExtent=\"" << 0 << " " << nx << " " << 0 << " " << ny << " " << 0
-          << " " << 0 << "\" "
-          << "Origin=\"" << params.xmin << " " << params.ymin << " " << 0.0 << "\" "
-          << "Spacing=\"" << params.dx << " " << params.dy << " " << 0.0 << "\">\n";
+          << " " << 0 << "\" " << "Origin=\"" << params.xmin << " " << params.ymin << " " << 0.0
+          << "\" " << "Spacing=\"" << params.dx << " " << params.dy << " " << 0.0 << "\">\n";
   outFile << "  <Piece Extent=\"" << 0 << " " << nx << " " << 0 << " " << ny << " " << 0 << " " << 0
-          << " "
-          << "\">\n";
+          << " " << "\">\n";
 
   outFile << "    <PointData>\n";
   outFile << "    </PointData>\n";
