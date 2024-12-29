@@ -162,7 +162,7 @@
        if (iprint .eq. 1) write(6,'(a,1pe12.4)') 'omega = omega2 ',denom2
        lomega2 = .true.
        denom2  = 1.0q-8
-       
+
       else if (abs(denom3) .le. osmall) then
        if (iprint .eq. 1) write(6,'(a,1pe12.4)') 'omega = omega3 ',denom3
        lomega3 = .true.
@@ -1218,4 +1218,3 @@
              ' into a real number in function value')
       stop ' error in routine value'
       end function value
-

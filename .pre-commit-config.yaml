@@ -1,4 +1,11 @@
+exclude: 'LICENSE'
 repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+    -   id: check-yaml
+    -   id: end-of-file-fixer
+    -   id: trailing-whitespace
   - repo: https://github.com/crate-ci/typos
     rev: v1.23.1
     hooks:

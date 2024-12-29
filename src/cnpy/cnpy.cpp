@@ -336,6 +336,3 @@ cnpy::NpyArray cnpy::npy_load(std::string fname) {
     fclose(fp);
     return arr;
 }
-
-
-
