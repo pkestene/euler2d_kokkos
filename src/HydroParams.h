@@ -152,7 +152,7 @@ struct HydroParams
 {
 
   // run parameters
-  int    nStepmax;     /*!< maximun number of time steps. */
+  int    nStepmax;     /*!< maximum number of time steps. */
   real_t tEnd;         /*!< end of simulation time. */
   int    nOutput;      /*!< number of time steps between 2 consecutive outputs. */
   bool   enableOutput; /*!< enable output file write. */

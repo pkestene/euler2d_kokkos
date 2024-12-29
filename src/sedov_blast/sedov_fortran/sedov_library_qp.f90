@@ -9,7 +9,7 @@
 ! this routine produces 1d solutions for a sedov blast wave propagating
 ! through a density gradient rho = rho**(-omega)
 ! in planar, cylindrical or spherical geometry
-! for the standard, transitional and vaccum cases:
+! for the standard, transitional and vacuum cases:
 
 ! standard     : a nonzero solution extends from the shock to the origin, where the pressure is finite.
 ! transitional : a nonzero solution extends from the shock to the origin, where the pressure vanishes.
@@ -44,7 +44,7 @@
 ! this routine is based upon two papers:
 ! "evaluation of the sedov-von neumann-taylor blast wave solution"
 ! jim kamm, la-ur-00-6055
-! "the sedov self-similiar point blast solutions in nonuniform media"
+! "the sedov self-similar point blast solutions in nonuniform media"
 ! david book, shock waves, 4, 1, 1994
 
 ! although the ordinary differential equations are analytic,
@@ -153,7 +153,7 @@
       end if
 
 ! two apparent singularies, book's notation for omega2 and omega3
-! resetting denom2 and denom3 is harmless as these two singularities are explicitely addressed
+! resetting denom2 and denom3 is harmless as these two singularities are explicitly addressed
 
       lomega2 = .false.
       lomega3 = .false.
@@ -685,7 +685,7 @@
 ! rule. func is input as the name of the function to be integrated between
 ! limits a and b. when called with n=1, the routine returns as s the crudest
 ! estimate of the integralof func from a to b. subsequent calls with n=2,3...
-! improve the accuracy of s by adding 2/3*3**(n-1) addtional interior points.
+! improve the accuracy of s by adding 2/3*3**(n-1) additional interior points.
 
 ! declare the pass
       external       :: func

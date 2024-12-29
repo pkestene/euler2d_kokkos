@@ -42,7 +42,7 @@ if (USE_DOUBLE)
   #add_compile_definitions(-DUSE_DOUBLE)
 endif()
 
-# HDF5 support (optionnal)
+# HDF5 support (optional)
 find_package(HDF5 QUIET)
 if(HDF5_FOUND)
   set(HDF5_ENABLED TRUE)

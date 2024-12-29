@@ -16,7 +16,7 @@
  * \class ConfigMap ConfigMap.h
  * \brief This is a specialized version of INIReader which reads and parses a INI
  * file into a key-value map (implemented using std::map). This class
- * is usefull to gather parameters.
+ * is useful to gather parameters.
  */
 class ConfigMap : public INIReader
 {

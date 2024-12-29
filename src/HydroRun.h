@@ -367,7 +367,7 @@ HydroRun<device_t>::convertToPrimitives(DataArray_t Udata)
 // =======================================================
 // //////////////////////////////////////////////////
 // Fill ghost cells according to border condition :
-// absorbant, reflexive or periodic
+// absorbent, reflexive or periodic
 // //////////////////////////////////////////////////
 template <typename device_t>
 void

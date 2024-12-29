@@ -11,7 +11,7 @@ namespace euler2d
 
 // using Device = Kokkos::DefaultExecutionSpace;
 
-// first index is space localtion, second is hydro variable
+// first index is space location, second is hydro variable
 // number of hydro variables is 4 in 2D, 5 in 3D
 template <typename device_t>
 using DataArray = Kokkos::View<real_t ** [NBVAR], device_t>;
@@ -25,7 +25,7 @@ using HydroState = Kokkos::Array<real_t, NBVAR>;
 /**
  * Retrieve cartesian coordinate from index, using memory layout information.
  *
- * for each execution space define a prefered layout.
+ * for each execution space define a preferred layout.
  * Prefer left layout  for CUDA execution space.
  * Prefer right layout for OpenMP execution space.
  */
