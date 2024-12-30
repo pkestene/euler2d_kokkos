@@ -1,4 +1,5 @@
-add_executable(euler2d
+add_executable(
+  euler2d
   ../config/inih/ini.h
   ../config/inih/ini.cpp
   ../config/inih/INIReader.h
@@ -21,9 +22,7 @@ add_executable(euler2d
   cnpy/cnpy.cpp
   main.cpp)
 
-target_include_directories(euler2d
-  PUBLIC
-  ${CMAKE_SOURCE_DIR})
+target_include_directories(euler2d PUBLIC ${CMAKE_SOURCE_DIR})
 target_link_libraries(euler2d Kokkos::kokkos ZLIB::ZLIB)
 
 if(HDF5_ENABLED)
