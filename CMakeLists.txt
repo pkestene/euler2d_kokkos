@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2024 euler2d_kokkos authors
+#
+# SPDX-License-Identifier: Unlicense
+
 cmake_minimum_required(VERSION 3.22)
 project(
   euler2d

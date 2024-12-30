@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2024 euler2d_kokkos authors
+//
+// SPDX-License-Identifier: Apache-2.0
+
 /**
  * \file ConfigMap.h
  * \brief Define an object will allow to easily retrieve parameter from a dictionary.

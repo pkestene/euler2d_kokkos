@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2024 euler2d_kokkos authors
+#
+# SPDX-License-Identifier: Unlicense
+
 # Two alternatives:
 #
 # 1. If EULER2D_KOKKOS_BUILD is ON, we download kokkos sources and build them

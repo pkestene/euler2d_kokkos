@@ -17,6 +17,10 @@ repos:
       - id: cmake-format
         args: [ '--config=.cmake-format.py' ]
       - id: cmake-lint
+  - repo: https://github.com/fsfe/reuse-tool
+    rev: v4.0.3
+    hooks:
+      - id: reuse
   - repo: https://github.com/crate-ci/typos
     rev: v1.23.1
     hooks:

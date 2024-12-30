@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2024 euler2d_kokkos authors
+#
+# SPDX-License-Identifier: Unlicense
+
 # adapted from
 # https://stackoverflow.com/questions/9298278/cmake-print-out-all-accessible-variables-in-a-script
 
