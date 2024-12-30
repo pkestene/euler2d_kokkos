@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2024 euler2d_kokkos authors
+//
+// SPDX-License-Identifier: Apache-2.0
+
 /**
  * \file cnpy_io.h
  * \brief converting numpy files to/from a Kokkos::View

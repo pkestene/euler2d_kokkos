@@ -1,4 +1,8 @@
-      subroutine sed_1d(time,nstep,xpos, &
+! SPDX-FileCopyrightText: 2024 F.X. Timmes
+!
+! SPDX-License-Identifier: Unlicense
+
+subroutine sed_1d(time,nstep,xpos, &
                         eblast,omega_in,xgeom_in, &
                         rho0,vel0,ener0,pres0,cs0,gam0, &
                         rshock,rho2,u2,e2,p2,cs2,rvacuum, &

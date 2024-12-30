@@ -1,3 +1,7 @@
+! SPDX-FileCopyrightText: 2024 F.X. Timmes
+!
+! SPDX-License-Identifier: Unlicense
+
 program sedov3
   implicit none
 

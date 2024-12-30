@@ -1,0 +1,51 @@
+version = 1
+SPDX-PackageName = "euler2d_kokkos"
+SPDX-PackageSupplier = "euler2d_kokkos authors"
+SPDX-PackageDownloadLocation = "https://github.com/pkestene/euler2d_kokkos"
+
+[[annotations]]
+path = [
+    ".github/**",  "Readme.md",  "doc/**", "blast2d.gif", "misc/plot_data.py", "src/sedov_blast/README.md", "src/sedov_blast/sedov_plot.py"
+]
+precedence = "aggregate"
+SPDX-FileCopyrightText = "2024 euler2d_kokkos authors"
+SPDX-License-Identifier = "Apache-2.0"
+
+[[annotations]]
+path = [
+    ".clang-format", ".clang-tidy", ".pre-commit-config.yaml", "REUSE.toml", ".git-blame-ignore-revs", ".editorconfig", ".cmake-format.py", ".gitignore", ".gitmodules", ".travis.yml", "_typos.toml", "src/sedov_blast/sedov_fortran/README_local.md"
+]
+precedence = "aggregate"
+SPDX-FileCopyrightText = "2017 - 2024 euler2d_kokkos authors"
+SPDX-License-Identifier = "Unlicense"
+
+[[annotations]]
+path = [
+    "src/**/*.ini"
+]
+precedence = "override"
+SPDX-FileCopyrightText = "2017 - 2024 euler2d_kokkos authors"
+SPDX-License-Identifier = "Apache-2.0"
+
+[[annotations]]
+path = [
+    "config/inih/**"
+]
+precedence = "override"
+SPDX-FileCopyrightText = "2009, Ben Hoyt"
+SPDX-License-Identifier = "BSD-1-Clause"
+
+[[annotations]]
+path = [
+    "src/sedov_blast/sedov_fortran/sedov3_qp.dek", "src/sedov_blast/sedov_fortran/README"
+]
+precedence = "override"
+SPDX-FileCopyrightText = "F.X. Timmes"
+SPDX-License-Identifier = "Unlicense"
+
+[[annotations]]
+path = [
+     "src/cnpy/cnpy.h", "src/cnpy/cnpy.cpp"
+]
+SPDX-FileCopyrightText = "2011  Carl Rogers"
+SPDX-License-Identifier = "MIT"

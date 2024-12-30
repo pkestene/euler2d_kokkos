@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2024 euler2d_kokkos authors
+#
+# SPDX-License-Identifier: Unlicense
+
 add_executable(
   euler2d
   ../config/inih/ini.h

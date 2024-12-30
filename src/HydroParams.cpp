@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2024 euler2d_kokkos authors
+//
+// SPDX-License-Identifier: Apache-2.0
+
 #include "HydroParams.h"
 
 #include <cstdlib> // for exit

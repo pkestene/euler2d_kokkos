@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2024 euler2d_kokkos authors
+//
+// SPDX-License-Identifier: Apache-2.0
+
 #ifndef EULER_KOKKOS_TIMER_H_
 #define EULER_KOKKOS_TIMER_H_
 
