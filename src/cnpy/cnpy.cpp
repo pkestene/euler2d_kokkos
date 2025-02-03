@@ -94,10 +94,10 @@ cnpy::parse_npy_header(unsigned char *       buffer,
                        bool &                fortran_order)
 {
   // std::string magic_string(buffer,6);
-  uint8_t     major_version = *reinterpret_cast<uint8_t *>(buffer + 6);
-  uint8_t     minor_version = *reinterpret_cast<uint8_t *>(buffer + 7);
-  uint16_t    header_len = *reinterpret_cast<uint16_t *>(buffer + 8);
-  std::string header(reinterpret_cast<char *>(buffer + 9), header_len);
+  [[maybe_unused]] uint8_t major_version = *reinterpret_cast<uint8_t *>(buffer + 6);
+  [[maybe_unused]] uint8_t minor_version = *reinterpret_cast<uint8_t *>(buffer + 7);
+  uint16_t                 header_len = *reinterpret_cast<uint16_t *>(buffer + 8);
+  std::string              header(reinterpret_cast<char *>(buffer + 9), header_len);
 
   size_t loc1, loc2;
 
@@ -204,14 +204,13 @@ cnpy::parse_zip_footer(FILE *     fp,
   if (res != 22)
     throw std::runtime_error("parse_zip_footer: failed fread");
 
-  uint16_t disk_no, disk_start, nrecs_on_disk, comment_len;
-  disk_no = *(uint16_t *)&footer[4];
-  disk_start = *(uint16_t *)&footer[6];
-  nrecs_on_disk = *(uint16_t *)&footer[8];
+  [[maybe_unused]] uint16_t disk_no = *(uint16_t *)&footer[4];
+  [[maybe_unused]] uint16_t disk_start = *(uint16_t *)&footer[6];
+  [[maybe_unused]] uint16_t nrecs_on_disk = *(uint16_t *)&footer[8];
   nrecs = *(uint16_t *)&footer[10];
   global_header_size = *(uint32_t *)&footer[12];
   global_header_offset = *(uint32_t *)&footer[16];
-  comment_len = *(uint16_t *)&footer[20];
+  [[maybe_unused]] uint16_t comment_len = *(uint16_t *)&footer[20];
 
   assert(disk_no == 0);
   assert(disk_start == 0);
@@ -244,8 +243,8 @@ load_the_npz_array(FILE * fp, uint32_t compr_bytes, uint32_t uncompr_bytes)
   if (nread != compr_bytes)
     throw std::runtime_error("load_the_npy_file: failed fread");
 
-  int      err;
-  z_stream d_stream;
+  [[maybe_unused]] int err;
+  z_stream             d_stream;
 
   d_stream.zalloc = Z_NULL;
   d_stream.zfree = Z_NULL;
