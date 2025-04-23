@@ -5,8 +5,7 @@
 cmake_minimum_required(VERSION 3.22)
 project(
   euler2d
-  DESCRIPTION
-    "euler2d_kokkos is a C++ Kokkos-based CFD miniapp for teaching purpose"
+  DESCRIPTION "euler2d_kokkos is a C++ Kokkos-based CFD miniapp for teaching purpose"
   LANGUAGES CXX C Fortran)
 
 # external dependencies: zlib (required by cnpy)
@@ -23,15 +22,13 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 # set default build type to "Release"
 set(DEFAULT_BUILD_TYPE "Release")
 if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
-  message(
-    STATUS
-      "Setting build type to '${DEFAULT_BUILD_TYPE}' as none was specified.")
+  message(STATUS "Setting build type to '${DEFAULT_BUILD_TYPE}' as none was specified.")
   set(CMAKE_BUILD_TYPE
       "${DEFAULT_BUILD_TYPE}"
       CACHE STRING "Choose the type of build." FORCE)
   # Set the possible values of build type for cmake-gui
-  set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Debug" "Release"
-                                               "MinSizeRel" "RelWithDebInfo")
+  set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Debug" "Release" "MinSizeRel"
+                                               "RelWithDebInfo")
 endif()
 
 # always export compile commands database
@@ -74,8 +71,8 @@ message("  CMake install prefix   : ${CMAKE_INSTALL_PREFIX}")
 message("  CMake system processor : ${CMAKE_SYSTEM_PROCESSOR}")
 message("  CMake system name (OS) : ${CMAKE_SYSTEM_NAME}")
 message("")
-message("  C++ Compiler : ${CMAKE_CXX_COMPILER_ID} "
-        "${CMAKE_CXX_COMPILER_VERSION} " "${CMAKE_CXX_COMPILER_WRAPPER}")
+message("  C++ Compiler : ${CMAKE_CXX_COMPILER_ID} " "${CMAKE_CXX_COMPILER_VERSION} "
+        "${CMAKE_CXX_COMPILER_WRAPPER}")
 message("                 ${CMAKE_CXX_COMPILER}")
 
 message("  Kokkos version               = ${Kokkos_VERSION}")

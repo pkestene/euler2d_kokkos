@@ -128,7 +128,7 @@ with section("markup"):
   # If comment markup is enabled, don't reflow the first comment block in each
   # listfile. Use this to preserve formatting of your copyright/license
   # statements.
-  first_comment_is_literal = False
+  first_comment_is_literal = True
 
   # If comment markup is enabled, don't reflow any comment block which matches
   # this (regex) pattern. Default is `None` (disabled).
@@ -164,7 +164,7 @@ with section("markup"):
 with section("lint"):
 
   # a list of lint codes to disable
-  disabled_codes = ["C0301"]
+  disabled_codes = ["C0103", "C0111", "C0301", "C0113", "E1120", "W0105", "R0912"]
 
   # regular expression pattern describing valid function names
   function_pattern = '[0-9a-z_]+'
