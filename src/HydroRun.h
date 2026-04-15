@@ -71,7 +71,7 @@ public:
 
   // riemann_solver_t riemann_solver_fn; /*!< riemann solver function pointer */
 
-  Timer boundaries_timer, godunov_timer;
+  Timer boundaries_timer, godunov_timer, compute_primitive_timer;
 
   // methods
   real_t
@@ -363,7 +363,9 @@ void
 HydroRun<device_t>::convertToPrimitives(DataArray_t Udata)
 {
   // call device functor
+  compute_primitive_timer.start();
   ConvertToPrimitivesFunctor<device_t>::apply(params, Udata, Q);
+  compute_primitive_timer.stop();
 
 } // HydroRun<device_t>::convertToPrimitives
 

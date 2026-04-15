@@ -185,11 +185,13 @@ main(int argc, char * argv[])
 
     real_t t_tot = total_timer.elapsed();
     real_t t_comp = hydro->godunov_timer.elapsed();
+    real_t t_prim = hydro->compute_primitive_timer.elapsed();
     real_t t_dt = dt_timer.elapsed();
     real_t t_bound = hydro->boundaries_timer.elapsed();
     real_t t_io = io_timer.elapsed();
     printf("total       time : %5.3f secondes\n", t_tot);
     printf("godunov     time : %5.3f secondes %5.2f%%\n", t_comp, 100 * t_comp / t_tot);
+    printf("primitive   time : %5.3f secondes %5.2f%%\n", t_prim, 100 * t_comp / t_tot);
     printf("compute dt  time : %5.3f secondes %5.2f%%\n", t_dt, 100 * t_dt / t_tot);
     printf("boundaries  time : %5.3f secondes %5.2f%%\n", t_bound, 100 * t_bound / t_tot);
     printf("io          time : %5.3f secondes %5.2f%%\n", t_io, 100 * t_io / t_tot);
