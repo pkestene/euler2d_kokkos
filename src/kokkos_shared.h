@@ -21,7 +21,7 @@ template <typename device_t>
 using DataArray = Kokkos::View<real_t ** [NBVAR], device_t>;
 
 template <typename device_t>
-using DataArrayHost = typename DataArray<device_t>::HostMirror;
+using DataArrayHost = typename DataArray<device_t>::host_mirror_type;
 
 /// a POD data structure to store local conservative / primitive variables
 using HydroState = Kokkos::Array<real_t, NBVAR>;

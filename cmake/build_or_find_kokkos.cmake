@@ -39,6 +39,14 @@ set(EULER2D_KOKKOS_BACKEND
 # Set the possible values for kokkos backend device
 set_property(CACHE EULER2D_KOKKOS_BACKEND PROPERTY STRINGS "OpenMP" "Cuda" "HIP" "Undefined")
 
+# raise the minimum C++ standard level if not already done
+# when build kokkos, it defaults to c++-20
+# when using installed kokkos, it is not set, so defaulting to c++-20
+# kokkos 5.0.0 requires c++-20 anyway
+if (NOT "${CMAKE_CXX_STANDARD}")
+  set(CMAKE_CXX_STANDARD 20)
+endif()
+
 # check if user requested a build of kokkos
 if(EULER2D_KOKKOS_BUILD)
 
@@ -66,12 +74,6 @@ if(EULER2D_KOKKOS_BUILD)
 
     if((NOT DEFINED Kokkos_ENABLE_CUDA) OR (NOT Kokkos_ENABLE_CUDA))
       set(Kokkos_ENABLE_CUDA
-          ON
-          CACHE BOOL "")
-    endif()
-
-    if((NOT DEFINED Kokkos_ENABLE_CUDA_LAMBDA) OR (NOT Kokkos_ENABLE_CUDA_LAMBDA))
-      set(Kokkos_ENABLE_CUDA_LAMBDA
           ON
           CACHE BOOL "")
     endif()
@@ -124,11 +126,6 @@ if(EULER2D_KOKKOS_BUILD)
 
   endif()
 
-  # we set c++ standard to c++-17 as kokkos >= 4.0.00 requires at least c++-17
-  if(NOT "${CMAKE_CXX_STANDARD}")
-    set(CMAKE_CXX_STANDARD 17)
-  endif()
-
   # find_package(Git REQUIRED)
   include(FetchContent)
 
@@ -138,11 +135,11 @@ if(EULER2D_KOKKOS_BUILD)
       kokkos_external
       SYSTEM
       GIT_REPOSITORY https://github.com/kokkos/kokkos.git
-      GIT_TAG 4.6.00)
+      GIT_TAG 5.1.0)
   else()
     message("[euler2d / kokkos] Building kokkos from source using git submodule")
     FetchContent_Declare(
-      kokkos_external # URL https://github.com/kokkos/kokkos/archive/refs/tags/4.6.00.tar.gz
+      kokkos_external # URL https://github.com/kokkos/kokkos/archive/refs/tags/5.1.0.tar.gz
       SOURCE_DIR ${PROJECT_SOURCE_DIR}/external/kokkos)
   endif()
 
@@ -166,13 +163,13 @@ else()
   #
   # check if an already installed kokkos exists
   #
-  find_package(Kokkos 4.0.00 CONFIG REQUIRED)
+  find_package(Kokkos 5.1.0 CONFIG REQUIRED)
 
   if(TARGET Kokkos::kokkos)
 
-    # set default c++ standard according to Kokkos version Kokkos >= 4.0.00 requires c++-17
+    # set default c++ standard according to Kokkos version Kokkos >= 5.1.0 requires c++-20
     if(NOT "${CMAKE_CXX_STANDARD}")
-      if(${Kokkos_VERSION} VERSION_LESS 4.0.00)
+      if(${Kokkos_VERSION} VERSION_LESS 5.1.00)
         set(CMAKE_CXX_STANDARD 14)
       else()
         set(CMAKE_CXX_STANDARD 17)
@@ -188,7 +185,6 @@ else()
 
     if(KOKKOS_DEVICE_ENABLE_CUDA)
       set(EULER2D_KOKKOS_BACKEND "Cuda")
-      kokkos_check(OPTIONS CUDA_LAMBDA RETURN_VALUE Kokkos_CUDA_LAMBDA_ENABLED)
       kokkos_check(OPTIONS CUDA_CONSTEXPR RETURN_VALUE Kokkos_CUDA_CONSTEXPR_ENABLED)
       kokkos_check(OPTIONS CUDA_UVM RETURN_VALUE Kokkos_CUDA_UVM_ENABLED)
     elseif(KOKKOS_DEVICE_ENABLE_HIP)
