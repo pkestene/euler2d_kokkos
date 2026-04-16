@@ -45,7 +45,7 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 #
 include(build_or_find_kokkos)
 
-option(USE_DOUBLE "build with double precision" OFF)
+option(USE_DOUBLE "build with double precision (default: ON)" ON)
 if(USE_DOUBLE)
   add_compile_options(-DUSE_DOUBLE)
   # cmake version also have this add_compile_definitions(-DUSE_DOUBLE)

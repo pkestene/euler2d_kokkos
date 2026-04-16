@@ -12,8 +12,8 @@
 # NOTE about required C++ standard we better chose to set the minimum C++ standard level if not
 # already done:
 #
-# * when building kokkos <  4.0.00, it defaults to c++-14
-# * when building kokkos >= 4.0.00, it defaults to c++-17
+# * when building kokkos <  5.0.00, it defaults to c++-17
+# * when building kokkos >= 5.0.00, it defaults to c++-20
 # * when using installed kokkos, we set C++ standard according to kokkos version
 
 #
@@ -53,9 +53,6 @@ if(EULER2D_KOKKOS_BUILD)
   message("[euler2d / kokkos] Building kokkos from source")
 
   # Kokkos default build options
-
-  # set install path
-  list(APPEND EULER2D_KOKKOS_CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${KOKKOS_INSTALL_DIR})
 
   # use predefined cmake args can be override on the command line
   if(EULER2D_KOKKOS_BACKEND MATCHES "Cuda")
@@ -138,9 +135,7 @@ if(EULER2D_KOKKOS_BUILD)
       GIT_TAG 5.1.0)
   else()
     message("[euler2d / kokkos] Building kokkos from source using git submodule")
-    FetchContent_Declare(
-      kokkos_external # URL https://github.com/kokkos/kokkos/archive/refs/tags/5.1.0.tar.gz
-      SOURCE_DIR ${PROJECT_SOURCE_DIR}/external/kokkos)
+    FetchContent_Declare(kokkos_external SYSTEM SOURCE_DIR ${PROJECT_SOURCE_DIR}/external/kokkos)
   endif()
 
   # Import kokkos targets (download, and call add_subdirectory)
@@ -167,15 +162,6 @@ else()
 
   if(TARGET Kokkos::kokkos)
 
-    # set default c++ standard according to Kokkos version Kokkos >= 5.1.0 requires c++-20
-    if(NOT "${CMAKE_CXX_STANDARD}")
-      if(${Kokkos_VERSION} VERSION_LESS 5.1.00)
-        set(CMAKE_CXX_STANDARD 14)
-      else()
-        set(CMAKE_CXX_STANDARD 17)
-      endif()
-    endif()
-
     # kokkos_check is defined in KokkosConfigCommon.cmake
     kokkos_check(DEVICES "OpenMP" RETURN_VALUE KOKKOS_DEVICE_ENABLE_OPENMP)
     kokkos_check(DEVICES "Cuda" RETURN_VALUE KOKKOS_DEVICE_ENABLE_CUDA)
@@ -194,8 +180,7 @@ else()
     endif()
 
     message(
-      "[euler2d / kokkos] Kokkos found via find_package; default backend is ${EULER2D_KOKKOS_BACKEND}"
-    )
+      "[euler2d / kokkos] Kokkos found via find_package; default backend is ${EULER2D_KOKKOS_BACKEND}")
     set(EULER2D_KOKKOS_FOUND True)
     set(HAVE_KOKKOS 1)
 
