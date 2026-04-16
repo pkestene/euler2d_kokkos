@@ -71,7 +71,8 @@ public:
 
   // riemann_solver_t riemann_solver_fn; /*!< riemann solver function pointer */
 
-  Timer boundaries_timer, godunov_timer, compute_primitive_timer;
+  Timer boundaries_timer, godunov_timer, compute_primitive_timer, comp_fluxes_timer,
+    update_hydro_timer;
 
   // methods
   real_t
@@ -313,10 +314,19 @@ HydroRun<device_t>::godunov_unsplit_impl(DataArray_t data_in,
 
     Kokkos::Profiling::pushRegion("hydro_impl0");
     // compute fluxes
+    Kokkos::Profiling::pushRegion("compute_fluxes");
+    comp_fluxes_timer.start();
     ComputeAndStoreFluxesFunctor<device_t>::apply(params, Q, Fluxes_x, Fluxes_y, dtdx, dtdy);
+    comp_fluxes_timer.stop();
+    Kokkos::Profiling::popRegion();
 
     // actual update
+    Kokkos::Profiling::pushRegion("update_hydro");
+    update_hydro_timer.start();
     UpdateFunctor<device_t>::apply(params, data_out, Fluxes_x, Fluxes_y);
+    update_hydro_timer.stop();
+    Kokkos::Profiling::popRegion();
+
     Kokkos::Profiling::popRegion();
   }
   else if (params.implementationVersion == 1)
