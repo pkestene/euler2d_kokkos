@@ -102,7 +102,7 @@ main(int argc, char * argv[])
 
     if (nStep % 10 == 0)
     {
-      std::cout << "time step=" << nStep << std::endl;
+      printf("time step=%7d (dt=% 10.8f t=% 10.8f)\n", nStep, dt, t);
     }
 
     // output
